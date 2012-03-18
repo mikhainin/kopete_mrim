@@ -1,0 +1,22 @@
+[Desktop Entry]
+Type=Service
+X-Kopete-Version=1000900
+Icon=bonjour_protocol
+X-KDE-ServiceTypes=Kopete/Protocol
+X-KDE-Library=
+
+X-Kopete-Messaging-Protocol=messaging/mrim
+X-KDE-PluginInfo-Author=Mikhail Galanin
+X-KDE-PluginInfo-Email=bespoleznyak@narod.ru
+X-KDE-PluginInfo-Name=kopete_mrim
+X-KDE-PluginInfo-Version=0.0.1
+X-KDE-PluginInfo-Website=http://kopete.kde.org
+X-KDE-PluginInfo-Category=Protocols
+X-KDE-PluginInfo-Depends=
+X-KDE-PluginInfo-License=LGPL
+X-KDE-PluginInfo-EnabledByDefault=false
+Name=MRIM
+Name[en_GB]=MRIM
+Name[ru]=MRIM
+Comment=Mail.Ru Instant Messaging (aka Mail.Ru agent)
+Comment[en_GB]=MRIM

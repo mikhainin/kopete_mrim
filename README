@@ -1,0 +1,16 @@
+Installation
+
+To build this project, you need to header files for kopete and PIM.
+In Debian you can install following packets:
+
+kdepimlibs5-dev
+libkopete-dev
+
+Build:
+
+$ mkdir build
+$ cd build
+$ cmake ..
+$ make
+$ make install
+
