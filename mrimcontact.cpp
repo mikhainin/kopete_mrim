@@ -67,8 +67,9 @@ void MrimContact::sendMessage( Kopete::Message &message )
 }
 
 void MrimContact::receivedMessage( const QString &text ) {
-    
-    Kopete::Message msg;
+
+    Kopete::Message msg( this, account()->myself() );
+
     msg.setDirection( Kopete::Message::Inbound );
     
     msg.setPlainBody( text );
