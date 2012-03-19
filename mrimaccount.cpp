@@ -10,14 +10,13 @@
 
 MrimAccount::MrimAccount( MrimProtocol *parent, const QString& accountID )
     : Kopete::Account(parent, accountID)
-    , group(NULL)
 {
     kWarning() << __PRETTY_FUNCTION__;
     // Init the myself contact
 	setMyself( new MrimContact( this, accountId(), accountId(), Kopete::ContactList::self()->myself() ) );
 	myself()->setOnlineStatus( MrimProtocol::protocol()->mrimOffline );
 
-	group = Kopete::ContactList::self()->findGroup("MRIM");
+        // group = Kopete::ContactList::self()->findGroup("MRIM");
 
 	// Clean out Contacts from last time when kopete starts up
 	// wipeOutAllContacts();
@@ -227,14 +226,9 @@ void MrimAccount::sendMessage(const QString &to, const QString &text) {
 
 void MrimAccount::slotReceivedMessage( const QString &from, const QString &text )
 {
-    Kopete::MetaContact *mc = dynamic_cast<Kopete::MetaContact *>( contacts().value(from) );
-    
-    MrimContact *c = (MrimContact *) mc->findContact(
-                    protocol()->pluginId(),
-                    accountId(),
-                    from
-                );
-    
+    kWarning() << "from=" << from;
+    MrimContact *c = dynamic_cast<MrimContact *>( contacts().value(from) );
+
     c->receivedMessage(text);
 }
 

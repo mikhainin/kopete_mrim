@@ -115,7 +115,6 @@ private slots:
 private:
     QByteArray username;
     QByteArray password;
-    Kopete::Group *group;
     MRAProtocol *m_mraProto;
     
     Kopete::OnlineStatus mrimStatusToKopete(int mrimStatus);

@@ -61,7 +61,7 @@ void MrimContact::sendMessage( Kopete::Message &message )
     a->sendMessage( contactId(), message.plainBody() );
     
 	// give it back to the manager to display
-	manager()->appendMessage( message );
+        manager()->appendMessage( message );
 	// tell the manager it was sent successfully
 	manager()->messageSucceeded();
 }
@@ -69,9 +69,12 @@ void MrimContact::sendMessage( Kopete::Message &message )
 void MrimContact::receivedMessage( const QString &text ) {
     
     Kopete::Message msg;
+    msg.setDirection( Kopete::Message::Inbound );
     
     msg.setPlainBody( text );
-    
+
+    msg.setManager( manager(CanCreate) );
+
     Kopete::ChatSession *session = manager(CanCreate);
-	session->appendMessage(msg);
+    session->appendMessage(msg);
 }
