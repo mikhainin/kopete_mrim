@@ -32,41 +32,54 @@ class MRAProtocol : public QObject
     Q_OBJECT
 
 public:
-	MRAProtocol(QObject *parent = 0);
+    MRAProtocol(QObject *parent = 0);
 
-	~MRAProtocol();
+    ~MRAProtocol();
     //void sendMsg(MRAData *data);
     bool makeConnection(const std::string &login, const std::string &password);
     void closeConnection();
     //unsigned int readMessage(MRAData *data, u_long &msg);
     void sendText(QString to, QString text);
     // void sendSMS(std::string number, std::string text);
-    
-    
+
+
     void handleMessage(const u_long &msg, MRAData *data);
+    void addToContactList(int flags, int groupId, const QString &address, const QString nick);
+    void authorizeContact(const QString &contact);
 
 private:
-	MRAConnection *m_connection;
-	int sec_count;
-	
-	pthread_t threadPingLoop;
-	pthread_t threadMsgLoop;
-	pthread_mutex_t mutex1;
+    MRAConnection *m_connection;
+    int sec_count;
+
+    pthread_t threadPingLoop;
+    pthread_t threadMsgLoop;
+    pthread_mutex_t mutex1;
     QTimer *m_keepAliveTimer;
 private:
     void sendHello();
-    bool sendLogin(const std::string &login, const std::string &password);
-    QVector<QVariant> readVectorByMask(MRAData & data, const QString &mask); 
-    
+    void sendLogin(const std::string &login, const std::string &password);
+    QVector<QVariant> readVectorByMask(MRAData & data, const QString &mask);
+
     void readContactList(MRAData & data);
     void readUserInfo(MRAData & data);
     void readMessage(MRAData & data);
+    void readAuthorizeAck(MRAData & data);
+    void readConnectionRejected(MRAData & data);
+    void readLogoutMessage(MRAData & data);
+
+
 private slots:
     void slotPing();
     void slotOnDataFromServer();
+    void slotDisconnected(const QString &reason);
 signals:
     void contactListReceived(const MRAContactList &list);
     void messageReceived(const QString &from, const QString text);
+    void authorizeAckReceived(const QString &from);
+    void connected();
+    void disconnected(const QString &reason);
+    void loginFailed(const QString &reason);
+
 };
 
 #endif
