@@ -251,14 +251,23 @@ void MrimAccount::slotContactListReceived(const MRAContactList &list) {
 }
 
 void MrimAccount::addNewContactToServerList(const QString &name, const QString &groupName) {
+    int flags = 0;
 
+    int gid = m_groups.indexOf(groupName);
+
+    kWarning() << flags << gid << name << groupName;
+
+    m_mraProto->addToContactList( flags, gid, name, name );
 }
 
 void MrimAccount::slotUserStatusChanged(const QString &user, int newStatus) {
 
     Kopete::Contact *c = contacts().value(user);
-
-    c->setOnlineStatus( mrimStatusToKopete(newStatus) );
+    if (c) {
+        c->setOnlineStatus( mrimStatusToKopete(newStatus) );
+    } else {
+        kWarning() << "user was not found" << user;
+    }
 
 }
 

@@ -1,6 +1,7 @@
 #include <kdebug.h>
 #include <kopeteaccount.h>
 #include <kopetemetacontact.h>
+#include <kopetegroup.h>
 
 #include "mrimaccount.h"
 
@@ -24,7 +25,8 @@ MrimAddContactPage::~MrimAddContactPage()
 bool MrimAddContactPage::apply( Kopete::Account* a, Kopete::MetaContact* m )
 {
     kWarning() << __PRETTY_FUNCTION__;
-
+    MrimAccount *ma = dynamic_cast<MrimAccount *>(a);
+    ma->addNewContactToServerList( m_mrimAddUI.lineEdit->text(), m->groups()[0]->displayName() );
     return false;
 }
 
