@@ -327,6 +327,12 @@ void MRAProtocol::addToContactList(int flags, int groupId, const QString &addres
     m_connection->sendMsg(MRIM_CS_ADD_CONTACT, &addData);
 }
 
+void MRAProtocol::readUserSataus(MRAData & data) {
+    int status   = data.getInt32();
+    QString user = data.getString();
+
+    emit userStatusChanged(user, status);
+}
 
 void MRAProtocol::handleMessage(const u_long &msg, MRAData *data)
 {
@@ -357,8 +363,11 @@ void MRAProtocol::handleMessage(const u_long &msg, MRAData *data)
             readLogoutMessage(*data);
             return;
 
-        case MRIM_CS_MESSAGE_STATUS:
         case MRIM_CS_USER_STATUS:
+            readUserSataus(*data);
+            return;
+
+        case MRIM_CS_MESSAGE_STATUS:
         case MRIM_CS_CONNECTION_PARAMS:
         case MRIM_CS_ADD_CONTACT_ACK:
         case MRIM_CS_OFFLINE_MESSAGE_ACK:

@@ -87,6 +87,8 @@ public:
 
     void sendMessage(const QString &to, const QString &text);
 
+    void addNewContactToServerList(const QString &name, const QString &groupName);
+
 signals:
 
 public slots:
@@ -118,6 +120,8 @@ private slots:
     void slotLoginFailed(const QString &reason);
 
     void slotAuthorizeAckReceived(const QString &from);
+
+    void slotUserStatusChanged(const QString &user, int newStatus);
 
 private:
     QByteArray username;

@@ -66,7 +66,7 @@ private:
     void readAuthorizeAck(MRAData & data);
     void readConnectionRejected(MRAData & data);
     void readLogoutMessage(MRAData & data);
-
+    void readUserSataus(MRAData & data);
 
 private slots:
     void slotPing();
@@ -79,7 +79,7 @@ signals:
     void connected();
     void disconnected(const QString &reason);
     void loginFailed(const QString &reason);
-
+    void userStatusChanged(const QString &user, int newStatus);
 };
 
 #endif

@@ -73,6 +73,9 @@ void MrimAccount::connect( const Kopete::OnlineStatus& /*initialStatus*/ )
     QObject::connect(m_mraProto, SIGNAL(authorizeAckReceived(QString)),
                      this, SLOT( slotAuthorizeAckReceived(QString) ) );
 
+    QObject::connect(m_mraProto, SIGNAL(userStatusChanged(QString,int)),
+                     this, SLOT( slotUserStatusChanged(QString,int) ) );
+
     if (m_mraProto->makeConnection(QString(username).toStdString(), QString(password).toStdString()) ) {
         kWarning() << "connecting...";
     } else {
@@ -247,12 +250,26 @@ void MrimAccount::slotContactListReceived(const MRAContactList &list) {
     }
 }
 
+void MrimAccount::addNewContactToServerList(const QString &name, const QString &groupName) {
+
+}
+
+void MrimAccount::slotUserStatusChanged(const QString &user, int newStatus) {
+
+    Kopete::Contact *c = contacts().value(user);
+
+    c->setOnlineStatus( mrimStatusToKopete(newStatus) );
+
+}
+
 Kopete::OnlineStatus MrimAccount::mrimStatusToKopete(int mrimStatus) {
+
+    MrimProtocol *p = dynamic_cast<MrimProtocol *>(protocol());
 
     switch(mrimStatus) {
 
     case STATUS_ONLINE:
-        return Kopete::OnlineStatus::Online;
+        return  p->mrimOnline; // Kopete::OnlineStatus::Online;
 
     case STATUS_OFFLINE:
         return Kopete::OnlineStatus::Offline;
