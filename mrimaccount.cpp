@@ -306,7 +306,22 @@ void MrimAccount::slotReceivedMessage( const QString &from, const QString &text 
     kWarning() << "from=" << from;
     MrimContact *c = dynamic_cast<MrimContact *>( contacts().value(from) );
 
-    c->receivedMessage(text);
+    if (c) {
+        c->receivedMessage(text);
+    } else {
+        kWarning() << "user was not found" << from;
+    }
+}
+
+void MrimAccount::slotTypingAMessage( const QString &from ) {
+    kWarning() << "from=" << from;
+    MrimContact *c = dynamic_cast<MrimContact *>( contacts().value(from) );
+
+    if (c) {
+        c->typingMessage();
+    } else {
+        kWarning() << "user was not found" << from;
+    }
 }
 
 #include "mrimaccount.moc"

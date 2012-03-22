@@ -274,7 +274,11 @@ void MRAProtocol::readMessage(MRAData & data) {
     QString text = data.getString();
     // QString rtf  = data.getString(); // ignore
 
-    emit messageReceived( from, text );
+    if ( (flags & MESSAGE_FLAG_NOTIFY) != 0 ) {
+        emit typingAMessage( from );
+    } else {
+        emit messageReceived( from, text );
+    }
 
     if ( (flags & MESSAGE_FLAG_NORECV) == 0 ) {
 

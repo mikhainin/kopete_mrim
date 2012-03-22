@@ -110,7 +110,7 @@ public slots:
     void slotGoOffline();
 
     void slotReceivedMessage( const QString &from, const QString &text );
-
+    void slotTypingAMessage( const QString &from );
 private slots:
 
     void slotContactListReceived(const MRAContactList &list);

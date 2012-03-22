@@ -74,7 +74,10 @@ private slots:
     void slotDisconnected(const QString &reason);
 signals:
     void contactListReceived(const MRAContactList &list);
+
     void messageReceived(const QString &from, const QString text);
+    void typingAMessage(const QString &from);
+
     void authorizeAckReceived(const QString &from);
     void connected();
     void disconnected(const QString &reason);
