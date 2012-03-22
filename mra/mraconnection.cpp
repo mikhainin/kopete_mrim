@@ -209,8 +209,8 @@ void MRAConnection::disconnect()
 
         QObject::disconnect(m_socket, SIGNAL(disconnected()), this, SLOT(slotDisconnected()) );
 
-        m_socket->disconnectFromHost();
-        delete m_socket;
+        m_socket->deleteLater();// isconnectFromHost();
+        // delete m_socket;
         m_socket = 0;
     }
 }
