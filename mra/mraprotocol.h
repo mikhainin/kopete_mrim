@@ -47,6 +47,7 @@ public:
     void addToContactList(int flags, int groupId, const QString &address, const QString nick);
     void authorizeContact(const QString &contact);
 
+    void sendTypingMessage(const QString &contact);
 private:
     MRAConnection *m_connection;
     int sec_count;

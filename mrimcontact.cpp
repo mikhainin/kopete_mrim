@@ -12,6 +12,7 @@ MrimContact::MrimContact( Kopete::Account* _account, const QString &uniqueName,
     : Kopete::Contact( _account, uniqueName, parent, QString("mrim_protocol") )
     , m_msgManager(NULL)
     , m_typingTimer(0)
+    , m_myselfTypingTimer(0)
 {
     kDebug()<< " uniqueName: " << uniqueName << ", displayName: " << displayName;
     kWarning() << __PRETTY_FUNCTION__;
@@ -36,6 +37,9 @@ Kopete::ChatSession* MrimContact::manager( CanCreateFlags canCreateFlags )
         m_msgManager = Kopete::ChatSessionManager::self()->create(account()->myself(), contacts, protocol(), form );
 
         connect(m_msgManager, SIGNAL(messageSent(Kopete::Message&,Kopete::ChatSession*)),
+                this, SLOT(sendMessage(Kopete::Message&)) );
+
+        connect(m_msgManager, SIGNAL(myselfTyping(bool)),
                 this, SLOT(sendMessage(Kopete::Message&)) );
 
         connect(m_msgManager, SIGNAL(destroyed()), this, SLOT(slotChatSessionDestroyed()));
@@ -88,7 +92,11 @@ void MrimContact::receivedMessage( const QString &text ) {
 }
 
 void MrimContact::typingMessage() {
-    delete m_typingTimer;
+    if ( m_typingTimer  ) {
+        m_typingTimer->stop();
+        m_typingTimer->deleteLater();
+        m_typingTimer = 0;
+    }
 
     manager(CanCreate)->receivedTypingMsg( this, true );
 
@@ -100,4 +108,27 @@ void MrimContact::typingMessage() {
 
 void MrimContact::slotTypingTimeOut() {
     manager(CanCreate)->receivedTypingMsg( this, false );
+    m_typingTimer->deleteLater();
+
+}
+
+void MrimContact::slotMyselfTyping(bool typing) {
+    if (typing && !m_myselfTypingTimer) {
+        m_myselfTypingTimer = new QTimer(this);
+
+        connect(m_myselfTypingTimer, SIGNAL(timeout()), this, SLOT(slotMyselfTypingTimeout()));
+        m_typingTimer->setInterval(10 * 1000);
+
+        slotMyselfTypingTimeout();
+
+    } else if ( !typing && m_myselfTypingTimer ) {
+        m_myselfTypingTimer->stop();
+        m_myselfTypingTimer->deleteLater();
+        m_myselfTypingTimer = 0;
+    }
+}
+
+void MrimContact::slotMyselfTypingTimeout() {
+    MrimAccount *a = dynamic_cast<MrimAccount*>( account() );
+    a->contactTypingAMessage( contactId() );
 }

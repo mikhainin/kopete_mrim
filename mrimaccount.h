@@ -89,6 +89,8 @@ public:
 
     void addNewContactToServerList(const QString &name, const QString &groupName);
 
+    void contactTypingAMessage( const QString &to );
+
 signals:
 
 public slots:

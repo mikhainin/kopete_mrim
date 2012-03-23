@@ -77,6 +77,9 @@ void MrimAccount::connect( const Kopete::OnlineStatus& /*initialStatus*/ )
     QObject::connect(m_mraProto, SIGNAL(userStatusChanged(QString,int)),
                      this, SLOT( slotUserStatusChanged(QString,int) ) );
 
+    QObject::connect(m_mraProto, SIGNAL(typingAMessage(QString)),
+                     this, SLOT( slotTypingAMessage(QString)) );
+
     if (m_mraProto->makeConnection(QString(username).toStdString(), QString(password).toStdString()) ) {
         kWarning() << "connecting...";
     } else {
@@ -326,6 +329,10 @@ void MrimAccount::slotTypingAMessage( const QString &from ) {
     } else {
         kWarning() << "user was not found" << from;
     }
+}
+
+void MrimAccount::contactTypingAMessage( const QString &to ) {
+    m_mraProto->sendTypingMessage(to);
 }
 
 #include "mrimaccount.moc"

@@ -31,9 +31,13 @@ public slots:
     void sendMessage( Kopete::Message &message );
     void slotTypingTimeOut();
     void slotChatSessionDestroyed();
+    void slotMyselfTyping(bool typing);
+    void slotMyselfTypingTimeout();
 private:
     Kopete::ChatSession* m_msgManager;
     QTimer *m_typingTimer;
+
+    QTimer *m_myselfTypingTimer;
 };
 
 #endif // MRIMCONTACT_H

@@ -303,6 +303,17 @@ void MRAProtocol::readMessage(MRAData & data) {
     }
 }
 
+void MRAProtocol::sendTypingMessage(const QString &contact) {
+    MRAData data;
+
+    data.addInt32( MESSAGE_FLAG_NORECV | MESSAGE_FLAG_NOTIFY ); // flags
+    data.addString(contact); // to
+    data.addString(" "); // message
+    data.addString(" "); // rtf
+
+    m_connection->sendMsg(MRIM_CS_MESSAGE, &data);
+}
+
 void MRAProtocol::readConnectionRejected(MRAData & data) {
     /// TODO: handle this event
     QString reason = data.getString();
