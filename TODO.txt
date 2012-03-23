@@ -5,4 +5,14 @@
 [ui]     add contacts with their names (not only emails)
 [kopete] avatars
 [kopete] show contact info
+[kopete] add contact from server's list to addressbook
+[proto]  handling MRIM_CS_CONNECTION_PARAMS
+[kopete] offline sending
+[proto]  offline receiving
+[proto]  status message
+[kopete] fix manual disconnect
+[kopete] double chatwindow open crashes Kopete
+[kopete] status icons
+[proto]  delivery status
+[kopete] message status: sent, delivered, rejected, etc...
 
