@@ -81,7 +81,7 @@ void MRAProtocol::closeConnection() {
     m_connection = 0;
 
     m_keepAliveTimer->stop();
-    delete m_keepAliveTimer;
+    m_keepAliveTimer->deleteLater();
     m_keepAliveTimer = 0;
 
 }
