@@ -30,7 +30,7 @@ public slots:
 
     void sendMessage( Kopete::Message &message );
     void slotTypingTimeOut();
-
+    void slotChatSessionDestroyed();
 private:
     Kopete::ChatSession* m_msgManager;
     QTimer *m_typingTimer;

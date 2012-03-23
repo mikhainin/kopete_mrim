@@ -9,8 +9,6 @@
 [kopete] offline sending
 [proto]  offline receiving
 [proto]  status message
-[kopete] double chatwindow open crashes Kopete
 [kopete] status icons
 [proto]  delivery status
 [kopete] message status: sent, delivered, rejected, etc...
-

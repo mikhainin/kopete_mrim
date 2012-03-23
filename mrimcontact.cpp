@@ -51,6 +51,11 @@ Kopete::ChatSession* MrimContact::manager( CanCreateFlags canCreateFlags )
 }
 
 
+void MrimContact::slotChatSessionDestroyed()
+{
+    m_msgManager = 0;
+}
+
 void MrimContact::sendMessage( Kopete::Message &message )
 {
     kDebug();
