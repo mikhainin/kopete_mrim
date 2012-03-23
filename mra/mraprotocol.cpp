@@ -398,11 +398,13 @@ void MRAProtocol::slotPing() {
 
 void MRAProtocol::slotOnDataFromServer() {
     kWarning() << __PRETTY_FUNCTION__;
-    MRAData data;
+    MRAData *data = new MRAData(this);
     mrim_msg_t msg;
-    m_connection->readMessage(msg, &data);
+    m_connection->readMessage(msg, data);
 
-    handleMessage(msg, &data);
+    handleMessage(msg, data);
+
+    data->deleteLater();
 }
 
 #include "mraprotocol.moc"

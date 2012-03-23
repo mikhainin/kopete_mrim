@@ -36,8 +36,9 @@ private:
 
 
 
-MRAData::MRAData()
-    : m_pointer(0)
+MRAData::MRAData(QObject * parent)
+    : QObject(parent)
+    , m_pointer(0)
 {
 }
 
@@ -49,7 +50,7 @@ MRAData::~MRAData()
 void MRAData::clear()
 {
     m_data.clear();
-	this->m_pointer  = 0;
+    m_pointer  = 0;
 	
 }
 
@@ -62,8 +63,8 @@ void MRAData::addString(const QString &str)
     
     QByteArray ba = str.toAscii();
     
-	addInt32(ba.size());
-	addData(ba.constData(), ba.size());
+     addInt32(ba.size());
+     addData(ba.constData(), ba.size());
 }
 
 
@@ -81,7 +82,7 @@ void MRAData::addData(const void *data_, ssize_t size)
  */
 void MRAData::addInt32(quint32 value)
 {
-	this->addData(&value, sizeof(value));
+        addData(&value, sizeof(value));
 }
 
 
@@ -109,32 +110,34 @@ unsigned long int MRAData::getSize() const
 quint32 MRAData::getInt32()
 {
     quint32 result = 0;
-	if (m_pointer <= (getSize() - sizeof(result))) {
-		result     = *(quint32*)(getData() + m_pointer) ;
+    if (m_pointer <= (getSize() - sizeof(result))) {
+        result     = *(quint32*)(getData() + m_pointer) ;
+
         std::cout << std::hex << static_cast< unsigned int >( *(getData() + m_pointer) )<< " " <<
                      static_cast< unsigned int >( *(getData() + m_pointer+1) )<< " " <<
                      static_cast< unsigned int >( *(getData() + m_pointer+2) )<< " " <<
                      static_cast< unsigned int >( *(getData() + m_pointer+3) ) << " = " << std::dec << result
                      << std::endl;
 		m_pointer +=  sizeof(result);
-	}
+    }
     return result;
 }
 
 QString MRAData::getString()
 {
-	int len = getInt32();
-	
-	if (m_pointer <= (getSize() - len)) {
+    int len = getInt32();
+
+    if (m_data.size() >= (m_pointer + len)) {
         CodecHolder holder("Windows-1251");
-        QString result = QString::fromAscii(getData() + m_pointer, len);		
+
+        QString result = QString::fromAscii( m_data.mid(m_pointer, len).constData() );
         
-		m_pointer += len;
+        m_pointer += len;
         
-		return result;
-	} else {
+        return result;
+    } else {
         return QString();
-	}
+    }
 }
 
 bool MRAData::eof() const
@@ -142,3 +145,12 @@ bool MRAData::eof() const
 	return (m_pointer >= getSize());
 }
 
+void MRAData::dumpData() {
+    for (qint32 i = 0; i < m_data.size(); ++i)
+    {
+        if ( (i % 16) == 0 ) {
+            printf("\n");
+        }
+        printf( "%02x ", unsigned(*(m_data.data() + i)) & 0xFF );
+    }
+}

@@ -127,7 +127,7 @@ ssize_t MRAConnection::read(char* buf, ssize_t size)
     ssize_t temp = 0;
     do {
 
-        qint64 read = m_socket->read(buf, size - temp);
+        qint64 read = m_socket->read(buf + temp, size - temp);
         if (read == -1) {
             if ( m_socket->isReadable() )
             kWarning() << "error: " << m_socket->errorString();
@@ -156,8 +156,11 @@ ssize_t MRAConnection::readMessage(mrim_msg_t &msg_, MRAData *data)
 
     msg_ = head_.msg;
     if (sz > 0) {
+
         QByteArray buf(head_.dlen, 0);
+
         sz = this->read(buf.data(), head_.dlen);
+
         if (data && sz > 0) {
             data->addData(buf.constData(), sz);
         }

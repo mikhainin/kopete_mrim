@@ -26,9 +26,10 @@
 #include <QObject>
 #include <QByteArray>
 
-class MRAData {
+class MRAData : public QObject {
+    Q_OBJECT
 public:
-    MRAData();
+    MRAData(QObject * parent = 0);
 
     ~MRAData();
     void addString(const QString &str);
@@ -43,7 +44,7 @@ public:
     bool eof() const;
     
     void clear();
-    
+    void dumpData();
 private:
 private:
     QByteArray m_data;
