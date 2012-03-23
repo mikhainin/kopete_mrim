@@ -108,6 +108,18 @@ void MRAProtocol::sendHello()
 
 }
 
+void MRAProtocol::readConnectionParams(MRAData & data) {
+
+    sec_count = data.getInt32();
+
+    m_keepAliveTimer->deleteLater();
+    m_keepAliveTimer = 0;
+
+    m_keepAliveTimer = new QTimer(this);
+    connect(m_keepAliveTimer, SIGNAL(timeout()) , this , SLOT(slotPing()));
+    m_keepAliveTimer->start(sec_count*1000);
+
+}
 
 /*!
     \fn MRAMsg::sendLogin()
@@ -371,8 +383,12 @@ void MRAProtocol::handleMessage(const u_long &msg, MRAData *data)
             readUserSataus(*data);
             return;
 
-        case MRIM_CS_MESSAGE_STATUS:
         case MRIM_CS_CONNECTION_PARAMS:
+            readConnectionParams(*data);
+            return;
+
+        case MRIM_CS_MESSAGE_STATUS:
+
         case MRIM_CS_ADD_CONTACT_ACK:
         case MRIM_CS_OFFLINE_MESSAGE_ACK:
         case MRIM_CS_AUTHORIZE_ACK:

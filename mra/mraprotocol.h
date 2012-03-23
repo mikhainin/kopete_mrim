@@ -67,6 +67,7 @@ private:
     void readConnectionRejected(MRAData & data);
     void readLogoutMessage(MRAData & data);
     void readUserSataus(MRAData & data);
+    void readConnectionParams(MRAData & data);
 
 private slots:
     void slotPing();

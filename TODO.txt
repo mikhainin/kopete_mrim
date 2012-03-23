@@ -6,7 +6,6 @@
 [kopete] avatars
 [kopete] show contact info
 [kopete] add contact from server's list to addressbook
-[proto]  handling MRIM_CS_CONNECTION_PARAMS
 [kopete] offline sending
 [proto]  offline receiving
 [proto]  status message
