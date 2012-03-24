@@ -1,4 +1,3 @@
-[proto]  send "typing" notifications
 [kopete] show disconnect reason in notification area
 [proto]  fix accepting authorization requests
 [ui]     add contacts to list on receiving AUTH_ACK (without reconnect)

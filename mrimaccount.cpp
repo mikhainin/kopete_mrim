@@ -173,12 +173,6 @@ void MrimAccount::slotGoOnline ()
     if (!isConnected())
         connect();
     else {
-        /*if (service) {
-            QMap <QString, QByteArray> map = service->textData();
-            map["status"] = AvailabilityStatusAvailId;
-            service->setTextData(map);
-        }
-        */
         myself()->setOnlineStatus( MrimProtocol::protocol()->mrimOnline );
     }
 }

@@ -40,7 +40,7 @@ Kopete::ChatSession* MrimContact::manager( CanCreateFlags canCreateFlags )
                 this, SLOT(sendMessage(Kopete::Message&)) );
 
         connect(m_msgManager, SIGNAL(myselfTyping(bool)),
-                this, SLOT(sendMessage(Kopete::Message&)) );
+                this, SLOT(slotMyselfTyping(bool)) );
 
         connect(m_msgManager, SIGNAL(destroyed()), this, SLOT(slotChatSessionDestroyed()));
 
