@@ -80,6 +80,9 @@ void MrimAccount::connect( const Kopete::OnlineStatus& /*initialStatus*/ )
     QObject::connect(m_mraProto, SIGNAL(typingAMessage(QString)),
                      this, SLOT( slotTypingAMessage(QString)) );
 
+    QObject::connect(m_mraProto, SIGNAL(offlineReceived(MRAOfflineMessage)),
+                     this, SLOT(slotReceivedOfflineMessage(MRAOfflineMessage)) );
+
     if (m_mraProto->makeConnection(QString(username).toStdString(), QString(password).toStdString()) ) {
         kWarning() << "connecting...";
     } else {
@@ -183,7 +186,7 @@ void MrimAccount::slotGoOffline()
     kWarning() << __PRETTY_FUNCTION__;
 
     foreach( Kopete::Contact *contact, contacts() ) {
-        delete contact;
+        contact->setOnlineStatus( MrimProtocol::protocol()->mrimOffline );
     }
     disconnect();
 }
@@ -237,7 +240,7 @@ void MrimAccount::slotContactListReceived(const MRAContactList &list) {
 
         Kopete::Group *g=Kopete::ContactList::self()->findGroup(groupName);
 
-        Kopete::MetaContact *mc = addContact(item.address(), item.nick(), g, Kopete::Account::Temporary /* ChangeKABC */);
+        Kopete::MetaContact *mc = addContact(item.address(), item.nick(), g, Kopete::Account::ChangeKABC);
 
         MrimContact *c = (MrimContact *) mc->findContact( // ???
                         protocol()->pluginId(),
@@ -312,6 +315,19 @@ void MrimAccount::slotReceivedMessage( const QString &from, const QString &text 
     } else {
         kWarning() << "user was not found" << from;
     }
+}
+
+void MrimAccount::slotReceivedOfflineMessage( const MRAOfflineMessage &message ) {
+    kWarning() << "from=" << message.from();
+
+    MrimContact *c = dynamic_cast<MrimContact *>( contacts().value(message.from()) );
+
+    if (c) {
+        c->receivedOfflineMessage(message);
+    } else {
+        kWarning() << "user was not found" << message.from();
+    }
+
 }
 
 void MrimAccount::slotTypingAMessage( const QString &from ) {

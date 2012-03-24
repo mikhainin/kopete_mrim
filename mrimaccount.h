@@ -6,6 +6,7 @@
 class MrimProtocol;
 class MRAProtocol;
 class MRAContactList;
+class MRAOfflineMessage;
 
 namespace Kopete {
     class Message;
@@ -112,6 +113,7 @@ public slots:
     void slotGoOffline();
 
     void slotReceivedMessage( const QString &from, const QString &text );
+    void slotReceivedOfflineMessage( const MRAOfflineMessage &message );
     void slotTypingAMessage( const QString &from );
 private slots:
 

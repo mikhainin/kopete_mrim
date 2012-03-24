@@ -51,7 +51,7 @@ void MRAData::clear()
 {
     m_data.clear();
     m_pointer  = 0;
-	
+
 }
 
 /*!
@@ -60,11 +60,19 @@ void MRAData::clear()
 void MRAData::addString(const QString &str)
 {
     CodecHolder holder("Windows-1251");
-    
+
     QByteArray ba = str.toAscii();
-    
+
      addInt32(ba.size());
      addData(ba.constData(), ba.size());
+}
+
+void MRAData::addUIDL(const QByteArray &str)
+{
+    // UIDL this is a string of 8 bytes
+    QByteArray ba = str.left(8);
+
+    addData(ba.constData(), ba.size());
 }
 
 
@@ -91,7 +99,7 @@ void MRAData::addInt32(quint32 value)
  */
 const char *MRAData::getData()
 {
-	return m_data.constData();
+    return m_data.constData();
 }
 
 
@@ -100,7 +108,7 @@ const char *MRAData::getData()
  */
 unsigned long int MRAData::getSize() const
 {
-	return m_data.size();
+    return m_data.size();
 }
 
 
@@ -118,7 +126,7 @@ quint32 MRAData::getInt32()
                      static_cast< unsigned int >( *(getData() + m_pointer+2) )<< " " <<
                      static_cast< unsigned int >( *(getData() + m_pointer+3) ) << " = " << std::dec << result
                      << std::endl;
-		m_pointer +=  sizeof(result);
+        m_pointer +=  sizeof(result);
     }
     return result;
 }
@@ -131,18 +139,36 @@ QString MRAData::getString()
         CodecHolder holder("Windows-1251");
 
         QString result = QString::fromAscii( m_data.mid(m_pointer, len).constData() );
-        
+
         m_pointer += len;
-        
+
         return result;
     } else {
         return QString();
     }
 }
 
+QByteArray MRAData::getUIDL() {
+
+    int len = 8;
+
+    if (m_data.size() >= (m_pointer + len)) {
+
+        QByteArray result = m_data.mid(m_pointer, len);
+
+        m_pointer += len;
+
+        return result;
+    } else {
+        return QByteArray();
+    }
+
+}
+
+
 bool MRAData::eof() const
 {
-	return (m_pointer >= getSize());
+    return (m_pointer >= getSize());
 }
 
 void MRAData::dumpData() {

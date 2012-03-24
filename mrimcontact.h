@@ -4,6 +4,8 @@
 #include <kopetecontact.h>
 #include <kopetechatsession.h>
 
+class MRAOfflineMessage;
+
 class MrimContact : public Kopete::Contact
 {
     Q_OBJECT
@@ -21,6 +23,8 @@ public:
     virtual Kopete::ChatSession *manager( CanCreateFlags canCreate = CannotCreate );
 
     void receivedMessage( const QString &text );
+
+    void receivedOfflineMessage( const MRAOfflineMessage &message );
 
     void typingMessage();
 

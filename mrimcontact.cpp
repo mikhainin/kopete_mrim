@@ -3,6 +3,7 @@
 #include <kopetechatsessionmanager.h>
 #include <QTimer>
 
+#include "mra/mraofflinemessage.h"
 #include "mrimaccount.h"
 #include "mrimcontact.h"
 
@@ -86,6 +87,22 @@ void MrimContact::receivedMessage( const QString &text ) {
     msg.setPlainBody( text );
 
     msg.setManager( manager(CanCreate) );
+
+    Kopete::ChatSession *session = manager(CanCreate);
+    session->appendMessage(msg);
+}
+
+void MrimContact::receivedOfflineMessage( const MRAOfflineMessage &message ) {
+
+    Kopete::Message msg( this, account()->myself() );
+
+    msg.setDirection( Kopete::Message::Inbound );
+
+    msg.setPlainBody( message.text() );
+
+    msg.setManager( manager(CanCreate) );
+
+    msg.setTimestamp( QDateTime::fromTime_t( message.date().toTime_t() ) );
 
     Kopete::ChatSession *session = manager(CanCreate);
     session->appendMessage(msg);

@@ -11,13 +11,13 @@ class MrimAddContactPage : public AddContactPage
 public:
     explicit MrimAddContactPage(QWidget *parent = 0);
     ~MrimAddContactPage();
-    
-    
+
+
     /**
      * Make a contact out of the entered data
      */
     virtual bool apply(Kopete::Account* a, Kopete::MetaContact* m);
-    
+
     /**
      * Is the data correct?
      */
@@ -27,9 +27,9 @@ protected:
     Ui_MrimAddUI m_mrimAddUI;
 
 signals:
-    
+
 public slots:
-    
+
 };
 
 #endif // MRIMADDCONTACTPAGE_H

@@ -33,6 +33,7 @@ MRAProtocol::MRAProtocol(QObject*parent)
     : QObject(parent)
     , m_connection(0)
     , sec_count(0)
+    , m_contactListReceived(false)
 {
 
     pthread_mutex_init(&this->mutex1, NULL);
@@ -41,6 +42,8 @@ MRAProtocol::MRAProtocol(QObject*parent)
 
 MRAProtocol::~MRAProtocol()
 {
+    closeConnection();
+
     if (m_keepAliveTimer) {
         m_keepAliveTimer->stop();
         disconnect(m_keepAliveTimer, SIGNAL(timeout()) , this , SLOT(slotPing()));
@@ -72,17 +75,20 @@ bool MRAProtocol::makeConnection(const std::string &login, const std::string &pa
 }
 
 void MRAProtocol::closeConnection() {
-    if (!m_connection) {
-        return;
+
+    m_contactListReceived = false;
+
+    if (m_connection) {
+        m_connection->disconnect();
+        m_connection->deleteLater();
+        m_connection = 0;
     }
 
-    m_connection->disconnect();
-    m_connection->deleteLater();
-    m_connection = 0;
-
-    m_keepAliveTimer->stop();
-    m_keepAliveTimer->deleteLater();
-    m_keepAliveTimer = 0;
+    if (m_keepAliveTimer) {
+        m_keepAliveTimer->stop();
+        m_keepAliveTimer->deleteLater();
+        m_keepAliveTimer = 0;
+    }
 
 }
 
@@ -135,18 +141,7 @@ void MRAProtocol::sendLogin(const std::string &login, const std::string &passwor
 
 
     m_connection->sendMsg(MRIM_CS_LOGIN2, &data);
-/*
-    mrim_msg_t msg;
 
-    m_connection->readMessage(msg, &data);
-
-    if ( msg == MRIM_CS_LOGIN_ACK ) {
-        return true;
-    } else {
-        /// @todo: read reason
-        return false;
-    }
-*/
 }
 
 
@@ -259,6 +254,10 @@ void MRAProtocol::readContactList(MRAData & data)
     }
 
     emit contactListReceived(list);
+
+    m_contactListReceived = true;
+
+    emitOfflineMessagesReceived();
 }
 
 void MRAProtocol::readUserInfo(MRAData & data)
@@ -354,11 +353,70 @@ void MRAProtocol::addToContactList(int flags, int groupId, const QString &addres
     m_connection->sendMsg(MRIM_CS_ADD_CONTACT, &addData);
 }
 
+void MRAProtocol::removeContact(const QString &contact) {
+    addToContactList(CONTACT_FLAG_REMOVED, 0, contact, contact);
+}
+
 void MRAProtocol::readUserSataus(MRAData & data) {
     int status   = data.getInt32();
     QString user = data.getString();
 
     emit userStatusChanged(user, status);
+}
+
+void MRAProtocol::readOfflineMessage(MRAData & data) {
+    QByteArray msgId      = data.getUIDL();
+    QString rfc822message = data.getString();
+
+    MRAOfflineMessage *message = new MRAOfflineMessage (this, msgId);
+    message->parse(rfc822message);
+
+    m_offlineMessages.push_back(message);
+
+    kWarning() << "offline message pushed" << m_offlineMessages.size();
+
+    if (m_contactListReceived) {
+        emitOfflineMessagesReceived();
+    }
+
+
+}
+
+bool MessageDateLessThan(MRAOfflineMessage *a, MRAOfflineMessage *b) {
+     return a->date() < b->date();
+}
+
+void MRAProtocol::emitOfflineMessagesReceived() {
+
+    // sort the list
+
+    kWarning() << "offline message emmiting" << m_offlineMessages.size();
+
+    qSort(m_offlineMessages.begin(), m_offlineMessages.end(), MessageDateLessThan);
+
+    kWarning() << "offline message emmiting2" << m_offlineMessages.size();
+
+    foreach( MRAOfflineMessage *message, m_offlineMessages ) {
+
+        if ( (message->flags() & MESSAGE_FLAG_AUTHORIZE) != 0) {
+            // emit authorizeRequestReceived(message->from(), message->text());
+            /// @todo implement me
+/*        } else if ( (message->flags() & MESSAGE_FLAG_NOTIFY) != 0 ) {
+            ;*/
+        } else {
+            emit offlineReceived(*message);
+        }
+
+        MRAData ackData;
+        ackData.addUIDL(message->id());
+
+        m_connection->sendMsg(MRIM_CS_DELETE_OFFLINE_MESSAGE, &ackData);
+
+        message->deleteLater();
+    }
+
+    m_offlineMessages.clear();
+
 }
 
 void MRAProtocol::handleMessage(const u_long &msg, MRAData *data)
@@ -398,13 +456,17 @@ void MRAProtocol::handleMessage(const u_long &msg, MRAData *data)
             readConnectionParams(*data);
             return;
 
-        case MRIM_CS_MESSAGE_STATUS:
-
-        case MRIM_CS_ADD_CONTACT_ACK:
-        case MRIM_CS_OFFLINE_MESSAGE_ACK:
         case MRIM_CS_AUTHORIZE_ACK:
             readAuthorizeAck(*data);
             break;
+
+        case MRIM_CS_OFFLINE_MESSAGE_ACK:
+            readOfflineMessage(*data);
+            break;
+
+        case MRIM_CS_MESSAGE_STATUS:
+
+        case MRIM_CS_ADD_CONTACT_ACK:
         case MRIM_CS_MPOP_SESSION:
 //	case MRIM_CS_FILE_TRANSFER_ACK:
         case MRIM_CS_ANKETA_INFO: {

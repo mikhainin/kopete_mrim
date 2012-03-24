@@ -23,8 +23,9 @@
 #include "mradata.h"
 #include "mraconnection.h"
 #include "mracontactlist.h"
-
+#include "mraofflinemessage.h"
 #include <QObject>
+
 
 
 class MRAProtocol : public QObject
@@ -46,6 +47,7 @@ public:
     void handleMessage(const u_long &msg, MRAData *data);
     void addToContactList(int flags, int groupId, const QString &address, const QString nick);
     void authorizeContact(const QString &contact);
+    void removeContact(const QString &contact);
 
     void sendTypingMessage(const QString &contact);
 private:
@@ -56,6 +58,9 @@ private:
     pthread_t threadMsgLoop;
     pthread_mutex_t mutex1;
     QTimer *m_keepAliveTimer;
+    bool m_contactListReceived;
+    QList<MRAOfflineMessage*> m_offlineMessages;
+
 private:
     void sendHello();
     void sendLogin(const std::string &login, const std::string &password);
@@ -69,6 +74,8 @@ private:
     void readLogoutMessage(MRAData & data);
     void readUserSataus(MRAData & data);
     void readConnectionParams(MRAData & data);
+    void readOfflineMessage(MRAData & data);
+    void emitOfflineMessagesReceived();
 
 private slots:
     void slotPing();
@@ -79,8 +86,11 @@ signals:
 
     void messageReceived(const QString &from, const QString text);
     void typingAMessage(const QString &from);
+    void offlineReceived(const MRAOfflineMessage &message);
 
+    void authorizeRequestReceived(const QString &from, const QString text);
     void authorizeAckReceived(const QString &from);
+
     void connected();
     void disconnected(const QString &reason);
     void loginFailed(const QString &reason);

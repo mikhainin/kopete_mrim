@@ -14,6 +14,7 @@ set(kopete_mrim_SRCS
     mra/mraprotocol.cpp
     mra/mracontactlist.cpp
     mra/mracontactlistentry.cpp
+    mra/mraofflinemessage.cpp
     PARENT_SCOPE
 )
 
