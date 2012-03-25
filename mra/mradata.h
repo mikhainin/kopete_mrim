@@ -40,7 +40,7 @@ public:
     quint32 getInt32();
 
     const char *getData();
-    unsigned long int getSize() const;
+    int getSize() const;
     void addData(const void *data_, ssize_t size);
     void addUIDL(const QByteArray &str);
 
@@ -51,7 +51,7 @@ public:
 private:
 private:
     QByteArray m_data;
-    unsigned long int m_pointer;
+    int m_pointer;
 };
 
 #endif

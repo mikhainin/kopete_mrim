@@ -106,7 +106,7 @@ const char *MRAData::getData()
 /*!
     \fn MRAData::getSize()
  */
-unsigned long int MRAData::getSize() const
+int MRAData::getSize() const
 {
     return m_data.size();
 }
@@ -118,7 +118,9 @@ unsigned long int MRAData::getSize() const
 quint32 MRAData::getInt32()
 {
     quint32 result = 0;
-    if (m_pointer <= (getSize() - sizeof(result))) {
+
+    if (m_pointer <= (getSize() - static_cast<int>(sizeof result)) ) {
+
         result     = *(quint32*)(getData() + m_pointer) ;
 
         std::cout << std::hex << static_cast< unsigned int >( *(getData() + m_pointer) )<< " " <<

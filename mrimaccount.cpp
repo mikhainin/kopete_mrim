@@ -123,7 +123,7 @@ void MrimAccount::authorizeRequestReceived(const QString &from, const QString &t
     QMessageBox::StandardButton answer =
         QMessageBox::question( 0,
                                "Authorization request",
-                               "Would you like to authorize " + from + "?",
+                               "Would you like to authorize " + from + "?\n\n" + text,
                                QMessageBox::Yes | QMessageBox::No );
 
     if ( answer == QMessageBox::Yes ) {
@@ -141,7 +141,7 @@ void MrimAccount::disconnect()
 }
 
 void MrimAccount::setOnlineStatus(const Kopete::OnlineStatus& status , const Kopete::StatusMessage &reason,
-                             const OnlineStatusOptions& options )
+                             const OnlineStatusOptions& /*options*/ )
 {
     kWarning() << __PRETTY_FUNCTION__;
 

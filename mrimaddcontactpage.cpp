@@ -23,7 +23,7 @@ MrimAddContactPage::~MrimAddContactPage()
     kWarning() << __PRETTY_FUNCTION__;
 }
 
-bool MrimAddContactPage::apply( Kopete::Account* a, Kopete::MetaContact* m )
+bool MrimAddContactPage::apply( Kopete::Account* /*a*/, Kopete::MetaContact* m )
 {
     kWarning() << __PRETTY_FUNCTION__;
 
