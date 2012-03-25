@@ -71,10 +71,10 @@ Kopete::Contact *MrimProtocol::deserializeContact(
     return contact;
 }
 
-AddContactPage * MrimProtocol::createAddContactWidget( QWidget *parent, Kopete::Account * /* account */ )
+AddContactPage * MrimProtocol::createAddContactWidget( QWidget *parent, Kopete::Account * account )
 {
     kWarning()<< "Creating Add Contact Page";
-    return new MrimAddContactPage( parent );
+    return new MrimAddContactPage( parent, dynamic_cast<MrimAccount *>(account) );
 }
 
 KopeteEditAccountWidget * MrimProtocol::createEditAccountWidget( Kopete::Account *account, QWidget *parent )

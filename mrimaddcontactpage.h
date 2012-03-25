@@ -5,11 +5,12 @@
 #include <ui/addcontactpage.h>
 #include "ui_mrimaddui.h"
 
+class MrimAccount;
 class MrimAddContactPage : public AddContactPage
 {
     Q_OBJECT
 public:
-    explicit MrimAddContactPage(QWidget *parent = 0);
+    explicit MrimAddContactPage(QWidget *parent, MrimAccount *a);
     ~MrimAddContactPage();
 
 
@@ -25,6 +26,7 @@ public:
 
 protected:
     Ui_MrimAddUI m_mrimAddUI;
+    MrimAccount *m_account;
 
 signals:
 

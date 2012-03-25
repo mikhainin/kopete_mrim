@@ -7,8 +7,9 @@
 
 #include "mrimaddcontactpage.h"
 
-MrimAddContactPage::MrimAddContactPage(QWidget *parent) :
+MrimAddContactPage::MrimAddContactPage(QWidget *parent, MrimAccount *a) :
     AddContactPage(parent)
+  , m_account(a)
 {
     kWarning() << __PRETTY_FUNCTION__;
     QVBoxLayout* l = new QVBoxLayout( this );
@@ -25,8 +26,10 @@ MrimAddContactPage::~MrimAddContactPage()
 bool MrimAddContactPage::apply( Kopete::Account* a, Kopete::MetaContact* m )
 {
     kWarning() << __PRETTY_FUNCTION__;
-    MrimAccount *ma = dynamic_cast<MrimAccount *>(a);
-    ma->addNewContactToServerList( m_mrimAddUI.lineEdit->text(), m->groups()[0]->displayName() );
+
+    // MrimAccount *ma = dynamic_cast<MrimAccount *>(a);
+
+    m_account->addNewContactToServerList( m_mrimAddUI.lineEdit->text(), m->groups()[0]->displayName() );
     return false;
 }
 
