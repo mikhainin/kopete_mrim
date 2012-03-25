@@ -81,3 +81,5 @@ const QString &MRAOfflineMessage::text() const {
 const QString &MRAOfflineMessage::rtfText() const {
     return m_rtfText;
 }
+
+#include "mraofflinemessage.moc"

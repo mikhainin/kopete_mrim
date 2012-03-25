@@ -180,3 +180,5 @@ void MRAData::dumpData() {
         printf( "%02x ", unsigned(*(m_data.data() + i)) & 0xFF );
     }
 }
+
+#include "mradata.moc"

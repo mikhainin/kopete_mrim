@@ -22,11 +22,11 @@ endif(Kopete_FOUND)
 
 include_directories(${KDE4_INCLUDES} ${CMAKE_CURRENT_BINARY_DIR})
 
-set(kopete_mrim_SRCS 
-    mrimprotocol.cpp 
-    mrimcontact.cpp 
-    mrimaddcontactpage.cpp 
-    mrimeditaccountwidget.cpp 
+set(kopete_mrim_SRCS
+    mrimprotocol.cpp
+    mrimcontact.cpp
+    mrimaddcontactpage.cpp
+    mrimeditaccountwidget.cpp
     mrimaccount.cpp
 )
 
@@ -38,9 +38,10 @@ kde4_add_ui_files(kopete_mrim_SRCS
 add_subdirectory (mra)
 
 add_definitions(-DKDE_DEFAULT_DEBUG_AREA=89326)
-kde4_add_plugin(kopete_mrim ${kopete_mrim_SRCS})
+kde4_add_plugin(kopete_mrim ${kopete_mrim_SRCS} )
 
-#target_link_libraries (kopete_mrim mra)
+target_link_libraries (kopete_mrim mra)
+
 target_link_libraries(kopete_mrim ${KDE4_KIO_LIBS} ${KDEPIMLIBS_KPIMIDENTITIES_LIBS} ${KDE4_KDNSSD_LIBS} kopete)
 
 install( TARGETS kopete_mrim  DESTINATION ${PLUGIN_INSTALL_DIR} )

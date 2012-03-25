@@ -134,7 +134,7 @@ void MrimContact::slotMyselfTyping(bool typing) {
         m_myselfTypingTimer = new QTimer(this);
 
         connect(m_myselfTypingTimer, SIGNAL(timeout()), this, SLOT(slotMyselfTypingTimeout()));
-        m_typingTimer->setInterval(10 * 1000);
+        m_myselfTypingTimer->setInterval(10 * 1000);
 
         slotMyselfTypingTimeout();
 

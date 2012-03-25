@@ -231,3 +231,5 @@ void MRAConnection::slotDisconnected() {
         emit disconnected("internal error");
     }
 }
+
+#include "mraconnection.moc"
