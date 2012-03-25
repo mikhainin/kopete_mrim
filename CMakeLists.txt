@@ -35,11 +35,12 @@ kde4_add_ui_files(kopete_mrim_SRCS
     mrimaccountpreferences.ui
 )
 
-add_subdirectory (mra)
 
 add_definitions(-DKDE_DEFAULT_DEBUG_AREA=89326)
 kde4_add_plugin(kopete_mrim ${kopete_mrim_SRCS} )
 
+add_subdirectory (icons)
+add_subdirectory (mra)
 target_link_libraries (kopete_mrim mra)
 
 target_link_libraries(kopete_mrim ${KDE4_KIO_LIBS} ${KDEPIMLIBS_KPIMIDENTITIES_LIBS} ${KDE4_KDNSSD_LIBS} kopete)

@@ -10,7 +10,7 @@ Build:
 
 $ mkdir build
 $ cd build
-$ cmake ..
+$ cmake -RCMAKE_INSTALL_PREFIX=/ -DEXEC_INSTALL_PREFIX=/usr -DSHARE_INSTALL_PREFIX=/usr/share/ -DDATA_INSTALL_DIR=/usr/share/kde4/kopete ..
 $ make
 $ make install
 

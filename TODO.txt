@@ -8,7 +8,6 @@
 [kopete] add contact from server's list to addressbook
 [kopete] offline sending
 [proto]  status message
-[kopete] status icons
 [proto]  delivery status
 [kopete] message status: sent, delivered, rejected, etc...
 [proto]  user's (myself) status change
