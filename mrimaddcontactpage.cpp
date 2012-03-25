@@ -29,7 +29,11 @@ bool MrimAddContactPage::apply( Kopete::Account* /*a*/, Kopete::MetaContact* m )
 
     // MrimAccount *ma = dynamic_cast<MrimAccount *>(a);
 
-    m_account->addNewContactToServerList( m_mrimAddUI.lineEdit->text(), m->groups()[0]->displayName() );
+    m_account->addNewContactToServerList(
+                      m_mrimAddUI.editEmail->text()
+                    , m_mrimAddUI.editNick->text()
+                    , m->groups()[0]->displayName()
+                );
     return false;
 }
 

@@ -258,14 +258,14 @@ void MrimAccount::slotContactListReceived(const MRAContactList &list) {
     }
 }
 
-void MrimAccount::addNewContactToServerList(const QString &name, const QString &groupName) {
+void MrimAccount::addNewContactToServerList(const QString &email, const QString &nick, const QString &groupName) {
     int flags = 0;
 
     int gid = m_groups.indexOf(groupName);
 
-    kWarning() << flags << gid << name << groupName;
+    kWarning() << flags << gid << email << groupName;
 
-    m_mraProto->addToContactList( flags, gid, name, name );
+    m_mraProto->addToContactList( flags, gid, email, nick );
 }
 
 void MrimAccount::slotUserStatusChanged(const QString &user, int newStatus) {

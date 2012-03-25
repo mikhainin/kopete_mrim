@@ -1,6 +1,6 @@
 [kopete] show disconnect reason in notification area
 [ui]     add contacts to list on receiving AUTH_ACK (without reconnect)
-[ui]     add contacts with their names (not only emails)
+[ui]     add contacts with their names (not only emails) (fixed?)
 [ui]     add contacts after authorization accept
 [ui]     show authoruzation text
 [kopete] avatars

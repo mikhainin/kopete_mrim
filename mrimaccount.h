@@ -88,7 +88,7 @@ public:
 
     void sendMessage(const QString &to, const QString &text);
 
-    void addNewContactToServerList(const QString &name, const QString &groupName);
+    void addNewContactToServerList(const QString &email, const QString &nick, const QString &groupName);
 
     void contactTypingAMessage( const QString &to );
 
