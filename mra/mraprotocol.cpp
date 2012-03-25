@@ -287,6 +287,8 @@ void MRAProtocol::readMessage(MRAData & data) {
 
     if ( (flags & MESSAGE_FLAG_NOTIFY) != 0 ) {
         emit typingAMessage( from );
+    } else if ( (flags & MESSAGE_FLAG_AUTHORIZE) != 0) {
+        emit authorizeRequestReceived(from, text);
     } else {
         emit messageReceived( from, text );
     }
@@ -399,8 +401,7 @@ void MRAProtocol::emitOfflineMessagesReceived() {
     foreach( MRAOfflineMessage *message, m_offlineMessages ) {
 
         if ( (message->flags() & MESSAGE_FLAG_AUTHORIZE) != 0) {
-            // emit authorizeRequestReceived(message->from(), message->text());
-            /// @todo implement me
+            emit authorizeRequestReceived(message->from(), message->text());
 /*        } else if ( (message->flags() & MESSAGE_FLAG_NOTIFY) != 0 ) {
             ;*/
         } else {

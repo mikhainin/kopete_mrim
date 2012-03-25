@@ -70,9 +70,12 @@ void MrimAccount::connect( const Kopete::OnlineStatus& /*initialStatus*/ )
 
     QObject::connect(m_mraProto, SIGNAL(disconnected(QString)),
                      this, SLOT( slotDisconnected(QString) ) ) ;
-
+/*
     QObject::connect(m_mraProto, SIGNAL(authorizeAckReceived(QString)),
                      this, SLOT( slotAuthorizeAckReceived(QString) ) );
+*/
+    QObject::connect(m_mraProto, SIGNAL(authorizeRequestReceived(QString,QString)),
+                     this, SLOT(authorizeRequestReceived(QString,QString)) );
 
     QObject::connect(m_mraProto, SIGNAL(userStatusChanged(QString,int)),
                      this, SLOT( slotUserStatusChanged(QString,int) ) );
@@ -116,7 +119,7 @@ void MrimAccount::slotLoginFailed(const QString &reason) {
 
 }
 
-void MrimAccount::slotAuthorizeAckReceived(const QString &from) {
+void MrimAccount::authorizeRequestReceived(const QString &from, const QString &text) {
     QMessageBox::StandardButton answer =
         QMessageBox::question( 0,
                                "Authorization request",
@@ -124,7 +127,8 @@ void MrimAccount::slotAuthorizeAckReceived(const QString &from) {
                                QMessageBox::Yes | QMessageBox::No );
 
     if ( answer == QMessageBox::Yes ) {
-
+        m_mraProto->authorizeContact(from);
+        m_mraProto->addToContactList(0, 0, from, from);
     }
 
 }

@@ -123,7 +123,7 @@ private slots:
     void slotDisconnected(const QString &reason);
     void slotLoginFailed(const QString &reason);
 
-    void slotAuthorizeAckReceived(const QString &from);
+    void authorizeRequestReceived(const QString &from, const QString &text);
 
     void slotUserStatusChanged(const QString &user, int newStatus);
 

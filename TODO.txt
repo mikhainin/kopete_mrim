@@ -1,7 +1,8 @@
 [kopete] show disconnect reason in notification area
-[proto]  fix accepting authorization requests
 [ui]     add contacts to list on receiving AUTH_ACK (without reconnect)
 [ui]     add contacts with their names (not only emails)
+[ui]     add contacts after authorization accept
+[ui]     show authoruzation text
 [kopete] avatars
 [kopete] show contact info
 [kopete] add contact from server's list to addressbook
@@ -10,3 +11,4 @@
 [kopete] status icons
 [proto]  delivery status
 [kopete] message status: sent, delivered, rejected, etc...
+[proto]  user's (myself) status change

@@ -28,7 +28,7 @@ void MRAOfflineMessage::parse(const QString &rfc822) {
             version[0].toUInt() << 2 |
             version[1].toUInt()      ;
 
-    m_flags = headers["X-MRIM-Flags"].toUInt();
+    m_flags = headers["X-MRIM-Flags"].toUInt(0, 16);
 
     QString boundary    = headers["Boundary"];
 
