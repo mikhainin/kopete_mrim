@@ -30,6 +30,8 @@ public:
 
     void avatarLoaded(const QImage &avatar);
 
+    virtual bool isReachable() {return true;}
+
 signals:
 
 public slots:

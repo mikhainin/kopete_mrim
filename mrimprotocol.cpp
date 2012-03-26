@@ -1,8 +1,8 @@
 #include <kgenericfactory.h>
 #include <kdebug.h>
 
-#include <kopete/kopeteaccountmanager.h>
-#include <kopete/kopeteaccount.h>
+#include <kopeteaccountmanager.h>
+#include <kopeteaccount.h>
 
 #include "mrimcontact.h"
 #include "mrimaddcontactpage.h"
@@ -36,6 +36,9 @@ MrimProtocol::MrimProtocol(QObject *parent, const QStringList &)
                    i18n( "Unknown" ) )
     , propPhoto( Kopete::Global::Properties::self()->photo() )
 {
+
+    setCapabilities( Kopete::Protocol::CanSendOffline );
+
     kWarning() << __PRETTY_FUNCTION__;
     s_protocol = this;
 }

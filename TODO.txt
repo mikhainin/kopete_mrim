@@ -1,6 +1,5 @@
 v0.1
 [kopete] show contact info
-[kopete] offline sending
 [proto]  loading contacts into proper groups
 
 v0.2
