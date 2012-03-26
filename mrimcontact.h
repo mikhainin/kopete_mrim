@@ -28,6 +28,8 @@ public:
 
     void typingMessage();
 
+    void avatarLoaded(const QImage &avatar);
+
 signals:
 
 public slots:
@@ -37,6 +39,14 @@ public slots:
     void slotChatSessionDestroyed();
     void slotMyselfTyping(bool typing);
     void slotMyselfTypingTimeout();
+
+    void slotLoadAvatar();
+
+    /**
+     * Show "info dialog" for the contact
+     */
+    virtual void slotUserInfo ();
+
 private:
     Kopete::ChatSession* m_msgManager;
     QTimer *m_typingTimer;

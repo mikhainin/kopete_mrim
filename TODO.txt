@@ -1,7 +1,6 @@
 v0.1
 [kopete] show contact info
 [kopete] offline sending
-[kopete] avatars
 [proto]  loading contacts into proper groups
 
 v0.2
@@ -13,3 +12,4 @@ v0.2
 [proto]  delivery status
 [kopete] message status: sent, delivered, rejected, etc...
 [proto]  user's (myself) status change
+[kopete] avatars updating

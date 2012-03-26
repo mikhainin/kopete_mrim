@@ -92,6 +92,8 @@ public:
 
     void contactTypingAMessage( const QString &to );
 
+    void loadAvatar( const QString &email );
+
 signals:
 
 public slots:
@@ -126,6 +128,8 @@ private slots:
     void authorizeRequestReceived(const QString &from, const QString &text);
 
     void slotUserStatusChanged(const QString &user, int newStatus);
+
+    void slotAvatarLoaded(const QString &contact, const QImage &image);
 
 private:
     QByteArray username;

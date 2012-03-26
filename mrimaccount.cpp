@@ -13,6 +13,7 @@
 
 MrimAccount::MrimAccount( MrimProtocol *parent, const QString& accountID )
     : Kopete::Account(parent, accountID)
+    , m_mraProto(0)
 {
     kWarning() << __PRETTY_FUNCTION__;
     // Init the myself contact
@@ -85,6 +86,9 @@ void MrimAccount::connect( const Kopete::OnlineStatus& /*initialStatus*/ )
 
     QObject::connect(m_mraProto, SIGNAL(offlineReceived(MRAOfflineMessage)),
                      this, SLOT(slotReceivedOfflineMessage(MRAOfflineMessage)) );
+
+    QObject::connect(m_mraProto, SIGNAL(avatarLoaded(QString,QImage)),
+                     this, SLOT(slotAvatarLoaded(QString,QImage)) );
 
     if (m_mraProto->makeConnection(QString(username).toStdString(), QString(password).toStdString()) ) {
         kWarning() << "connecting...";
@@ -238,7 +242,7 @@ void MrimAccount::slotContactListReceived(const MRAContactList &list) {
     }
 
     for( int i = 0; i < list.count(); ++i ) {
-        MRAContactListEntry item = list[i];
+        const MRAContactListEntry &item = list[i];
 
         QString groupName = list.groups()[ item.group() ].name;
 
@@ -252,7 +256,7 @@ void MrimAccount::slotContactListReceived(const MRAContactList &list) {
                         item.address()
                     );
 
-        kWarning() << "contact:" << item.address() << item.address() << item.status();
+        kWarning() << "contact:" << item.address() << item.address() << item.status() << item.group();
 
         c->setOnlineStatus( mrimStatusToKopete(item.status()) );
     }
@@ -347,6 +351,26 @@ void MrimAccount::slotTypingAMessage( const QString &from ) {
 
 void MrimAccount::contactTypingAMessage( const QString &to ) {
     m_mraProto->sendTypingMessage(to);
+}
+
+void MrimAccount::loadAvatar( const QString &email) {
+    if (m_mraProto) {
+        kWarning() << email;
+        m_mraProto->loadAvatar( email );
+    }
+}
+
+void MrimAccount::slotAvatarLoaded(const QString &contact, const QImage &image) {
+
+    kWarning() << "contact=" << contact;
+    MrimContact *c = dynamic_cast<MrimContact *>( contacts().value(contact) );
+
+    if (c) {
+        c->avatarLoaded(image);
+    } else {
+        kWarning() << "user was not found" << contact;
+    }
+
 }
 
 #include "mrimaccount.moc"

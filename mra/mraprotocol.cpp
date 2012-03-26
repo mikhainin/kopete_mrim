@@ -18,12 +18,12 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 #include <kdebug.h>
-#include <qtimer.h>
-
-#include "mraprotocol.h"
-#include <pthread.h>
+#include <QTimer>
+#include <QHttp>
 
 #include "mracontactlist.h"
+#include "mraavatarloader.h"
+#include "mraprotocol.h"
 
 
 unsigned long int sec_count;
@@ -34,9 +34,8 @@ MRAProtocol::MRAProtocol(QObject*parent)
     , m_connection(0)
     , sec_count(0)
     , m_contactListReceived(false)
+    , m_avatarLoadersCount(0)
 {
-
-    pthread_mutex_init(&this->mutex1, NULL);
 }
 
 
@@ -241,16 +240,16 @@ void MRAProtocol::readContactList(MRAData & data)
         MRAContactListEntry item;
 
         QVector<QVariant> protoData = readVectorByMask(data, umask);
-        item.setFlags(   protoData[0].toInt() );
-        item.setGroup(   protoData[1].toInt() );
+        item.setFlags(   protoData[0].toUInt() );
+        item.setGroup(   protoData[1].toUInt() );
         item.setAddress( protoData[2].toString() );
         item.setNick(    protoData[3].toString() );
-        item.setServerFlags( protoData[4].toInt() );
-        item.setStatus(  protoData[5].toInt() );
+        item.setServerFlags( protoData[4].toUInt() );
+        item.setStatus(  protoData[5].toUInt() );
 
         list.addEntry(item);
 
-        kWarning() << "added contact" << item.flags() << item.nick() << item.address();
+        kWarning() << "added contact" << item.flags() << item.group() << item.nick() << item.address() << protoData[6].toString();
     }
 
     emit contactListReceived(list);
@@ -420,6 +419,53 @@ void MRAProtocol::emitOfflineMessagesReceived() {
 
 }
 
+void MRAProtocol::loadAvatar(const QString &contact) {
+
+    kWarning() << contact;
+    m_avatarLoaders.push_back(
+                    new MRAAvatarLoader(contact, this)
+                );
+
+    m_avatarLoadersCount++;
+
+    loadAvatarLoop();
+}
+
+void MRAProtocol::loadAvatarLoop() {
+
+    kWarning() << __PRETTY_FUNCTION__;
+
+    if ( m_avatarLoadersCount > 3 || m_avatarLoaders.empty() ) {
+        return;
+    }
+
+    MRAAvatarLoader * loader = m_avatarLoaders.front();
+    m_avatarLoaders.pop_front();
+
+    QObject::connect(loader, SIGNAL(done(bool,MRAAvatarLoader*)),
+                     this, SLOT(slotAvatarLoaded(bool,MRAAvatarLoader*)) );
+
+    kWarning() << loader->contact();
+
+    loader->run();
+}
+
+void MRAProtocol::slotAvatarLoaded(bool success, MRAAvatarLoader *loader) {
+
+    kWarning() << loader->contact() << success;
+
+    if (success) {
+        emit avatarLoaded( loader->contact(), loader->image() );
+    }
+
+    m_avatarLoadersCount--;
+
+    loader->deleteLater();
+
+    loadAvatarLoop();
+}
+
+
 void MRAProtocol::handleMessage(const u_long &msg, MRAData *data)
 {
     kWarning() << "Accepting message " << msg;
@@ -496,5 +542,6 @@ void MRAProtocol::slotOnDataFromServer() {
 
     data->deleteLater();
 }
+
 
 #include "mraprotocol.moc"

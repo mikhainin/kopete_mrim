@@ -24,9 +24,11 @@
 #include "mraconnection.h"
 #include "mracontactlist.h"
 #include "mraofflinemessage.h"
+
 #include <QObject>
 
-
+class MRAAvatarLoader;
+class QImage;
 
 class MRAProtocol : public QObject
 {
@@ -50,16 +52,24 @@ public:
     void removeContact(const QString &contact);
 
     void sendTypingMessage(const QString &contact);
+
+    void loadAvatar(const QString &contact);
+    void loadAvatarLoop();
+
+    /**
+     * Return whether the protocol supports offline messages.
+     */
+    bool canSendOffline() const { return true; }
+
 private:
     MRAConnection *m_connection;
     int sec_count;
 
-    pthread_t threadPingLoop;
-    pthread_t threadMsgLoop;
-    pthread_mutex_t mutex1;
     QTimer *m_keepAliveTimer;
     bool m_contactListReceived;
     QList<MRAOfflineMessage*> m_offlineMessages;
+    QList<MRAAvatarLoader*> m_avatarLoaders;
+    int m_avatarLoadersCount;
 
 private:
     void sendHello();
@@ -81,6 +91,8 @@ private slots:
     void slotPing();
     void slotOnDataFromServer();
     void slotDisconnected(const QString &reason);
+    void slotAvatarLoaded(bool success, MRAAvatarLoader *loader);
+
 signals:
     void contactListReceived(const MRAContactList &list);
 
@@ -95,6 +107,8 @@ signals:
     void disconnected(const QString &reason);
     void loginFailed(const QString &reason);
     void userStatusChanged(const QString &user, int newStatus);
+
+    void avatarLoaded(const QString &contact, const QImage &image);
 };
 
 #endif

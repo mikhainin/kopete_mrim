@@ -2,9 +2,12 @@
 #include <kopeteaccount.h>
 #include <kopetechatsessionmanager.h>
 #include <QTimer>
+#include <QMessageBox>
+#include <kopeteavatarmanager.h>
 
 #include "mra/mraofflinemessage.h"
 #include "mrimaccount.h"
+#include "mrimprotocol.h"
 #include "mrimcontact.h"
 
 MrimContact::MrimContact( Kopete::Account* _account, const QString &uniqueName,
@@ -17,6 +20,9 @@ MrimContact::MrimContact( Kopete::Account* _account, const QString &uniqueName,
 {
     kDebug()<< " uniqueName: " << uniqueName << ", displayName: " << displayName;
     kWarning() << __PRETTY_FUNCTION__;
+
+    QTimer::singleShot( 10 * 1000, this, SLOT(slotLoadAvatar()) );
+
 }
 
 Kopete::ChatSession* MrimContact::manager( CanCreateFlags canCreateFlags )
@@ -148,4 +154,42 @@ void MrimContact::slotMyselfTyping(bool typing) {
 void MrimContact::slotMyselfTypingTimeout() {
     MrimAccount *a = dynamic_cast<MrimAccount*>( account() );
     a->contactTypingAMessage( contactId() );
+}
+
+void MrimContact::slotUserInfo () {
+    QMessageBox::information( 0,"hello", contactId() );
+}
+
+void MrimContact::slotLoadAvatar() {
+
+    if ( !contactId().isEmpty() )
+    {
+        if ( !property(MrimProtocol::protocol()->propPhoto).isNull() ) {
+            return ;
+        }
+        MrimAccount *a = dynamic_cast<MrimAccount*>( account() );
+        a->loadAvatar( contactId() );
+
+    } else {
+        kWarning() << "empty!" << contactId();
+    }
+
+}
+
+void MrimContact::avatarLoaded(const QImage &avatar) {
+
+    // add the entry using the avatar manager
+    Kopete::AvatarManager::AvatarEntry entry;
+    entry.name = contactId();
+    entry.image = avatar;
+    entry.category = Kopete::AvatarManager::Contact;
+    entry.contact = this;
+    entry = Kopete::AvatarManager::self()->add(entry);
+
+    // Save the image to the disk, then set the property.
+    if(!entry.dataPath.isNull())
+    {
+        setProperty( MrimProtocol::protocol()->propPhoto, entry.dataPath );
+    }
+
 }

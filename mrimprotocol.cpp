@@ -34,6 +34,7 @@ MrimProtocol::MrimProtocol(QObject *parent, const QStringList &)
 
     , mrimUnknown( Kopete::OnlineStatus::Unknown, 25, this, STATUS_UNDETERMINATED, QStringList( "status_unknown" ),
                    i18n( "Unknown" ) )
+    , propPhoto( Kopete::Global::Properties::self()->photo() )
 {
     kWarning() << __PRETTY_FUNCTION__;
     s_protocol = this;
