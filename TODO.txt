@@ -2,6 +2,7 @@ v0.1
 [kopete] show contact info
 [kopete] offline sending
 [kopete] avatars
+[proto]  loading contacts into proper groups
 
 v0.2
 [kopete] show disconnect reason in notification area
