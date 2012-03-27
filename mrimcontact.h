@@ -1,10 +1,15 @@
 #ifndef MRIMCONTACT_H
 #define MRIMCONTACT_H
+#include <QList>
+#include <QPair>
+#include <QString>
 
 #include <kopetecontact.h>
 #include <kopetechatsession.h>
+#include "mra/mraprotocol.h"
 
 class MRAOfflineMessage;
+class ContactInfo;
 
 class MrimContact : public Kopete::Contact
 {
@@ -32,7 +37,10 @@ public:
 
     virtual bool isReachable() {return true;}
 
+    void loadUserInfo();
+    void slotUserInfoLoaded(const contact_info_t &info);
 signals:
+    void userInfoLoaded(const contact_info_t &info);
 
 public slots:
 
@@ -48,12 +56,14 @@ public slots:
      * Show "info dialog" for the contact
      */
     virtual void slotUserInfo ();
+    // void slotUserInfoClosed();
+
 
 private:
     Kopete::ChatSession* m_msgManager;
     QTimer *m_typingTimer;
-
     QTimer *m_myselfTypingTimer;
+    ContactInfo *m_infoDialog;
 };
 
 #endif // MRIMCONTACT_H

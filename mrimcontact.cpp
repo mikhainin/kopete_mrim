@@ -4,7 +4,9 @@
 #include <QTimer>
 #include <QMessageBox>
 #include <kopeteavatarmanager.h>
+#include <kopeteuiglobal.h>
 
+#include "ui/contactinfo.h"
 #include "mra/mraofflinemessage.h"
 #include "mrimaccount.h"
 #include "mrimprotocol.h"
@@ -17,6 +19,7 @@ MrimContact::MrimContact( Kopete::Account* _account, const QString &uniqueName,
     , m_msgManager(NULL)
     , m_typingTimer(0)
     , m_myselfTypingTimer(0)
+    , m_infoDialog(0)
 {
     kDebug()<< " uniqueName: " << uniqueName << ", displayName: " << displayName;
     kWarning() << __PRETTY_FUNCTION__;
@@ -71,15 +74,12 @@ void MrimContact::sendMessage( Kopete::Message &message )
 {
     kDebug();
 
-    // Blocking Again. Upto another 3 seconds
-    // connection->sendMessage(message);
-
     MrimAccount *a = dynamic_cast<MrimAccount*>( account() );
 
     a->sendMessage( contactId(), message.plainBody() );
 
     // give it back to the manager to display
-        manager()->appendMessage( message );
+    manager()->appendMessage( message );
     // tell the manager it was sent successfully
     manager()->messageSucceeded();
 }
@@ -156,8 +156,28 @@ void MrimContact::slotMyselfTypingTimeout() {
     a->contactTypingAMessage( contactId() );
 }
 
-void MrimContact::slotUserInfo () {
-    QMessageBox::information( 0,"hello", contactId() );
+void MrimContact::slotUserInfo() {
+
+    new ContactInfo( dynamic_cast<MrimAccount*>( account() ), this, Kopete::UI::Global::mainWidget () );
+
+    kWarning() << __PRETTY_FUNCTION__;
+
+    loadUserInfo();
+}
+
+void MrimContact::slotUserInfoLoaded(const contact_info_t &info) {
+
+    kWarning() << __PRETTY_FUNCTION__;
+
+    emit userInfoLoaded(info);
+}
+
+void MrimContact::loadUserInfo() {
+
+    kWarning() << __PRETTY_FUNCTION__;
+
+    MrimAccount *a = dynamic_cast<MrimAccount*>( account() );
+    a->loadUserInfo( contactId() );
 }
 
 void MrimContact::slotLoadAvatar() {
@@ -193,3 +213,5 @@ void MrimContact::avatarLoaded(const QImage &avatar) {
     }
 
 }
+
+#include "mrimcontact.moc"

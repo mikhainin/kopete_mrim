@@ -2,6 +2,7 @@
 #define MRIMACCOUNT_H
 
 #include <kopeteaccount.h>
+#include "mra/mraprotocol.h"
 
 class MrimProtocol;
 class MRAProtocol;
@@ -94,6 +95,8 @@ public:
 
     void loadAvatar( const QString &email );
 
+    void loadUserInfo( const QString &email );
+
 signals:
 
 public slots:
@@ -130,6 +133,8 @@ private slots:
     void slotUserStatusChanged(const QString &user, int newStatus);
 
     void slotAvatarLoaded(const QString &contact, const QImage &image);
+
+    void slotUserInfoLoaded(const QString &contact, const contact_info_t &info);
 
 private:
     QByteArray username;

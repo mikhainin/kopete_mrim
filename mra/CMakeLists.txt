@@ -1,12 +1,4 @@
 
-#set(libmra_SRCS
-#    mraconnection.cpp
-#    mradata.cpp
-#    mramsg.cpp
-#    mraprotocol.cpp
-#    mracontactlist.cpp
-#)
-
 set(libmra_SRCS
     mraconnection.cpp
     mradata.cpp

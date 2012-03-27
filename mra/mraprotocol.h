@@ -25,6 +25,12 @@
 #include "mracontactlist.h"
 #include "mraofflinemessage.h"
 
+#include <QList>
+#include <QPair>
+#include <QString>
+
+typedef QList<QPair<QString, QString> > contact_info_t;
+
 #include <QObject>
 
 class MRAAvatarLoader;
@@ -56,10 +62,7 @@ public:
     void loadAvatar(const QString &contact);
     void loadAvatarLoop();
 
-    /**
-     * Return whether the protocol supports offline messages.
-     */
-    bool canSendOffline() const { return true; }
+    void loadUserInfo(const QString &contact);
 
 private:
     MRAConnection *m_connection;
@@ -87,6 +90,8 @@ private:
     void readOfflineMessage(MRAData & data);
     void emitOfflineMessagesReceived();
 
+    void readAnketaInfo(MRAData & data);
+
 private slots:
     void slotPing();
     void slotOnDataFromServer();
@@ -109,6 +114,7 @@ signals:
     void userStatusChanged(const QString &user, int newStatus);
 
     void avatarLoaded(const QString &contact, const QImage &image);
+    void userInfoLoaded(const QString &contact, const contact_info_t &info);
 };
 
 #endif

@@ -41,7 +41,9 @@ kde4_add_plugin(kopete_mrim ${kopete_mrim_SRCS} )
 
 add_subdirectory (icons)
 add_subdirectory (mra)
-target_link_libraries (kopete_mrim mra)
+add_subdirectory (ui)
+
+target_link_libraries (kopete_mrim mra ui)
 
 target_link_libraries(kopete_mrim ${KDE4_KIO_LIBS} ${KDEPIMLIBS_KPIMIDENTITIES_LIBS} ${KDE4_KDNSSD_LIBS} kopete)
 

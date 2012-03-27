@@ -90,6 +90,9 @@ void MrimAccount::connect( const Kopete::OnlineStatus& /*initialStatus*/ )
     QObject::connect(m_mraProto, SIGNAL(avatarLoaded(QString,QImage)),
                      this, SLOT(slotAvatarLoaded(QString,QImage)) );
 
+    QObject::connect(m_mraProto, SIGNAL(userInfoLoaded(QString,contact_info_t)),
+                     this, SLOT(slotUserInfoLoaded(QString,contact_info_t)) );
+
     if (m_mraProto->makeConnection(QString(username).toStdString(), QString(password).toStdString()) ) {
         kWarning() << "connecting...";
     } else {
@@ -367,6 +370,22 @@ void MrimAccount::slotAvatarLoaded(const QString &contact, const QImage &image) 
 
     if (c) {
         c->avatarLoaded(image);
+    } else {
+        kWarning() << "user was not found" << contact;
+    }
+
+}
+
+void MrimAccount::loadUserInfo( const QString &email ) {
+    m_mraProto->loadUserInfo(email);
+}
+
+void MrimAccount::slotUserInfoLoaded(const QString &contact, const contact_info_t &info) {
+    kWarning() << "contact=" << contact;
+    MrimContact *c = dynamic_cast<MrimContact *>( contacts().value(contact) );
+
+    if (c) {
+        c->slotUserInfoLoaded( info );
     } else {
         kWarning() << "user was not found" << contact;
     }

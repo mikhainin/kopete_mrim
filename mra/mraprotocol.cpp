@@ -465,6 +465,68 @@ void MRAProtocol::slotAvatarLoaded(bool success, MRAAvatarLoader *loader) {
     loadAvatarLoop();
 }
 
+void MRAProtocol::loadUserInfo(const QString &contact) {
+
+    QStringList items = contact.split('@');
+    if (items.size() != 2) {
+        return; /// todo raise error
+    }
+
+    MRAData anketaData;
+    anketaData.addInt32(MRIM_CS_WP_REQUEST_PARAM_USER);
+    anketaData.addString(items[0]);
+
+    anketaData.addInt32(MRIM_CS_WP_REQUEST_PARAM_DOMAIN);
+    anketaData.addString(items[1]);
+
+    m_connection->sendMsg( MRIM_CS_WP_REQUEST, &anketaData );
+}
+
+void MRAProtocol::readAnketaInfo(MRAData & data) {
+
+    contact_info_t info;
+
+    uint status     = data.getInt32();
+    kWarning() << "status=" << status;
+    uint fields_num = data.getInt32();
+    uint max_rows   = data.getInt32();
+    uint server_time= data.getInt32();
+    Q_UNUSED(max_rows); /// @fixme: use this fields
+    Q_UNUSED(server_time); /// @fixme: use this fields
+
+    QVector<QPair<QString, QString> > vecInfo;
+    vecInfo.reserve(fields_num);
+
+    for( uint i = 0; i < fields_num; ++i ) {
+        QString field = data.getString();
+        kWarning() << field;
+        vecInfo.append( QPair<QString, QString>( field, QString() ) );
+    }
+
+    QString username;
+    QString domain;
+
+    for( uint i = 0; i < fields_num; ++i ) {
+
+        QString fieldData = data.getString();
+
+        if ( vecInfo[i].first == "Username" ) {
+            username = fieldData;
+        } else if ( vecInfo[i].first == "Domain" ) {
+            domain = fieldData;
+        }
+
+        kWarning() << vecInfo[i].first << fieldData;
+        vecInfo[i].second = fieldData;
+
+        info.append(vecInfo[i]);
+
+    }
+
+
+
+    emit userInfoLoaded( username + '@' + domain, info );
+}
 
 void MRAProtocol::handleMessage(const u_long &msg, MRAData *data)
 {
@@ -511,15 +573,18 @@ void MRAProtocol::handleMessage(const u_long &msg, MRAData *data)
             readOfflineMessage(*data);
             break;
 
+        case MRIM_CS_ANKETA_INFO:
+            readAnketaInfo(*data);
+            break;
+
         case MRIM_CS_MESSAGE_STATUS:
 
         case MRIM_CS_ADD_CONTACT_ACK:
         case MRIM_CS_MPOP_SESSION:
-//	case MRIM_CS_FILE_TRANSFER_ACK:
-        case MRIM_CS_ANKETA_INFO: {
+        // case MRIM_CS_FILE_TRANSFER_ACK:
             kWarning() << "there is no handler for " << msg;
             break;
-        }
+
         default: {
             kWarning()  << "unknown message " << msg;
         }
