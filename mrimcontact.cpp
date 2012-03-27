@@ -158,6 +158,10 @@ void MrimContact::slotMyselfTypingTimeout() {
 
 void MrimContact::slotUserInfo() {
 
+    if ( !account()->isConnected() ) {
+        return;
+    }
+
     new ContactInfo( dynamic_cast<MrimAccount*>( account() ), this, Kopete::UI::Global::mainWidget () );
 
     kWarning() << __PRETTY_FUNCTION__;
