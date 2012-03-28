@@ -13,10 +13,16 @@ struct MRAAvatarLoaderPrivate {
 
     QHttp http;
     QImage image;
+
     int getId;
+    QObject *receiver;
+    const char *member;
+    bool large;
+
+    MRAAvatarLoaderPrivate() : getId(-1), receiver(0), member(0), large(false) {}
 };
 
-MRAAvatarLoader::MRAAvatarLoader(const QString &contact, QObject *parent) :
+MRAAvatarLoader::MRAAvatarLoader(const QString &contact, QObject *parent, bool large, QObject *reveiver, const char *member) :
     QObject(parent)
 {
     d = new MRAAvatarLoaderPrivate;

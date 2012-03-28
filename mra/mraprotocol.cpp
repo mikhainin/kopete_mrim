@@ -419,11 +419,11 @@ void MRAProtocol::emitOfflineMessagesReceived() {
 
 }
 
-void MRAProtocol::loadAvatar(const QString &contact) {
+void MRAProtocol::loadAvatar(const QString &contact, bool large, QObject *receiver, const char *member) {
 
     kWarning() << contact;
     m_avatarLoaders.push_back(
-                    new MRAAvatarLoader(contact, this)
+                    new MRAAvatarLoader(contact, this, large, receiver, member)
                 );
 
     m_avatarLoadersCount++;

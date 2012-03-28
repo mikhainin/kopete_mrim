@@ -59,7 +59,7 @@ public:
 
     void sendTypingMessage(const QString &contact);
 
-    void loadAvatar(const QString &contact);
+    void loadAvatar(const QString &contact, bool large = false, QObject *receiver = 0, const char *member = 0);
     void loadAvatarLoop();
 
     void loadUserInfo(const QString &contact);

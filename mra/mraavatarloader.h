@@ -11,7 +11,7 @@ class MRAAvatarLoader : public QObject
 {
     Q_OBJECT
 public:
-    explicit MRAAvatarLoader(const QString &contact, QObject *parent = 0);
+    explicit MRAAvatarLoader(const QString &contact, QObject *parent = 0, bool large = false, QObject *reveiver = 0, const char *member = 0);
     ~MRAAvatarLoader();
 
     const QImage &image();

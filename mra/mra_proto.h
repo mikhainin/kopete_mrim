@@ -265,7 +265,7 @@ enum {
 
 typedef struct mrim_connection_params_t
 {
-	unsigned long	ping_period;
+        uint32_t	ping_period;
 }
 mrim_connection_params_t;
 
