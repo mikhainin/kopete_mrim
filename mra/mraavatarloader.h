@@ -6,18 +6,23 @@
 class MRAAvatarLoaderPrivate;
 
 class QImage;
+class QHttpResponseHeader;
 
 class MRAAvatarLoader : public QObject
 {
     Q_OBJECT
 public:
-    explicit MRAAvatarLoader(const QString &contact, QObject *parent = 0, bool large = false, QObject *reveiver = 0, const char *member = 0);
+    explicit MRAAvatarLoader(const QString &contact, QObject *parent = 0, bool large = false, QObject *receiver = 0, const char *member = 0);
     ~MRAAvatarLoader();
 
-    const QImage &image();
-    const QString &contact();
     void run();
 
+    const QImage &image() const;
+    const QString &contact() const;
+
+    bool large() const;
+    QObject *receiver() const;
+    const char *member() const;
 signals:
     void done(bool success, MRAAvatarLoader *self);
 

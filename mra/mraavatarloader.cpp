@@ -22,12 +22,18 @@ struct MRAAvatarLoaderPrivate {
     MRAAvatarLoaderPrivate() : getId(-1), receiver(0), member(0), large(false) {}
 };
 
-MRAAvatarLoader::MRAAvatarLoader(const QString &contact, QObject *parent, bool large, QObject *reveiver, const char *member) :
+MRAAvatarLoader::MRAAvatarLoader(const QString &contact, QObject *parent, bool large, QObject *receiver, const char *member) :
     QObject(parent)
 {
     d = new MRAAvatarLoaderPrivate;
     d->contact = contact;
-    d->getId = -1;
+
+    if (receiver && member) {
+        QObject::connect(this, SIGNAL(done(bool,MRAAvatarLoader*)), receiver, member);
+    }
+
+    d->large = large;
+
 }
 
 MRAAvatarLoader::~MRAAvatarLoader() {
@@ -51,8 +57,11 @@ void MRAAvatarLoader::run() {
     } else {
         items[1] = domain.left(domain.length() - 3); // delete ".ru": bk.ru -> bk
     }
-
-    d->address = "http://obraz.foto.mail.ru/%1/%2/_mrimavatarsmall";
+    if (d->large) {
+        d->address = "http://obraz.foto.mail.ru/%1/%2/_mrimavatar";
+    } else {
+        d->address = "http://obraz.foto.mail.ru/%1/%2/_mrimavatarsmall";
+    }
     kWarning() << d->contact << d->address ;
     d->address = d->address.arg(items[1], items[0]);
 
@@ -67,12 +76,24 @@ void MRAAvatarLoader::run() {
 
 }
 
-const QImage &MRAAvatarLoader::image() {
+const QImage &MRAAvatarLoader::image() const {
     return d->image;
 }
 
-const QString &MRAAvatarLoader::contact() {
+const QString &MRAAvatarLoader::contact() const {
     return d->contact;
+}
+
+bool MRAAvatarLoader::large() const {
+    return d->large;
+}
+
+QObject *MRAAvatarLoader::receiver() const {
+    return d->receiver;
+}
+
+const char *MRAAvatarLoader::member() const {
+    return d->member;
 }
 
 void MRAAvatarLoader::slotHttpHeadDone(bool error) {

@@ -95,6 +95,8 @@ public:
 
     void loadAvatar( const QString &email );
 
+    void loadPhoto( const QString &email, QObject *receiver, const char *member );
+
     void loadUserInfo( const QString &email );
 
 signals:

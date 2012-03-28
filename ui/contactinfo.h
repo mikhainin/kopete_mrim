@@ -3,12 +3,14 @@
 
 #include <kdialog.h>
 #include "mra/mraprotocol.h"
+
 namespace Ui {
 class ContactInfo;
 }
 
 class MrimAccount;
 class MrimContact;
+class MRAAvatarLoader;
 
 class ContactInfo : public KDialog
 {
@@ -19,9 +21,12 @@ public:
     ~ContactInfo();
 public slots:
     void slotUserInfoLoaded(const contact_info_t &info);
+private slots:
+    void slotRefreshAvatar();
+    void slotAvatarLoaded(bool success, MRAAvatarLoader *loader);
 private:
-    Ui::ContactInfo *ui;
-    QWidget * m_mainWidget;
+    class ContactInfoPrivate;
+    ContactInfoPrivate *d;
 };
 
 #endif // CONTACTINFO_H

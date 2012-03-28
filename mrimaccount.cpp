@@ -363,6 +363,15 @@ void MrimAccount::loadAvatar( const QString &email) {
     }
 }
 
+void MrimAccount::loadPhoto( const QString &email, QObject *receiver, const char *member ) {
+    if (m_mraProto) {
+        kWarning() << email;
+        m_mraProto->loadAvatar( email, true, receiver, member );
+    } else {
+        kWarning() << "there's undefined connection" << email;
+    }
+}
+
 void MrimAccount::slotAvatarLoaded(const QString &contact, const QImage &image) {
 
     kWarning() << "contact=" << contact;

@@ -455,7 +455,9 @@ void MRAProtocol::slotAvatarLoaded(bool success, MRAAvatarLoader *loader) {
     kWarning() << loader->contact() << success;
 
     if (success) {
-        emit avatarLoaded( loader->contact(), loader->image() );
+        if ( !loader->receiver() ) {
+            emit avatarLoaded( loader->contact(), loader->image() );
+        }
     }
 
     m_avatarLoadersCount--;
