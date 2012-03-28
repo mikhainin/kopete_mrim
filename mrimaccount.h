@@ -136,7 +136,7 @@ private slots:
 
     void slotAvatarLoaded(const QString &contact, const QImage &image);
 
-    void slotUserInfoLoaded(const QString &contact, const contact_info_t &info);
+    void slotUserInfoLoaded(const QString &contact, const MRAContactInfo &info);
 
 private:
     QByteArray username;

@@ -169,7 +169,7 @@ void MrimContact::slotUserInfo() {
     loadUserInfo();
 }
 
-void MrimContact::slotUserInfoLoaded(const contact_info_t &info) {
+void MrimContact::slotUserInfoLoaded(const MRAContactInfo &info) {
 
     kWarning() << __PRETTY_FUNCTION__;
 

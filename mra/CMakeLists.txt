@@ -7,6 +7,7 @@ set(libmra_SRCS
     mracontactlistentry.cpp
     mraofflinemessage.cpp
     mraavatarloader.cpp
+    mracontactinfo.cpp
 )
 
 

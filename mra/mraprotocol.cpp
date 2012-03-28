@@ -24,7 +24,7 @@
 #include "mracontactlist.h"
 #include "mraavatarloader.h"
 #include "mraprotocol.h"
-
+#include "mracontactinfo.h"
 
 unsigned long int sec_count;
 
@@ -486,7 +486,7 @@ void MRAProtocol::loadUserInfo(const QString &contact) {
 
 void MRAProtocol::readAnketaInfo(MRAData & data) {
 
-    contact_info_t info;
+    MRAContactInfo info;
 
     uint status     = data.getInt32();
     kWarning() << "status=" << status;
@@ -496,38 +496,24 @@ void MRAProtocol::readAnketaInfo(MRAData & data) {
     Q_UNUSED(max_rows); /// @fixme: use this fields
     Q_UNUSED(server_time); /// @fixme: use this fields
 
-    QVector<QPair<QString, QString> > vecInfo;
+    QVector<QString> vecInfo;
     vecInfo.reserve(fields_num);
 
     for( uint i = 0; i < fields_num; ++i ) {
         QString field = data.getString();
         kWarning() << field;
-        vecInfo.append( QPair<QString, QString>( field, QString() ) );
+        vecInfo.append( field );
     }
-
-    QString username;
-    QString domain;
 
     for( uint i = 0; i < fields_num; ++i ) {
 
         QString fieldData = data.getString();
 
-        if ( vecInfo[i].first == "Username" ) {
-            username = fieldData;
-        } else if ( vecInfo[i].first == "Domain" ) {
-            domain = fieldData;
-        }
-
-        kWarning() << vecInfo[i].first << fieldData;
-        vecInfo[i].second = fieldData;
-
-        info.append(vecInfo[i]);
+        info.setParam(vecInfo[i], fieldData);
 
     }
 
-
-
-    emit userInfoLoaded( username + '@' + domain, info );
+    emit userInfoLoaded( info.email(), info );
 }
 
 void MRAProtocol::handleMessage(const u_long &msg, MRAData *data)

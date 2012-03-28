@@ -38,9 +38,9 @@ public:
     virtual bool isReachable() {return true;}
 
     void loadUserInfo();
-    void slotUserInfoLoaded(const contact_info_t &info);
+    void slotUserInfoLoaded(const MRAContactInfo &info);
 signals:
-    void userInfoLoaded(const contact_info_t &info);
+    void userInfoLoaded(const MRAContactInfo &info);
 
 public slots:
 

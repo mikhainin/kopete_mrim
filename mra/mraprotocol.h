@@ -29,12 +29,11 @@
 #include <QPair>
 #include <QString>
 
-typedef QList<QPair<QString, QString> > contact_info_t;
-
 #include <QObject>
 
 class MRAAvatarLoader;
 class QImage;
+class MRAContactInfo;
 
 class MRAProtocol : public QObject
 {
@@ -114,7 +113,7 @@ signals:
     void userStatusChanged(const QString &user, int newStatus);
 
     void avatarLoaded(const QString &contact, const QImage &image);
-    void userInfoLoaded(const QString &contact, const contact_info_t &info);
+    void userInfoLoaded(const QString &contact, const MRAContactInfo &info);
 };
 
 #endif

@@ -20,7 +20,7 @@ public:
     explicit ContactInfo(MrimAccount *account, MrimContact *contact, QWidget * parent = 0);
     ~ContactInfo();
 public slots:
-    void slotUserInfoLoaded(const contact_info_t &info);
+    void slotUserInfoLoaded(const MRAContactInfo &info);
 private slots:
     void slotRefreshAvatar();
     void slotAvatarLoaded(bool success, MRAAvatarLoader *loader);
