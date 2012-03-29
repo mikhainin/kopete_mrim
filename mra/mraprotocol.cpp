@@ -426,14 +426,12 @@ void MRAProtocol::loadAvatar(const QString &contact, bool large, QObject *receiv
                     new MRAAvatarLoader(contact, this, large, receiver, member)
                 );
 
-    m_avatarLoadersCount++;
-
     loadAvatarLoop();
 }
 
 void MRAProtocol::loadAvatarLoop() {
 
-    kWarning() << __PRETTY_FUNCTION__;
+    kWarning() << __PRETTY_FUNCTION__ << "loaders" << m_avatarLoadersCount;
 
     if ( m_avatarLoadersCount > 3 || m_avatarLoaders.empty() ) {
         return;
@@ -447,7 +445,10 @@ void MRAProtocol::loadAvatarLoop() {
 
     kWarning() << loader->contact();
 
+    m_avatarLoadersCount++;
+
     loader->run();
+
 }
 
 void MRAProtocol::slotAvatarLoaded(bool success, MRAAvatarLoader *loader) {

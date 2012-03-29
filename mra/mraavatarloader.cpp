@@ -23,9 +23,9 @@ struct MRAAvatarLoaderPrivate {
 };
 
 MRAAvatarLoader::MRAAvatarLoader(const QString &contact, QObject *parent, bool large, QObject *receiver, const char *member) :
-    QObject(parent)
+    QObject(parent),
+    d(new MRAAvatarLoaderPrivate)
 {
-    d = new MRAAvatarLoaderPrivate;
     d->contact = contact;
 
     if (receiver && member) {
@@ -33,7 +33,6 @@ MRAAvatarLoader::MRAAvatarLoader(const QString &contact, QObject *parent, bool l
     }
 
     d->large = large;
-
 }
 
 MRAAvatarLoader::~MRAAvatarLoader() {

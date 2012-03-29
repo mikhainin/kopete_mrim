@@ -1,5 +1,7 @@
 v0.1
-[kopete] show contact info
+<done>
+- debian packages
+- version through the "-D" compiler flag
 
 v0.2
 [kopete] show disconnect reason in notification area
@@ -12,3 +14,4 @@ v0.2
 [proto]  user's (myself) status change
 [kopete] avatars updating
 [proto]  move contacts between groups
+[proto]  load avatars via 3 permanent connections
