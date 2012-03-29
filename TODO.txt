@@ -1,17 +1,20 @@
 v0.1
 <done>
-- debian packages
+- Debian packages
 - version through the "-D" compiler flag
+- license
 
 v0.2
 [kopete] show disconnect reason in notification area
 [ui]     add contacts to list on receiving AUTH_ACK (without reconnect)
-[ui]     add contacts with their names (not only emails) (fixed?)
 [ui]     add contacts after authorization accept
-[proto]  status message
-[proto]  delivery status
-[kopete] message status: sent, delivered, rejected, etc...
 [proto]  user's (myself) status change
 [kopete] avatars updating
 [proto]  move contacts between groups
 [proto]  load avatars via 3 permanent connections
+[proto]  chats: show list of users in chatroom
+
+v0.3
+[proto]  status message
+[proto]  delivery status
+[kopete] message status: sent, delivered, rejected, etc...
