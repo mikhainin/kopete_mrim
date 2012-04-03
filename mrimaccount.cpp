@@ -142,8 +142,12 @@ void MrimAccount::authorizeRequestReceived(const QString &from, const QString &t
 
 void MrimAccount::disconnect()
 {
-    kWarning() << __PRETTY_FUNCTION__;
-    m_mraProto->closeConnection();
+    if (m_mraProto) {
+        kWarning() << __PRETTY_FUNCTION__;
+        m_mraProto->closeConnection();
+        m_mraProto->deleteLater();
+        m_mraProto = 0;
+    }
     myself()->setOnlineStatus( MrimProtocol::protocol()->mrimOffline );
 }
 

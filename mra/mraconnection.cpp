@@ -42,6 +42,7 @@ private:
 
 MRAConnection::MRAConnection(QObject *parent)
     : QObject(parent)
+    , m_socket(0)
     , m_locked(false)
 {
     memset ( &header, 0, sizeof header );
@@ -209,11 +210,8 @@ void MRAConnection::sendMsg(mrim_msg_t msg, MRAData *data)
 void MRAConnection::disconnect()
 {
     if (m_socket) {
-
         QObject::disconnect(m_socket, SIGNAL(disconnected()), this, SLOT(slotDisconnected()) );
-
-        m_socket->deleteLater();// isconnectFromHost();
-        // delete m_socket;
+        m_socket->deleteLater();
         m_socket = 0;
     }
 }
