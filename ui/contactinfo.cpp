@@ -45,6 +45,13 @@ ContactInfo::~ContactInfo()
     delete d;
 }
 
+
+void ContactInfo::slotClose()
+{
+    deleteLater();
+}
+
+
 void ContactInfo::slotUserInfoLoaded(const MRAContactInfo &info) {
 
     kWarning() << __PRETTY_FUNCTION__;

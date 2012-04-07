@@ -24,6 +24,7 @@ public slots:
 private slots:
     void slotRefreshAvatar();
     void slotAvatarLoaded(bool success, MRAAvatarLoader *loader);
+    void slotClose();
 private:
     class ContactInfoPrivate;
     ContactInfoPrivate *d;

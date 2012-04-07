@@ -1,8 +1,6 @@
 v0.1
 <done>
-- Debian packages
 - version through the "-D" compiler flag
-- license
 
 v0.2
 [kopete] show disconnect reason in notification area
