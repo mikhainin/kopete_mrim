@@ -1,0 +1,20 @@
+Source: kopete-mrim
+Section: unknown
+Priority: extra
+Maintainer: Mikhail Galanin <bespoleznyak@narod.ru>
+Build-Depends: debhelper (>= 7.0.50~), cmake, libkopete-dev
+Standards-Version: 3.8.4
+Homepage: https://github.com/negram/kopete_mrim/
+Vcs-Git: git://github.com/negram/kopete_mrim.git
+Vcs-Browser: https://github.com/negram/kopete_mrim/
+
+Package: kopete-mrim
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, kopete
+Description: MRIM (Mail.Ru Instant Messenging aka mail.ru@agent) protocol support for Kopete
+ This package adds support for Mail Agent protocol to Kopete.
+ This is initial implementation of the protocol. Supported features are:
+   - send/receive offline and online messages
+   - typing notifications
+   - add contact to contactlist, accept authorization requests
+   - load avatars and user's info.
