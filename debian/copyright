@@ -1,28 +1,26 @@
 This work was packaged for Debian by:
 
-    unknown <a@debian> on Sat, 07 Apr 2012 18:53:49 +0400
+    Mikhail Galanin <bespoleznyak@narod.ru> on Sat, 07 Apr 2012 18:53:49 +0400
 
 It was downloaded from:
 
-    <url://example.com>
+    <https://github.com/negram/kopete_mrim/>
 
 Upstream Author(s):
 
-    <put author's name and email here>
-    <likewise for another author>
+    Mikhail Galanin <bespoleznyak@narod.ru>
 
 Copyright:
 
-    <Copyright (C) YYYY Firstname Lastname>
-    <likewise for another author>
+    Copyright (C) 2012 Mikhail Galanin
 
 License:
 
-    <Put the license of the package here indented by 4 spaces>
+    BSD
 
 The Debian packaging is:
 
-    Copyright (C) 2012 unknown <a@debian>
+    Copyright (C) 2012 Mikhail Galanin <bespoleznyak@narod.ru>
 
 # Please chose a license for your packaging work. If the program you package
 # uses a mainstream license, using the same license is the safest choice.
@@ -30,8 +28,8 @@ The Debian packaging is:
 # packaged work, as it may make Debian's contributions unacceptable upstream.
 # If you just want it to be GPL version 3, leave the following lines in.
 
-and is licensed under the GPL version 3,
-see "/usr/share/common-licenses/GPL-3".
+and is licensed under the BSD,
+see "/usr/share/common-licenses/BSD".
 
 # Please also look if there are files or directories which have a
 # different copyright/license attached and list them here.
