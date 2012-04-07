@@ -28,6 +28,7 @@ set(kopete_mrim_SRCS
     mrimaddcontactpage.cpp
     mrimeditaccountwidget.cpp
     mrimaccount.cpp
+    version.cpp
 )
 
 kde4_add_ui_files(kopete_mrim_SRCS
@@ -37,6 +38,7 @@ kde4_add_ui_files(kopete_mrim_SRCS
 
 
 add_definitions(-DKDE_DEFAULT_DEBUG_AREA=89326)
+add_definitions(-DKOPETE_MRIM_VERSION=0.1.0)
 kde4_add_plugin(kopete_mrim ${kopete_mrim_SRCS} )
 
 add_subdirectory (icons)
