@@ -1,21 +1,22 @@
 #ifndef MRAPROTOCOL_H
 #define MRAPROTOCOL_H
 
-#include "mra_proto.h"
-#include "mradata.h"
-#include "mraconnection.h"
-#include "mracontactlist.h"
-#include "mraofflinemessage.h"
-
-#include <QList>
-#include <QPair>
-#include <QString>
+// #include "mra_proto.h"
+// #include "mradata.h"
+// #include "mraconnection.h"
+// #include "mracontactlist.h"
+// #include "mraofflinemessage.h"
 
 #include <QObject>
 
-class MRAAvatarLoader;
 class QImage;
+class QString;
+
 class MRAContactInfo;
+class MRAAvatarLoader;
+class MRAData;
+class MRAOfflineMessage;
+class MRAContactList;
 
 class MRAProtocol : public QObject
 {
@@ -25,12 +26,12 @@ public:
     MRAProtocol(QObject *parent = 0);
 
     ~MRAProtocol();
-    //void sendMsg(MRAData *data);
+
     bool makeConnection(const std::string &login, const std::string &password);
     void closeConnection();
-    //unsigned int readMessage(MRAData *data, u_long &msg);
-    void sendText(QString to, QString text);
-    // void sendSMS(std::string number, std::string text);
+
+    void sendText(const QString &to, const QString &text);
+
 
 
     void handleMessage(const u_long &msg, MRAData *data);
@@ -45,15 +46,11 @@ public:
 
     void loadUserInfo(const QString &contact);
 
-private:
-    MRAConnection *m_connection;
-    int sec_count;
 
-    QTimer *m_keepAliveTimer;
-    bool m_contactListReceived;
-    QList<MRAOfflineMessage*> m_offlineMessages;
-    QList<MRAAvatarLoader*> m_avatarLoaders;
-    int m_avatarLoadersCount;
+    void setStatus(int status);
+private:
+    class MRAProtocolPrivate;
+    MRAProtocolPrivate *d;
 
 private:
     void sendHello();

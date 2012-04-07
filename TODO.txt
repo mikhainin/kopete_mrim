@@ -1,6 +1,5 @@
 v0.1
 <done>
-- version through the "-D" compiler flag
 
 v0.2
 [kopete] show disconnect reason in notification area

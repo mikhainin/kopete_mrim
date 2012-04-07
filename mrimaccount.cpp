@@ -7,6 +7,10 @@
 #include <kopeteaccount.h>
 
 #include "mra/mraprotocol.h"
+#include "mra/mra_proto.h"
+#include "mra/mracontactlist.h"
+#include "mra/mraofflinemessage.h"
+
 #include "mrimprotocol.h"
 #include "mrimcontact.h"
 #include "mrimaccount.h"
@@ -182,6 +186,23 @@ void MrimAccount::setAway(bool away, const QString& reason)
 {
     kWarning() << __PRETTY_FUNCTION__;
 
+    if (!isConnected()) {
+        connect();
+    }
+    if ( m_mraProto ) {
+        if (away) {
+            m_mraProto->setStatus(STATUS_AWAY);
+        } else {
+            m_mraProto->setStatus(STATUS_ONLINE);
+        }
+    }
+    if (away) {
+        myself()->setOnlineStatus( MrimProtocol::protocol()->mrimAway );
+    } else {
+        myself()->setOnlineStatus( MrimProtocol::protocol()->mrimOnline );
+    }
+
+
 }
 
 void MrimAccount::slotGoOnline ()
@@ -192,6 +213,7 @@ void MrimAccount::slotGoOnline ()
         connect();
     else {
         myself()->setOnlineStatus( MrimProtocol::protocol()->mrimOnline );
+        m_mraProto->setStatus(STATUS_ONLINE);
     }
 }
 
@@ -209,6 +231,10 @@ void MrimAccount::slotGoOffline()
 void MrimAccount::slotGoAway()
 {
     kWarning() << __PRETTY_FUNCTION__;
+    if ( m_mraProto ) {
+        m_mraProto->setStatus(STATUS_AWAY);
+    }
+    myself()->setOnlineStatus( MrimProtocol::protocol()->mrimAway );
 }
 
 void MrimAccount::parseConfig()

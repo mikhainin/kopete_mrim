@@ -3,6 +3,8 @@
 #include <QPair>
 #include <QString>
 
+#include <kdatetime.h>
+
 #include "mrimaccount.h"
 #include "mrimcontact.h"
 #include "mra/mraavatarloader.h"

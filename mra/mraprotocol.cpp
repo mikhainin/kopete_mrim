@@ -6,18 +6,33 @@
 #include "mraavatarloader.h"
 #include "mraprotocol.h"
 #include "mracontactinfo.h"
+#include "mraconnection.h"
+#include "mraofflinemessage.h"
 
 #include "../version.h"
 
 unsigned long int sec_count;
 
+struct MRAProtocol::MRAProtocolPrivate {
+    MRAConnection *connection;
+    int secCount;
+
+    QTimer *keepAliveTimer;
+    bool contactListReceived;
+    QList<MRAOfflineMessage*> offlineMessages;
+    QList<MRAAvatarLoader*> avatarLoaders;
+    int avatarLoadersCount;
+
+    MRAProtocolPrivate(): connection(0)
+      , secCount(0)
+      , contactListReceived(false)
+      , avatarLoadersCount(0) {
+    }
+};
 
 MRAProtocol::MRAProtocol(QObject*parent)
     : QObject(parent)
-    , m_connection(0)
-    , sec_count(0)
-    , m_contactListReceived(false)
-    , m_avatarLoadersCount(0)
+    , d(new MRAProtocolPrivate)
 {
 }
 
@@ -26,50 +41,50 @@ MRAProtocol::~MRAProtocol()
 {
     closeConnection();
 
-    if (m_keepAliveTimer) {
-        m_keepAliveTimer->stop();
-        disconnect(m_keepAliveTimer, SIGNAL(timeout()) , this , SLOT(slotPing()));
-        delete m_keepAliveTimer;
-        m_keepAliveTimer = 0;
+    if (d->keepAliveTimer) {
+        d->keepAliveTimer->stop();
+        disconnect(d->keepAliveTimer, SIGNAL(timeout()) , this , SLOT(slotPing()));
+        delete d->keepAliveTimer;
+        d->keepAliveTimer = 0;
     }
-
+    delete d;
 }
 
 bool MRAProtocol::makeConnection(const std::string &login, const std::string &password)
 {
-    m_connection = new MRAConnection(this);
-    if ( !m_connection->connectToHost() ) {
-        delete m_connection;
+    d->connection = new MRAConnection(this);
+    if ( !d->connection->connectToHost() ) {
+        delete d->connection;
         return false;
     }
 
     sendHello();
 
-    connect( m_connection, SIGNAL(onData()), this, SLOT(slotOnDataFromServer()) );
-    connect( m_connection, SIGNAL(disconnected(QString)), this, SLOT(slotDisconnected(QString)) );
+    connect( d->connection, SIGNAL(onData()), this, SLOT(slotOnDataFromServer()) );
+    connect( d->connection, SIGNAL(disconnected(QString)), this, SLOT(slotDisconnected(QString)) );
     sendLogin(login, password);
 
-    m_keepAliveTimer = new QTimer(this);
-    connect(m_keepAliveTimer, SIGNAL(timeout()) , this , SLOT(slotPing()));
-    m_keepAliveTimer->start(sec_count*1000);
+    d->keepAliveTimer = new QTimer(this);
+    connect(d->keepAliveTimer, SIGNAL(timeout()) , this , SLOT(slotPing()));
+    d->keepAliveTimer->start(sec_count*1000);
 
     return true;
 }
 
 void MRAProtocol::closeConnection() {
 
-    m_contactListReceived = false;
+    d->contactListReceived = false;
 
-    if (m_connection) {
-        m_connection->disconnect();
-        m_connection->deleteLater();
-        m_connection = 0;
+    if (d->connection) {
+        d->connection->disconnect();
+        d->connection->deleteLater();
+        d->connection = 0;
     }
 
-    if (m_keepAliveTimer) {
-        m_keepAliveTimer->stop();
-        m_keepAliveTimer->deleteLater();
-        m_keepAliveTimer = 0;
+    if (d->keepAliveTimer) {
+        d->keepAliveTimer->stop();
+        d->keepAliveTimer->deleteLater();
+        d->keepAliveTimer = 0;
     }
 
 }
@@ -84,12 +99,12 @@ void MRAProtocol::slotDisconnected(const QString &reason) {
  */
 void MRAProtocol::sendHello()
 {
-    m_connection->sendMsg(MRIM_CS_HELLO, NULL);
+    d->connection->sendMsg(MRIM_CS_HELLO, NULL);
     MRAData data;
     mrim_msg_t msg;
     kWarning() << "HELLO sent";
 
-    m_connection->readMessage(msg, &data);
+    d->connection->readMessage(msg, &data);
 
     sec_count = data.getInt32();
     kWarning() << "HELLO ACK received, timeout sec:" << sec_count ;
@@ -100,12 +115,12 @@ void MRAProtocol::readConnectionParams(MRAData & data) {
 
     sec_count = data.getInt32();
 
-    m_keepAliveTimer->deleteLater();
-    m_keepAliveTimer = 0;
+    d->keepAliveTimer->deleteLater();
+    d->keepAliveTimer = 0;
 
-    m_keepAliveTimer = new QTimer(this);
-    connect(m_keepAliveTimer, SIGNAL(timeout()) , this , SLOT(slotPing()));
-    m_keepAliveTimer->start(sec_count*1000);
+    d->keepAliveTimer = new QTimer(this);
+    connect(d->keepAliveTimer, SIGNAL(timeout()) , this , SLOT(slotPing()));
+    d->keepAliveTimer->start(sec_count*1000);
 
 }
 
@@ -122,7 +137,7 @@ void MRAProtocol::sendLogin(const std::string &login, const std::string &passwor
     data.addString("Kopete MRIM plugin v" + kopeteMrimVersion() );
 
 
-    m_connection->sendMsg(MRIM_CS_LOGIN2, &data);
+    d->connection->sendMsg(MRIM_CS_LOGIN2, &data);
 
 }
 
@@ -130,7 +145,7 @@ void MRAProtocol::sendLogin(const std::string &login, const std::string &passwor
 /*!
     \fn MRAMsg::sendMessage()
  */
-void MRAProtocol::sendText(QString to, QString text)
+void MRAProtocol::sendText(const QString &to, const QString &text)
 {
     MRAData data;
 
@@ -141,7 +156,7 @@ void MRAProtocol::sendText(QString to, QString text)
     data.addString(text);
     data.addString(" ");// RTF has not supported yet
 
-    m_connection->sendMsg(MRIM_CS_MESSAGE, &data);
+    d->connection->sendMsg(MRIM_CS_MESSAGE, &data);
 }
 
 
@@ -237,7 +252,7 @@ void MRAProtocol::readContactList(MRAData & data)
 
     emit contactListReceived(list);
 
-    m_contactListReceived = true;
+    d->contactListReceived = true;
 
     emitOfflineMessagesReceived();
 }
@@ -282,7 +297,7 @@ void MRAProtocol::readMessage(MRAData & data) {
         ackData.addString(from); // LPS ## from ##
         ackData.addInt32(msg_id); // UL ## msg_id ##
 
-        m_connection->sendMsg(MRIM_CS_MESSAGE_RECV, &ackData);
+        d->connection->sendMsg(MRIM_CS_MESSAGE_RECV, &ackData);
     }
 }
 
@@ -294,7 +309,7 @@ void MRAProtocol::sendTypingMessage(const QString &contact) {
     data.addString(" "); // message
     data.addString(" "); // rtf
 
-    m_connection->sendMsg(MRIM_CS_MESSAGE, &data);
+    d->connection->sendMsg(MRIM_CS_MESSAGE, &data);
 }
 
 void MRAProtocol::readConnectionRejected(MRAData & data) {
@@ -321,7 +336,7 @@ void MRAProtocol::authorizeContact(const QString &contact) {
     MRAData authData;
     authData.addString(contact);
 
-    m_connection->sendMsg( MRIM_CS_AUTHORIZE, &authData );
+    d->connection->sendMsg( MRIM_CS_AUTHORIZE, &authData );
 
 }
 
@@ -334,7 +349,7 @@ void MRAProtocol::addToContactList(int flags, int groupId, const QString &addres
     addData.addString(nick);
     addData.addString(" "); // unused LPS
 
-    m_connection->sendMsg(MRIM_CS_ADD_CONTACT, &addData);
+    d->connection->sendMsg(MRIM_CS_ADD_CONTACT, &addData);
 }
 
 void MRAProtocol::removeContact(const QString &contact) {
@@ -348,6 +363,13 @@ void MRAProtocol::readUserSataus(MRAData & data) {
     emit userStatusChanged(user, status);
 }
 
+void MRAProtocol::setStatus(int status) {
+    MRAData data;
+    data.addInt32(status);
+
+    d->connection->sendMsg(MRIM_CS_CHANGE_STATUS, &data);
+}
+
 void MRAProtocol::readOfflineMessage(MRAData & data) {
     QByteArray msgId      = data.getUIDL();
     QString rfc822message = data.getString();
@@ -355,11 +377,11 @@ void MRAProtocol::readOfflineMessage(MRAData & data) {
     MRAOfflineMessage *message = new MRAOfflineMessage (this, msgId);
     message->parse(rfc822message);
 
-    m_offlineMessages.push_back(message);
+    d->offlineMessages.push_back(message);
 
-    kWarning() << "offline message pushed" << m_offlineMessages.size();
+    kWarning() << "offline message pushed" << d->offlineMessages.size();
 
-    if (m_contactListReceived) {
+    if (d->contactListReceived) {
         emitOfflineMessagesReceived();
     }
 
@@ -374,13 +396,13 @@ void MRAProtocol::emitOfflineMessagesReceived() {
 
     // sort the list
 
-    kWarning() << "offline message emmiting" << m_offlineMessages.size();
+    kWarning() << "offline message emmiting" << d->offlineMessages.size();
 
-    qSort(m_offlineMessages.begin(), m_offlineMessages.end(), MessageDateLessThan);
+    qSort(d->offlineMessages.begin(), d->offlineMessages.end(), MessageDateLessThan);
 
-    kWarning() << "offline message emmiting2" << m_offlineMessages.size();
+    kWarning() << "offline message emmiting2" << d->offlineMessages.size();
 
-    foreach( MRAOfflineMessage *message, m_offlineMessages ) {
+    foreach( MRAOfflineMessage *message, d->offlineMessages ) {
 
         if ( (message->flags() & MESSAGE_FLAG_AUTHORIZE) != 0) {
             emit authorizeRequestReceived(message->from(), message->text());
@@ -393,19 +415,19 @@ void MRAProtocol::emitOfflineMessagesReceived() {
         MRAData ackData;
         ackData.addUIDL(message->id());
 
-        m_connection->sendMsg(MRIM_CS_DELETE_OFFLINE_MESSAGE, &ackData);
+        d->connection->sendMsg(MRIM_CS_DELETE_OFFLINE_MESSAGE, &ackData);
 
         message->deleteLater();
     }
 
-    m_offlineMessages.clear();
+    d->offlineMessages.clear();
 
 }
 
 void MRAProtocol::loadAvatar(const QString &contact, bool large, QObject *receiver, const char *member) {
 
     kWarning() << contact;
-    m_avatarLoaders.push_back(
+    d->avatarLoaders.push_back(
                     new MRAAvatarLoader(contact, this, large, receiver, member)
                 );
 
@@ -414,21 +436,21 @@ void MRAProtocol::loadAvatar(const QString &contact, bool large, QObject *receiv
 
 void MRAProtocol::loadAvatarLoop() {
 
-    kWarning() << __PRETTY_FUNCTION__ << "loaders" << m_avatarLoadersCount;
+    kWarning() << __PRETTY_FUNCTION__ << "loaders" << d->avatarLoadersCount;
 
-    if ( m_avatarLoadersCount > 3 || m_avatarLoaders.empty() ) {
+    if ( d->avatarLoadersCount > 3 || d->avatarLoaders.empty() ) {
         return;
     }
 
-    MRAAvatarLoader * loader = m_avatarLoaders.front();
-    m_avatarLoaders.pop_front();
+    MRAAvatarLoader * loader = d->avatarLoaders.front();
+    d->avatarLoaders.pop_front();
 
     QObject::connect(loader, SIGNAL(done(bool,MRAAvatarLoader*)),
                      this, SLOT(slotAvatarLoaded(bool,MRAAvatarLoader*)) );
 
     kWarning() << loader->contact();
 
-    m_avatarLoadersCount++;
+    d->avatarLoadersCount++;
 
     loader->run();
 
@@ -444,7 +466,7 @@ void MRAProtocol::slotAvatarLoaded(bool success, MRAAvatarLoader *loader) {
         }
     }
 
-    m_avatarLoadersCount--;
+    d->avatarLoadersCount--;
 
     loader->deleteLater();
 
@@ -465,7 +487,7 @@ void MRAProtocol::loadUserInfo(const QString &contact) {
     anketaData.addInt32(MRIM_CS_WP_REQUEST_PARAM_DOMAIN);
     anketaData.addString(items[1]);
 
-    m_connection->sendMsg( MRIM_CS_WP_REQUEST, &anketaData );
+    d->connection->sendMsg( MRIM_CS_WP_REQUEST, &anketaData );
 }
 
 void MRAProtocol::readAnketaInfo(MRAData & data) {
@@ -565,7 +587,7 @@ void MRAProtocol::handleMessage(const u_long &msg, MRAData *data)
 
 void MRAProtocol::slotPing() {
     kWarning() << "sending ping";
-    m_connection->sendMsg(MRIM_CS_PING, NULL);
+    d->connection->sendMsg(MRIM_CS_PING, NULL);
     kDebug() << "ping sent";
 }
 
@@ -573,7 +595,7 @@ void MRAProtocol::slotOnDataFromServer() {
     kWarning() << __PRETTY_FUNCTION__;
     MRAData *data = new MRAData(this);
     mrim_msg_t msg;
-    m_connection->readMessage(msg, data);
+    d->connection->readMessage(msg, data);
 
     handleMessage(msg, data);
 
