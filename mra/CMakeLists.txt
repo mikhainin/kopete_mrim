@@ -8,6 +8,7 @@ set(libmra_SRCS
     mraofflinemessage.cpp
     mraavatarloader.cpp
     mracontactinfo.cpp
+    mraprotocolv123.cpp
 )
 
 

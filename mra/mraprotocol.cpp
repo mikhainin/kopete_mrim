@@ -1,6 +1,7 @@
 #include <kdebug.h>
 #include <QTimer>
-#include <QHttp>
+#include <QStringList>
+// #include <QHttp>
 
 #include "mracontactlist.h"
 #include "mraavatarloader.h"
@@ -8,6 +9,7 @@
 #include "mracontactinfo.h"
 #include "mraconnection.h"
 #include "mraofflinemessage.h"
+#include "mra_proto.h"
 
 #include "../version.h"
 
@@ -50,7 +52,11 @@ MRAProtocol::~MRAProtocol()
     delete d;
 }
 
-bool MRAProtocol::makeConnection(const std::string &login, const std::string &password)
+MRAConnection *MRAProtocol::connection() {
+    return d->connection;
+}
+
+bool MRAProtocol::makeConnection(const QString &login, const QString &password)
 {
     d->connection = new MRAConnection(this);
     if ( !d->connection->connectToHost() ) {
@@ -127,20 +133,18 @@ void MRAProtocol::readConnectionParams(MRAData & data) {
 /*!
     \fn MRAMsg::sendLogin()
  */
-void MRAProtocol::sendLogin(const std::string &login, const std::string &password)
+void MRAProtocol::sendLogin(const QString &login, const QString &password)
 {
     MRAData data;
 
-    data.addString(login.c_str());
-    data.addString(password.c_str());
+    // proto v1.07/1.08
+    data.addString(login);
+    data.addString(password);
     data.addInt32(STATUS_ONLINE);
     data.addString("Kopete MRIM plugin v" + kopeteMrimVersion() );
 
-
     d->connection->sendMsg(MRIM_CS_LOGIN2, &data);
-
 }
-
 
 /*!
     \fn MRAMsg::sendMessage()
@@ -363,11 +367,22 @@ void MRAProtocol::readUserSataus(MRAData & data) {
     emit userStatusChanged(user, status);
 }
 
-void MRAProtocol::setStatus(int status) {
+void MRAProtocol::setStatus(STATUS status) {
     MRAData data;
-    data.addInt32(status);
+    data.addInt32(statusToInt(status));
 
     d->connection->sendMsg(MRIM_CS_CHANGE_STATUS, &data);
+}
+
+int MRAProtocol::statusToInt(STATUS status) {
+    if (status == ONLINE) {
+        return STATUS_ONLINE;
+    } else if (status == OFFLINE) {
+        return STATUS_OFFLINE;
+    } else if (status == AWAY) {
+        return STATUS_AWAY;
+    }
+    return STATUS_UNDETERMINATED;
 }
 
 void MRAProtocol::readOfflineMessage(MRAData & data) {
@@ -519,10 +534,10 @@ void MRAProtocol::readAnketaInfo(MRAData & data) {
 
     }
 
-    emit userInfoLoaded( info.email(), info );
+    this->emit userInfoLoaded( info.email(), info );
 }
 
-void MRAProtocol::handleMessage(const u_long &msg, MRAData *data)
+void MRAProtocol::handleMessage(const ulong &msg, MRAData *data)
 {
     kWarning() << "Accepting message " << msg;
     switch (msg) {

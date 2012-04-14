@@ -7,6 +7,7 @@
 #include <kopeteaccount.h>
 
 #include "mra/mraprotocol.h"
+#include "mra/mraprotocolv123.h"
 #include "mra/mra_proto.h"
 #include "mra/mracontactlist.h"
 #include "mra/mraofflinemessage.h"
@@ -59,7 +60,7 @@ void MrimAccount::connect( const Kopete::OnlineStatus& /*initialStatus*/ )
 
     m_groups.clear();
 
-    m_mraProto = new MRAProtocol(this);
+    m_mraProto = new MRAProtocolV123(this); /// @todo: make the protocol's version optional
 
     QObject::connect(m_mraProto, SIGNAL(contactListReceived(MRAContactList)),
             this, SLOT(slotContactListReceived(MRAContactList)) );
@@ -97,7 +98,7 @@ void MrimAccount::connect( const Kopete::OnlineStatus& /*initialStatus*/ )
     QObject::connect(m_mraProto, SIGNAL(userInfoLoaded(QString,MRAContactInfo)),
                      this, SLOT(slotUserInfoLoaded(QString,MRAContactInfo)) );
 
-    if (m_mraProto->makeConnection(QString(username).toStdString(), QString(password).toStdString()) ) {
+    if (m_mraProto->makeConnection(QString(username), QString(password)) ) {
         kWarning() << "connecting...";
     } else {
         kWarning() << "connect problems.";
@@ -191,9 +192,9 @@ void MrimAccount::setAway(bool away, const QString& reason)
     }
     if ( m_mraProto ) {
         if (away) {
-            m_mraProto->setStatus(STATUS_AWAY);
+            m_mraProto->setStatus(MRAProtocol::AWAY);
         } else {
-            m_mraProto->setStatus(STATUS_ONLINE);
+            m_mraProto->setStatus(MRAProtocol::ONLINE);
         }
     }
     if (away) {
@@ -213,7 +214,7 @@ void MrimAccount::slotGoOnline ()
         connect();
     else {
         myself()->setOnlineStatus( MrimProtocol::protocol()->mrimOnline );
-        m_mraProto->setStatus(STATUS_ONLINE);
+        m_mraProto->setStatus(MRAProtocol::ONLINE);
     }
 }
 
@@ -232,7 +233,7 @@ void MrimAccount::slotGoAway()
 {
     kWarning() << __PRETTY_FUNCTION__;
     if ( m_mraProto ) {
-        m_mraProto->setStatus(STATUS_AWAY);
+        m_mraProto->setStatus(MRAProtocol::AWAY);
     }
     myself()->setOnlineStatus( MrimProtocol::protocol()->mrimAway );
 }

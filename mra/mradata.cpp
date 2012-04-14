@@ -65,6 +65,14 @@ void MRAData::addData(const void *data_, ssize_t size)
     m_data.append(static_cast<const char*>(data_), size);
 }
 
+void MRAData::addData(const QByteArray &data) {
+    m_data.append(data);
+}
+
+void MRAData::addBinaryString(const QByteArray &data) {
+    addInt32(data.size());
+    addData(data);
+}
 
 /*!
     \fn MRAData::addInt32(long int value)
@@ -122,6 +130,22 @@ QString MRAData::getString()
         CodecHolder holder("Windows-1251");
 
         QString result = QString::fromAscii( m_data.mid(m_pointer, len).constData() );
+
+        m_pointer += len;
+
+        return result;
+    } else {
+        return QString();
+    }
+}
+
+QString MRAData::getUnicodeString() {
+    int len = getInt32();
+
+    if (m_data.size() >= (m_pointer + len)) {
+        CodecHolder holder("UTF-16LE");
+
+        QString result = QString::fromAscii( m_data.mid(m_pointer, len).constData(), len );
 
         m_pointer += len;
 
