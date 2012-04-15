@@ -10,7 +10,8 @@
 #define PROTO_VERSION_MAJOR     1
 // and then protocol has been changed. Even login is impossible
 #define PROTO_VERSION_MINOR     23
-#define PROTO_VERSION ((((u_long)(PROTO_VERSION_MAJOR))<<16)|(u_long)(PROTO_VERSION_MINOR))
+#define MAKE_VERSION(major, minor) ((((uint32_t)(major))<<16)|(uint32_t)(minor))
+#define PROTO_VERSION MAKE_VERSION(PROTO_VERSION_MAJOR,PROTO_VERSION_MINOR)
 
 
 #define PROTO_MAJOR(p) (((p)&0xFFFF0000)>>16)

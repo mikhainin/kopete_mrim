@@ -37,7 +37,7 @@ private:
 
 
     void cutHeaders(QMap<QString, QString> &headers, QString &message);
-
+    void parseTextPart();
 signals:
 
 public slots:
