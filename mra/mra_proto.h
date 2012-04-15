@@ -176,6 +176,11 @@ typedef uint32_t mrim_msg_t;
 #define MRIM_CS_CHANGE_STATUS			0x1022	// C -> S
     // UL new status
 
+    // v1.23 (added by negram)
+    // LPS status text, e.g. status_dnd
+    // LPUS status title, e.g. "Don't dustrub" in russian (or contact's language)
+    // DATA[8] ???  00 00 00 00 ff 0b 00 00
+
 
 #define MRIM_CS_GET_MPOP_SESSION		0x1024	// C -> S
 
@@ -311,7 +316,7 @@ login
 
 password (?)
 0010                              10 00 00 00 xx xx xx           ....xxx
-0020   xx xx xx xx xx xx xx xx xx xx xx xx xx           xxxxxxxxxxxxxx
+0020   xx xx xx xx xx xx xx xx xx xx xx xx xx           xxxxxxxxxxxxx
 
 status (?)
 0030                                          ff 0b 00               ...

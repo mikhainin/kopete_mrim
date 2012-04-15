@@ -14,6 +14,8 @@ public:
 
     virtual void sendLogin(const QString &login, const QString &password);
 
+    virtual void readLoginAck(MRAData & data);
+
     virtual void sendUnknownBeforeLogin();
 
     virtual void setStatus(STATUS status);

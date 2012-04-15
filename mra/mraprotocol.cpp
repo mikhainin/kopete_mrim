@@ -146,6 +146,11 @@ void MRAProtocol::sendLogin(const QString &login, const QString &password)
     d->connection->sendMsg(MRIM_CS_LOGIN2, &data);
 }
 
+void MRAProtocol::readLoginAck(MRAData & data) {
+    Q_UNUSED(data);
+    emit connected();
+}
+
 /*!
     \fn MRAMsg::sendMessage()
  */
@@ -555,7 +560,7 @@ void MRAProtocol::handleMessage(const ulong &msg, MRAData *data)
             break;
 
         case MRIM_CS_LOGIN_ACK:
-            emit connected();/// TODO: handle this event
+            readLoginAck(*data);
             return;
 
         case MRIM_CS_LOGIN_REJ:

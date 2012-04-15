@@ -52,16 +52,16 @@ public:
     virtual void loadUserInfo(const QString &contact);
 
 
-    void setStatus(STATUS status);
+    virtual void setStatus(STATUS status);
 private:
     class MRAProtocolPrivate;
     MRAProtocolPrivate *d;
 
-    int statusToInt(STATUS status);
 protected:
     MRAConnection *connection();
     virtual void sendHello();
     virtual void sendLogin(const QString &login, const QString &password);
+    virtual void readLoginAck(MRAData & data);
 
     QVector<QVariant> readVectorByMask(MRAData & data, const QString &mask);
 
@@ -77,6 +77,7 @@ protected:
     virtual void emitOfflineMessagesReceived();
 
     virtual void readAnketaInfo(MRAData & data);
+    int statusToInt(STATUS status);
 
 private slots:
     void slotPing();

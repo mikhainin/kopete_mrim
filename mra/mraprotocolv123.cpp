@@ -18,6 +18,7 @@ bool MRAProtocolV123::makeConnection(const QString &login, const QString &passwo
     if (!MRAProtocol::makeConnection(login, password)) {
         return false;
     }
+
     return true;
 }
 
@@ -39,6 +40,12 @@ void MRAProtocolV123::sendLogin(const QString &login, const QString &password)
     data.addString("MRA 5.10 (build 5282);");
 
     connection()->sendMsg(MRIM_CS_LOGIN3, &data);
+}
+
+void MRAProtocolV123::readLoginAck(MRAData & data) {
+    Q_UNUSED(data);
+    setStatus(ONLINE);
+    emit connected();
 }
 
 void MRAProtocolV123::sendUnknownBeforeLogin() {
@@ -106,7 +113,31 @@ void MRAProtocolV123::sendText(const QString &to, const QString &text)
 
 
 void MRAProtocolV123::setStatus(STATUS status) {
+    MRAData data;
 
+    data.addInt32( statusToInt(status) );
+    if (status == ONLINE) {
+        data.addString("STATUS_ONLINE");
+        data.addUnicodeString(tr("Online")); /// @todo make phrases configurable
+    } else if (status == AWAY) {
+        data.addString("STATUS_AWAY");
+        data.addUnicodeString(tr("Away"));
+    } else if (status == DONT_DISTRUB) {
+        data.addString("STATUS_DND");
+        data.addUnicodeString(tr("Don't distrub"));
+    } else if (status == CHATTY) {
+        data.addString("STATUS_CHAT");
+        data.addUnicodeString(tr("Ready to talk"));
+    } else {
+        /// @fixme
+        data.addString("STATUS_ONLINE");
+        data.addUnicodeString(tr("Online"));
+    }
+
+    data.addInt32(0x00);
+    data.addInt32(0x00000BFF);
+
+    connection()->sendMsg(MRIM_CS_CHANGE_STATUS, &data);
 }
 
 #include "mraprotocolv123.moc"
