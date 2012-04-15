@@ -16,6 +16,7 @@ public:
     void addString(const QString &str);
     QString getString();
 
+    void addUnicodeString(const QString &str);
     QString getUnicodeString();
 
     void addInt32(quint32 value);

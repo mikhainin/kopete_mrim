@@ -158,7 +158,7 @@ void MRAProtocol::sendText(const QString &to, const QString &text)
     data.addInt32(flags);
     data.addString(to);
     data.addString(text);
-    data.addString(" ");// RTF has not supported yet
+    data.addString(" ");// RTF is not supported yet
 
     d->connection->sendMsg(MRIM_CS_MESSAGE, &data);
 }

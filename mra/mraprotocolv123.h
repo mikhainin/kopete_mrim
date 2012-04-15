@@ -16,6 +16,10 @@ public:
 
     virtual void sendUnknownBeforeLogin();
 
+    virtual void setStatus(STATUS status);
+
+    virtual void sendText(const QString &to, const QString &text);
+
 protected:
     virtual void readMessage(MRAData & data);
 signals:

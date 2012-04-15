@@ -1,4 +1,5 @@
 #include <QtCore>
+#include <QTextCodec>
 #include <string>
 #include "mradata.h"
 
@@ -137,6 +138,19 @@ QString MRAData::getString()
     } else {
         return QString();
     }
+}
+
+void MRAData::addUnicodeString(const QString &str) {
+
+    QTextCodec *codec = QTextCodec::codecForName("UTF-16LE");
+    ///CodecHolder holder("UTF-16LE");
+
+    // QByteArray ba( str.toAscii(), str.size() * 2 );
+    QByteArray ba = codec->fromUnicode(str);
+
+    ba = ba.remove(0, 2); // remove BOM (Byte Order Mark)
+    addInt32(ba.size());
+    addData(ba.constData(), ba.size());
 }
 
 QString MRAData::getUnicodeString() {

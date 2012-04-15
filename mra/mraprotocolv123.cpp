@@ -86,5 +86,27 @@ void MRAProtocolV123::readMessage(MRAData & data) {
         connection()->sendMsg(MRIM_CS_MESSAGE_RECV, &ackData);
     }
 }
+/*!
+    \fn MRAMsg::sendMessage()
+ */
+void MRAProtocolV123::sendText(const QString &to, const QString &text)
+{
+    MRAData data;
+
+    unsigned long int flags = MESSAGE_FLAG_NORECV;
+
+    data.addInt32(flags);
+    data.addString(to);
+    data.addUnicodeString(text);
+    data.addString(" ");// RTF is not supported yet
+
+    connection()->sendMsg(MRIM_CS_MESSAGE, &data);
+}
+
+
+
+void MRAProtocolV123::setStatus(STATUS status) {
+
+}
 
 #include "mraprotocolv123.moc"
