@@ -76,8 +76,8 @@ typedef uint32_t mrim_msg_t;
     #define MESSAGE_FLAG_NOTIFY                 0x00000400
     #define MESSAGE_FLAG_MULTICAST		0x00001000
 
-    #define MESSAGE_FLAG_CHAT                   0x00010000
-    #define MESSAGE_FLAG_UNKNOWN                0x00040000
+    #define MESSAGE_FLAG_UNICODE                0x00100000
+    #define MESSAGE_FLAG_CHAT                   0x00400000
 
 #define MAX_MULTICAST_RECIPIENTS 50
     #define MESSAGE_USERFLAGS_MASK	0x000036A8	// Flags that user is allowed to set himself

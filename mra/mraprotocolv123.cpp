@@ -73,14 +73,31 @@ void MRAProtocolV123::readMessage(MRAData & data) {
     int msg_id = data.getInt32();
     int flags  = data.getInt32();
     QString from = data.getString();
-    QString text = data.getUnicodeString();
-    // QString rtf  = data.getString(); // ignore
+    QString text;
+    if (flags & MESSAGE_FLAG_UNICODE) {
+        text = data.getUnicodeString();
+    } else {
+        text = data.getString();
+    }
+    if ( (flags & MESSAGE_FLAG_RTF) && !data.eof() ) {
+        QString rtf  = data.getString(); // ignore
+        Q_UNUSED(rtf);
+    }
 
     if ( (flags & MESSAGE_FLAG_NOTIFY) != 0 ) {
         emit typingAMessage( from );
     } else if ( (flags & MESSAGE_FLAG_AUTHORIZE) != 0) {
         emit authorizeRequestReceived(from, text);
     } else {
+        if (!data.eof()) {
+            data.getInt32(); // ??
+            data.getInt32(); // ??
+            QString chatTitle  = data.getUnicodeString();
+            QString chatMember = data.getString();
+
+            text = chatTitle + '(' + chatMember + ')' + '\n' + text;
+        }
+
         emit messageReceived( from, text );
     }
 
@@ -143,12 +160,12 @@ void MRAProtocolV123::setStatus(STATUS status) {
 
 void MRAProtocolV123::readUserSataus(MRAData & data) {
 
-    data.dumpData();
+    // data.dumpData();
 
     int status  = data.getInt32();
 
     QString statusTitle = data.getString(); // STATUS_ONLINE
-    QString str         = data.getUnicodeString(); // ????
+    QString str         = data.getUnicodeString(); // tr("Online")
     int int1            = data.getInt32(); // ???
 
     QString user        = data.getString();
