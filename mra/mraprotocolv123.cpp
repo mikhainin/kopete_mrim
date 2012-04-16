@@ -3,6 +3,7 @@
 
 #include "mradata.h"
 #include "mraconnection.h"
+#include "mracontactinfo.h"
 #include "mraprotocolv123.h"
 
 MRAProtocolV123::MRAProtocolV123(QObject *parent) :
@@ -177,6 +178,54 @@ void MRAProtocolV123::readUserSataus(MRAData & data) {
     kWarning() << statusTitle << str << int1 << user << int2 << client;
 
     emit userStatusChanged(user, status);
+}
+
+
+
+void MRAProtocolV123::readAnketaInfo(MRAData & data) {
+
+    MRAContactInfo info;
+
+    uint status     = data.getInt32();
+    kWarning() << "status=" << status;
+    uint fields_num = data.getInt32();
+    uint max_rows   = data.getInt32();
+    uint server_time= data.getInt32();
+    Q_UNUSED(max_rows); /// @fixme: use this fields
+    Q_UNUSED(server_time); /// @fixme: use this fields
+
+    QVector<QString> vecInfo;
+    vecInfo.reserve(fields_num);
+
+    for( uint i = 0; i < fields_num; ++i ) {
+        QString field = data.getString();
+        kWarning() << field;
+        vecInfo.append( field );
+    }
+
+    for( uint i = 0; i < fields_num; ++i ) {
+
+
+        QString fieldData;
+        bool isUnicodeAttribute =
+            vecInfo[i] == "Location" ||
+            vecInfo[i] == "Nickname" ||
+            vecInfo[i] == "FirstName" ||
+            vecInfo[i] == "LastName" ||
+            vecInfo[i] == "status_title";
+
+        if (isUnicodeAttribute) {
+            fieldData = data.getUnicodeString();
+        } else {
+            fieldData = data.getString();
+        }
+
+        info.setParam(vecInfo[i], fieldData);
+        kWarning() << vecInfo[i] << fieldData;
+
+    }
+
+    this->emit userInfoLoaded( info.email(), info );
 }
 
 
