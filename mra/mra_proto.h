@@ -68,13 +68,16 @@ typedef uint32_t mrim_msg_t;
     // LPS message
     // LPS rtf-formatted message (>=1.1)
     #define MESSAGE_FLAG_OFFLINE		0x00000001
-    #define MESSAGE_FLAG_NORECV		0x00000004
+    #define MESSAGE_FLAG_NORECV                 0x00000004
     #define MESSAGE_FLAG_AUTHORIZE		0x00000008 	// X-MRIM-Flags: 00000008
-    #define MESSAGE_FLAG_SYSTEM		0x00000040
-    #define MESSAGE_FLAG_RTF		0x00000080
+    #define MESSAGE_FLAG_SYSTEM                 0x00000040
+    #define MESSAGE_FLAG_RTF                    0x00000080
     #define MESSAGE_FLAG_CONTACT		0x00000200
-    #define MESSAGE_FLAG_NOTIFY		0x00000400
+    #define MESSAGE_FLAG_NOTIFY                 0x00000400
     #define MESSAGE_FLAG_MULTICAST		0x00001000
+
+    #define MESSAGE_FLAG_CHAT                   0x00010000
+    #define MESSAGE_FLAG_UNKNOWN                0x00040000
 
 #define MAX_MULTICAST_RECIPIENTS 50
     #define MESSAGE_USERFLAGS_MASK	0x000036A8	// Flags that user is allowed to set himself

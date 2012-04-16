@@ -24,6 +24,7 @@ public:
 
 protected:
     virtual void readMessage(MRAData & data);
+    virtual void readUserSataus(MRAData & data);
 signals:
 
 public slots:

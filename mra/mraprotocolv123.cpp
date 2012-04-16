@@ -1,3 +1,4 @@
+#include <kdebug.h>
 #include <QCryptographicHash>
 
 #include "mradata.h"
@@ -134,10 +135,32 @@ void MRAProtocolV123::setStatus(STATUS status) {
         data.addUnicodeString(tr("Online"));
     }
 
-    data.addInt32(0x00);
+    data.addInt32(0x00); // user's client?
     data.addInt32(0x00000BFF);
 
     connection()->sendMsg(MRIM_CS_CHANGE_STATUS, &data);
 }
+
+void MRAProtocolV123::readUserSataus(MRAData & data) {
+
+    data.dumpData();
+
+    int status  = data.getInt32();
+
+    QString statusTitle = data.getString(); // STATUS_ONLINE
+    QString str         = data.getUnicodeString(); // ????
+    int int1            = data.getInt32(); // ???
+
+    QString user        = data.getString();
+
+    int int2            = data.getInt32(); // 0x00000BFF
+
+    QString client      = data.getString(); // client="magent" version="5.10" build="5309"
+
+    kWarning() << statusTitle << str << int1 << user << int2 << client;
+
+    emit userStatusChanged(user, status);
+}
+
 
 #include "mraprotocolv123.moc"
