@@ -239,6 +239,9 @@ QVector<QVariant> MRAProtocolV123::readVectorByMask(MRAData & data, const QStrin
     if (localMask.length() > 5) {
         // user's mask
         localMask[3] = 'S';
+    } else {
+        // group's mask
+        localMask[1] = 'S';
     }
 
     for (int k = 0; k < localMask.length(); ++k) {
