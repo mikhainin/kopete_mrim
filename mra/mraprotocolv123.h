@@ -2,6 +2,9 @@
 #define MRAPROTOCOLV123_H
 
 #include "mraprotocol.h"
+#include <QVector>
+
+class MRAContactListEntry;
 
 class MRAProtocolV123 : public MRAProtocol
 {
@@ -26,6 +29,10 @@ protected:
     virtual void readMessage(MRAData & data);
     virtual void readUserSataus(MRAData & data);
     virtual void readAnketaInfo(MRAData & data);
+
+    virtual QVector<QVariant> readVectorByMask(MRAData & data, const QString &mask);
+
+    virtual void fillUserInfo(QVector<QVariant> &protoData, MRAContactListEntry &item);
 signals:
 
 public slots:

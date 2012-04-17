@@ -247,12 +247,8 @@ void MRAProtocol::readContactList(MRAData & data)
         MRAContactListEntry item;
 
         QVector<QVariant> protoData = readVectorByMask(data, umask);
-        item.setFlags(   protoData[0].toUInt() );
-        item.setGroup(   protoData[1].toUInt() );
-        item.setAddress( protoData[2].toString() );
-        item.setNick(    protoData[3].toString() );
-        item.setServerFlags( protoData[4].toUInt() );
-        item.setStatus(  protoData[5].toUInt() );
+
+        fillUserInfo(protoData, item);
 
         list.addEntry(item);
 
@@ -264,6 +260,15 @@ void MRAProtocol::readContactList(MRAData & data)
     d->contactListReceived = true;
 
     emitOfflineMessagesReceived();
+}
+
+void MRAProtocol::fillUserInfo(QVector<QVariant> &protoData, MRAContactListEntry &item) {
+    item.setFlags(   protoData[0].toUInt() );
+    item.setGroup(   protoData[1].toUInt() );
+    item.setAddress( protoData[2].toString() );
+    item.setNick(    protoData[3].toString() );
+    item.setServerFlags( protoData[4].toUInt() );
+    item.setStatus(  protoData[5].toUInt() );
 }
 
 void MRAProtocol::readUserInfo(MRAData & data)

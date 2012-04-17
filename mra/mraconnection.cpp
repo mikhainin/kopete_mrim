@@ -58,7 +58,7 @@ bool MRAConnection::connectToHost()
     m_socket->connectToHost(list[0], list[1].toInt());
 
     if (m_socket->waitForConnected(-1))
-        kWarning() << "Connected!";
+        kDebug() << "Connected!";
     else
         kWarning() << m_socket->errorString();
 
@@ -84,7 +84,7 @@ QString MRAConnection::getRecommendedServer() {
     QByteArray ba = socket.readLine();
     QString hostAndPort(ba);
     hostAndPort = hostAndPort.trimmed();
-    kWarning() << "recommended address is " << hostAndPort;
+    kDebug() << "recommended address is " << hostAndPort;
 
     return hostAndPort;
 }
@@ -93,7 +93,7 @@ ssize_t MRAConnection::write(const char* buf, ssize_t size)
 {
     LockWrapper locker(m_locked);
     ssize_t temp = m_socket->write(buf, size);
-    kWarning() << "size: " << size << " written:" << temp;
+    kDebug() << "size: " << size << " written:" << temp;
     return temp;
 }
 
@@ -111,7 +111,7 @@ ssize_t MRAConnection::read(char* buf, ssize_t size)
         qint64 read = m_socket->read(buf + temp, size - temp);
         if (read == -1) {
             if ( m_socket->isReadable() )
-            kWarning() << "error: " << m_socket->errorString();
+            kDebug() << "error: " << m_socket->errorString();
             return temp;/// @todo throw!
         } else if (read == 0) {
             m_socket->waitForReadyRead(-1);
@@ -176,8 +176,8 @@ void MRAConnection::sendMsg(mrim_msg_t msg, MRAData *data)
         sz = this->write((char*)(data->getData()), data->getSize());
     }
 
-    std::cout << "written " << sz << " msg: " << msg << " sz: " << sz << " seq: " << currHeader.seq << std::endl;
-    std::cout.flush();
+    // std::cout << "written " << sz << " msg: " << msg << " sz: " << sz << " seq: " << currHeader.seq << std::endl;
+    // std::cout.flush();
 
     header.seq++;
 

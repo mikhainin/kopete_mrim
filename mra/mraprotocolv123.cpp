@@ -3,6 +3,7 @@
 
 #include "mradata.h"
 #include "mraconnection.h"
+#include "mracontactlist.h"
 #include "mracontactinfo.h"
 #include "mraprotocolv123.h"
 
@@ -228,5 +229,45 @@ void MRAProtocolV123::readAnketaInfo(MRAData & data) {
     this->emit userInfoLoaded( info.email(), info );
 }
 
+QVector<QVariant> MRAProtocolV123::readVectorByMask(MRAData & data, const QString &mask)
+{
+    QVector<QVariant> result;
+
+    quint32 _int;
+    QString _string;
+    QString localMask = mask;
+    if (localMask.length() > 5) {
+        // user's mask
+        localMask[3] = 'S';
+    }
+
+    for (int k = 0; k < localMask.length(); ++k) {
+        if (localMask[k] == 'u') {
+            _int = data.getInt32();
+            // kWarning() << "u=" << _int;
+            result.push_back(_int);
+        } else if (localMask[k] == 's') {
+            _string = data.getString( );
+            // kWarning() << "s=" << _string;
+            result.push_back(_string);
+        } else if (localMask[k] == 'S') {
+            _string = data.getUnicodeString( );
+            // kWarning() << "S=" << _string;
+            result.push_back(_string);
+        }
+    }
+    kWarning() << "done";
+    return result;
+}
+
+
+void MRAProtocolV123::fillUserInfo(QVector<QVariant> &protoData, MRAContactListEntry &item) {
+    item.setFlags(   protoData[0].toUInt() );
+    item.setGroup(   protoData[1].toUInt() );
+    item.setAddress( protoData[2].toString() );
+    item.setNick(    protoData[3].toString() );
+    item.setServerFlags( protoData[4].toUInt() );
+    item.setStatus(  protoData[5].toUInt() );
+}
 
 #include "mraprotocolv123.moc"

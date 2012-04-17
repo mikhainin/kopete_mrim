@@ -112,12 +112,12 @@ quint32 MRAData::getInt32()
     if (m_pointer <= (getSize() - static_cast<int>(sizeof result)) ) {
 
         result     = *(quint32*)(getData() + m_pointer) ;
-
+/*
         std::cout << std::hex << static_cast< unsigned int >( *(getData() + m_pointer) )<< " " <<
                      static_cast< unsigned int >( *(getData() + m_pointer+1) )<< " " <<
                      static_cast< unsigned int >( *(getData() + m_pointer+2) )<< " " <<
                      static_cast< unsigned int >( *(getData() + m_pointer+3) ) << " = " << std::dec << result
-                     << std::endl;
+                     << std::endl; */
         m_pointer +=  sizeof(result);
     }
     return result;

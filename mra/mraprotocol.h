@@ -12,6 +12,7 @@ class MRAData;
 class MRAOfflineMessage;
 class MRAContactList;
 class MRAConnection;
+class MRAContactListEntry;
 
 class MRAProtocol : public QObject
 {
@@ -63,7 +64,8 @@ protected:
     virtual void sendLogin(const QString &login, const QString &password);
     virtual void readLoginAck(MRAData & data);
 
-    QVector<QVariant> readVectorByMask(MRAData & data, const QString &mask);
+    virtual QVector<QVariant> readVectorByMask(MRAData & data, const QString &mask);
+    virtual void fillUserInfo(QVector<QVariant> &protoData, MRAContactListEntry &item);
 
     virtual void readContactList(MRAData & data);
     virtual void readUserInfo(MRAData & data);
