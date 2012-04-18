@@ -7,6 +7,7 @@
 
 #include <kdatetime.h>
 
+class MessagePart;
 class MRAOfflineMessage : public QObject
 {
     Q_OBJECT
@@ -37,7 +38,7 @@ private:
 
 
     void cutHeaders(QMap<QString, QString> &headers, QString &message);
-    void parseTextPart();
+    void parseTextPart(MessagePart &textPart);
 signals:
 
 public slots:

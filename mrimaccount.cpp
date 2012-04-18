@@ -384,7 +384,9 @@ void MrimAccount::slotTypingAMessage( const QString &from ) {
 }
 
 void MrimAccount::contactTypingAMessage( const QString &to ) {
-    m_mraProto->sendTypingMessage(to);
+    if (m_mraProto) {
+        m_mraProto->sendTypingMessage(to);
+    }
 }
 
 void MrimAccount::loadAvatar( const QString &email) {

@@ -133,7 +133,7 @@ ssize_t MRAConnection::readMessage(mrim_msg_t &msg_, MRAData *data)
     ssize_t sz = 0;
     sz = this->read((char*)&head_, sizeof head_ );
 
-    kWarning() << "message: " << head_.msg << " dlen" << head_.dlen;
+    kDebug() << "message: " << head_.msg << " dlen" << head_.dlen;
 
     msg_ = head_.msg;
     if (sz > 0) {
@@ -171,9 +171,20 @@ void MRAConnection::sendMsg(mrim_msg_t msg, MRAData *data)
     }
 
     sz = this->write((char*)&currHeader, sizeof currHeader );
+    
+    if (sz == 0) {
+        disconnect();
+        slotDisconnected();
+        return;
+    }
 
     if (data != NULL) {
         sz = this->write((char*)(data->getData()), data->getSize());
+        if (sz == 0) {
+            disconnect();
+            slotDisconnected();
+            return;
+        }
     }
 
     // std::cout << "written " << sz << " msg: " << msg << " sz: " << sz << " seq: " << currHeader.seq << std::endl;
