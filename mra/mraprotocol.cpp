@@ -221,8 +221,8 @@ void MRAProtocol::readContactList(MRAData & data)
     QString gmask;
     QString umask;
 
-    gmask = data.getString(); // "us" - флаги и название
-    umask = data.getString(); // uussuus (флаги, группа, адрес, ник, серверные флаги, текущий статус в сети)
+    gmask = data.getString(); // "us" - flags and name
+    umask = data.getString(); // uussuus (flags, group num, email address, nickname, server flags, current status)
 
     kWarning() << "gmask=" << gmask << " umask=" << umask;
     ulong flags;

@@ -134,12 +134,25 @@ typedef uint32_t mrim_msg_t;
     // LPS contact
     // LPS name
     // LPS unused
+
+    // added by negram. since v1.23:
+    //
+    // UL flags (group(2) or usual(0)
+    // UL group id (unused if contact is group)
+    // LPS contact
+    // LPS name (unicode)
+    // LPS unused
+    // LPS authorization message, 'please, authorize me': base64(unicode(message))
+    // UL ??? (0x00000001)
+
     #define CONTACT_FLAG_REMOVED	0x00000001
     #define CONTACT_FLAG_GROUP	0x00000002
     #define CONTACT_FLAG_INVISIBLE	0x00000004
     #define CONTACT_FLAG_VISIBLE	0x00000008
     #define CONTACT_FLAG_IGNORE	0x00000010
     #define CONTACT_FLAG_SHADOW	0x00000020
+
+    #define CONTACT_FLAG_UNKNOWN 0x00000200 /* added by negram, used with 'remove' */
 
 #define MRIM_CS_ADD_CONTACT_ACK			0x101A	// S -> C
     // UL status
