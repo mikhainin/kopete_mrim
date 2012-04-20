@@ -91,11 +91,11 @@ void MRAProtocolV123::readMessage(MRAData & data) {
     } else if ( (flags & MESSAGE_FLAG_AUTHORIZE) != 0) {
         emit authorizeRequestReceived(from, text);
     } else {
-        if (!data.eof()) {
+        if ( (flags & MESSAGE_FLAG_CHAT) && !data.eof() ) {
             data.getInt32(); // ??
             data.getInt32(); // ??
-            QString chatTitle  = data.getUnicodeString();
-            QString chatMember = data.getString();
+            QString chatTitle  = data.getUnicodeString(); // subject
+            QString chatMember = data.getString();        // sender
 
             text = chatTitle + '(' + chatMember + ')' + '\n' + text;
         }

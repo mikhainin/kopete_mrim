@@ -18,6 +18,7 @@ public:
     const QString &text() const;
     QString header(const QString &name);
     bool hasHeader(const QString &name) const;
+    QString subject();
 
 private:
     QMap<QString, QString> m_headers;
@@ -85,6 +86,37 @@ QString MessagePart::charset() {
     return contentType.mid(contentType.indexOf("charset=") + 8).trimmed();
 }
 
+QString MessagePart::subject() {
+    if (!hasHeader("Subject")) {
+        return QString();
+    }
+
+    const QString &subject = m_headers["Subject"];
+    // value: =?UTF-16LE?B?(base64(subject))?=
+
+    QStringList parts = subject.split('?');
+
+    if (parts.size() < 3) {
+        return subject;
+    }
+
+    const QString &charset  = parts[1];
+    const QString &encoding = parts[2];
+    const QString &text     = parts[3];
+
+    if (charset != "UTF-16LE") {
+        return subject;
+    }
+
+    if (encoding != "B") { // base64
+        return subject;
+    }
+
+    QTextCodec *codec = QTextCodec::codecForName( charset.toAscii() );
+
+    return m_text = codec->toUnicode( QByteArray::fromBase64( text.toAscii() ) );
+
+}
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -98,6 +130,7 @@ MRAOfflineMessage::MRAOfflineMessage(QObject *parent, const QByteArray &id) :
 
 #include <iostream>
 void MRAOfflineMessage::parse(const QString &rfc822) {
+    std::cout << rfc822.toStdString();
     MessagePart message(rfc822);
 
     m_date      = KDateTime::fromString(message.header("Date"), KDateTime::RFCDate);
@@ -119,7 +152,7 @@ void MRAOfflineMessage::parse(const QString &rfc822) {
     m_flags = message.header("X-MRIM-Flags").toUInt(0, 16);
 
     if (message.contentType() == "text/plain") {
-        parseTextPart( message );
+        parseTextPart( message, message );
         return;
     }
 
@@ -134,7 +167,7 @@ void MRAOfflineMessage::parse(const QString &rfc822) {
 
         MessagePart part(partText);
         if (part.contentType() == "text/plain") {
-            parseTextPart( part );
+            parseTextPart( message, part );
         } else {
             m_rtfText = message.text();
         }
@@ -196,7 +229,7 @@ const QString &MRAOfflineMessage::rtfText() const {
     return m_rtfText;
 }
 
-void MRAOfflineMessage::parseTextPart(MessagePart &textPart) {
+void MRAOfflineMessage::parseTextPart(MessagePart &mainPart, MessagePart &textPart) {
     if (m_protoVersion < MAKE_VERSION(1,16)) {
         return;
     }
@@ -210,6 +243,11 @@ void MRAOfflineMessage::parseTextPart(MessagePart &textPart) {
 
         m_text = codec->toUnicode(data);
     }
+
+    if ( mainPart.hasHeader("Sender") || mainPart.hasHeader("Subject") ) {
+        m_text = mainPart.subject() + '(' + mainPart.header("Sender") + "):\n" + m_text;
+    }
+
 }
 
 #include "mraofflinemessage.moc"
