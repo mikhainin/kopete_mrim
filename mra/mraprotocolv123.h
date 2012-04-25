@@ -25,6 +25,11 @@ public:
 
     virtual void sendText(const QString &to, const QString &text);
 
+    virtual void deleteContact(uint id, const QString &contact, const QString &contactName);
+
+    virtual void addToContactList(int flags, int groupId, const QString &address, const QString &nick, const QString &authMessage);
+//    virtual void authorizeContact(const QString &contact);
+
 protected:
     virtual void readMessage(MRAData & data);
     virtual void readUserSataus(MRAData & data);

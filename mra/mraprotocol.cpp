@@ -243,8 +243,9 @@ void MRAProtocol::readContactList(MRAData & data)
         list.groups().add(g);
     }
 
+    ulong userNumber = 20;
     while( !data.eof() ) {
-        MRAContactListEntry item;
+        MRAContactListEntry item(userNumber++);
 
         QVector<QVariant> protoData = readVectorByMask(data, umask);
 
@@ -354,8 +355,11 @@ void MRAProtocol::authorizeContact(const QString &contact) {
 
 }
 
-void MRAProtocol::addToContactList(int flags, int groupId, const QString &address, const QString nick) {
-    MRAData addData; /// TODO: use this function
+void MRAProtocol::addToContactList(int flags, int groupId, const QString &address, const QString &nick, const QString &authMessage) {
+
+    Q_UNUSED(authMessage); // in proto v1.23
+
+    MRAData addData;
 
     addData.addInt32(flags);
     addData.addInt32(groupId);
@@ -367,7 +371,7 @@ void MRAProtocol::addToContactList(int flags, int groupId, const QString &addres
 }
 
 void MRAProtocol::removeContact(const QString &contact) {
-    addToContactList(CONTACT_FLAG_REMOVED, 0, contact, contact);
+    addToContactList(CONTACT_FLAG_REMOVED, 0, contact, contact, "please, quthorize me");
 }
 
 void MRAProtocol::readUserSataus(MRAData & data) {
@@ -547,6 +551,26 @@ void MRAProtocol::readAnketaInfo(MRAData & data) {
     this->emit userInfoLoaded( info.email(), info );
 }
 
+void MRAProtocol::deleteContact(uint id, const QString &contact, const QString &contactName) {
+    MRAData data;
+
+    data.addInt32( id );
+    data.addInt32( CONTACT_FLAG_REMOVED );
+    data.addInt32( 0 ); // don't care about group
+    data.addString( contact );
+    data.addString( contactName );
+    data.addString( QString() );
+
+    connection()->sendMsg( MRIM_CS_MODIFY_CONTACT, &data );
+}
+
+void MRAProtocol::readAddContactAck(MRAData & data) {
+    int status    = data.getInt32();
+    int contactId = data.getInt32();
+
+    emit addContactAckReceived(status, contactId);
+}
+
 void MRAProtocol::handleMessage(const ulong &msg, MRAData *data)
 {
     kWarning() << "Accepting message " << msg;
@@ -596,9 +620,12 @@ void MRAProtocol::handleMessage(const ulong &msg, MRAData *data)
             readAnketaInfo(*data);
             break;
 
+        case MRIM_CS_ADD_CONTACT_ACK:
+            readAddContactAck(*data);
+            break;
+
         case MRIM_CS_MESSAGE_STATUS:
 
-        case MRIM_CS_ADD_CONTACT_ACK:
         case MRIM_CS_MPOP_SESSION:
         // case MRIM_CS_FILE_TRANSFER_ACK:
             kWarning() << "there is no handler for " << msg;

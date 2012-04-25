@@ -154,7 +154,7 @@ typedef uint32_t mrim_msg_t;
     #define CONTACT_FLAG_IGNORE	0x00000010
     #define CONTACT_FLAG_SHADOW	0x00000020
 
-    #define CONTACT_FLAG_UNKNOWN 0x00000200 /* added by negram, used with 'remove' */
+    #define CONTACT_FLAG_UNKNOWN 0x00000200 /* added by negram, used with 'remove'. Perhaps, means "unicode name" */
 
 #define MRIM_CS_ADD_CONTACT_ACK			0x101A	// S -> C
     // UL status
@@ -189,6 +189,7 @@ typedef uint32_t mrim_msg_t;
 
 #define MRIM_CS_AUTHORIZE			0x1020	// C -> S
     // LPS user
+
 
 #define MRIM_CS_AUTHORIZE_ACK			0x1021	// S -> C
     // LPS user

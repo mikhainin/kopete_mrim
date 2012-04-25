@@ -41,7 +41,7 @@ public:
 
 
     virtual void handleMessage(const ulong &msg, MRAData *data);
-    virtual void addToContactList(int flags, int groupId, const QString &address, const QString nick);
+    virtual void addToContactList(int flags, int groupId, const QString &address, const QString &nick, const QString &authMessage);
     virtual void authorizeContact(const QString &contact);
     virtual void removeContact(const QString &contact);
 
@@ -52,8 +52,10 @@ public:
 
     virtual void loadUserInfo(const QString &contact);
 
-
     virtual void setStatus(STATUS status);
+
+    virtual void deleteContact(uint id, const QString &contact, const QString &contactName);
+
 private:
     class MRAProtocolPrivate;
     MRAProtocolPrivate *d;
@@ -81,6 +83,8 @@ protected:
     virtual void readAnketaInfo(MRAData & data);
     int statusToInt(STATUS status);
 
+    virtual void readAddContactAck(MRAData & data);
+
 private slots:
     void slotPing();
     void slotOnDataFromServer();
@@ -104,6 +108,8 @@ signals:
 
     void avatarLoaded(const QString &contact, const QImage &image);
     void userInfoLoaded(const QString &contact, const MRAContactInfo &info);
+
+    void addContactAckReceived(int status, int contactId);
 };
 
 #endif

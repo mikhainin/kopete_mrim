@@ -44,6 +44,8 @@ signals:
 
 public slots:
 
+    void deleteContact();
+
     void sendMessage( Kopete::Message &message );
     void slotTypingTimeOut();
     void slotChatSessionDestroyed();

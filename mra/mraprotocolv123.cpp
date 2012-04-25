@@ -1,5 +1,6 @@
 #include <kdebug.h>
 #include <QCryptographicHash>
+#include <QTextCodec>
 
 #include "mradata.h"
 #include "mraconnection.h"
@@ -229,6 +230,65 @@ void MRAProtocolV123::readAnketaInfo(MRAData & data) {
     this->emit userInfoLoaded( info.email(), info );
 }
 
+/* void MRAProtocolV123::authorizeContact(const QString &contact) {
+    Q_UNUSED(contact);
+} */
+
+void MRAProtocolV123::addToContactList(int flags, int groupId, const QString &address, const QString &nick, const QString &authMessage) {
+/*
+#define MRIM_CS_ADD_CONTACT			0x1019	// C -> S
+    // added by negram. since v1.23:
+    //
+    // UL flags (group(2) or usual(0)
+    // UL group id (unused if contact is group)
+    // LPS contact
+    // LPS name (unicode)
+    // LPS unused
+    // LPS authorization message, 'please, authorize me': base64(unicode(message))
+    // UL ??? (0x00000001)
+*/
+    MRAData addData;
+
+    addData.addInt32(flags);
+    addData.addInt32(groupId);
+    addData.addString(address);
+    addData.addUnicodeString(nick);
+    addData.addString(""); // unused
+
+    QTextCodec *codec = QTextCodec::codecForName("UTF-16LE");
+    QByteArray data = codec->fromUnicode(authMessage);
+
+    addData.addString( data.toBase64() );
+
+    addData.addInt32( 1 );
+
+    connection()->sendMsg(MRIM_CS_ADD_CONTACT, &addData);
+}
+
+void MRAProtocolV123::deleteContact(uint id, const QString &contact, const QString &contactName) {
+    kWarning() << __PRETTY_FUNCTION__;
+/*
+
+#define MRIM_CS_MODIFY_CONTACT			0x101B	// C -> S
+    // UL id
+    // UL flags - same as for MRIM_CS_ADD_CONTACT
+    // UL group id (unused if contact is group)
+    // LPS contact
+    // LPS name
+    // LPS unused
+    */
+    MRAData data;
+
+    data.addInt32( id );
+    data.addInt32( CONTACT_FLAG_REMOVED | CONTACT_FLAG_UNKNOWN );
+    data.addInt32( 0 ); // don't care about group
+    data.addString( contact );
+    data.addUnicodeString( contact );
+    data.addString( QString() );
+
+    connection()->sendMsg( MRIM_CS_MODIFY_CONTACT, &data );
+}
+
 QVector<QVariant> MRAProtocolV123::readVectorByMask(MRAData & data, const QString &mask)
 {
     QVector<QVariant> result;
@@ -239,6 +299,7 @@ QVector<QVariant> MRAProtocolV123::readVectorByMask(MRAData & data, const QStrin
     if (localMask.length() > 5) {
         // user's mask
         localMask[3] = 'S';
+        localMask[8] = 'S';
     } else {
         // group's mask
         localMask[1] = 'S';
@@ -247,15 +308,15 @@ QVector<QVariant> MRAProtocolV123::readVectorByMask(MRAData & data, const QStrin
     for (int k = 0; k < localMask.length(); ++k) {
         if (localMask[k] == 'u') {
             _int = data.getInt32();
-            // kWarning() << "u=" << _int;
+            kWarning() << "u=" << _int;
             result.push_back(_int);
         } else if (localMask[k] == 's') {
             _string = data.getString( );
-            // kWarning() << "s=" << _string;
+            kWarning() << "s=" << _string;
             result.push_back(_string);
         } else if (localMask[k] == 'S') {
             _string = data.getUnicodeString( );
-            // kWarning() << "S=" << _string;
+            kWarning() << "S=" << _string;
             result.push_back(_string);
         }
     }
