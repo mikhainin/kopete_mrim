@@ -7,6 +7,7 @@
 #include <kopeteaccount.h>
 
 #include "mra/mraprotocol.h"
+#include "mra/mraprotocolv123.h"
 #include "mra/mra_proto.h"
 #include "mra/mracontactlist.h"
 #include "mra/mraofflinemessage.h"
@@ -15,9 +16,20 @@
 #include "mrimcontact.h"
 #include "mrimaccount.h"
 
+struct MrimAccount::Private {
+    QByteArray username;
+    QByteArray password;
+    MRAProtocol *mraProto;
+    MRAContactListEntry adding;
+    MRAContactList contactList;
+
+    Private() : mraProto(0) {
+    }
+};
+
 MrimAccount::MrimAccount( MrimProtocol *parent, const QString& accountID )
     : Kopete::Account(parent, accountID)
-    , m_mraProto(0)
+    , d(new Private)
 {
     kWarning() << __PRETTY_FUNCTION__;
     // Init the myself contact
@@ -39,6 +51,8 @@ MrimAccount::~MrimAccount()
 
     if (isConnected())
         disconnect();
+
+    delete d;
 }
 
 bool MrimAccount::createContact(const QString& contactId, Kopete::MetaContact* parentContact)
@@ -54,50 +68,54 @@ void MrimAccount::connect( const Kopete::OnlineStatus& /*initialStatus*/ )
     kWarning() << __PRETTY_FUNCTION__;
 
 
-    if (username.isEmpty())
+    if (d->username.isEmpty())
         return;
 
-    m_groups.clear();
+    d->contactList = MRAContactList();
+    d->adding      = MRAContactListEntry();
 
-    m_mraProto = new MRAProtocol(this);
+    d->mraProto = new MRAProtocolV123(this); /// @todo: make the protocol's version optional
 
-    QObject::connect(m_mraProto, SIGNAL(contactListReceived(MRAContactList)),
-            this, SLOT(slotContactListReceived(MRAContactList)) );
+    QObject::connect(d->mraProto, SIGNAL(contactListReceived(MRAContactList)),
+            this, SLOT(slotReceivedContactList(MRAContactList)) );
 
-    QObject::connect(m_mraProto, SIGNAL( messageReceived(QString,QString)),
+    QObject::connect(d->mraProto, SIGNAL( messageReceived(QString,QString)),
             this, SLOT( slotReceivedMessage(QString,QString) ) ) ;
 
-    QObject::connect(m_mraProto, SIGNAL(connected()),
+    QObject::connect(d->mraProto, SIGNAL(connected()),
             this, SLOT( slotConnected() ) ) ;
 
-    QObject::connect(m_mraProto, SIGNAL(loginFailed(QString)),
+    QObject::connect(d->mraProto, SIGNAL(loginFailed(QString)),
             this, SLOT( slotLoginFailed(QString) ) ) ;
 
-    QObject::connect(m_mraProto, SIGNAL(disconnected(QString)),
+    QObject::connect(d->mraProto, SIGNAL(disconnected(QString)),
                      this, SLOT( slotDisconnected(QString) ) ) ;
 /*
-    QObject::connect(m_mraProto, SIGNAL(authorizeAckReceived(QString)),
+    QObject::connect(d->mraProto, SIGNAL(authorizeAckReceived(QString)),
                      this, SLOT( slotAuthorizeAckReceived(QString) ) );
 */
-    QObject::connect(m_mraProto, SIGNAL(authorizeRequestReceived(QString,QString)),
+    QObject::connect(d->mraProto, SIGNAL(authorizeRequestReceived(QString,QString)),
                      this, SLOT(authorizeRequestReceived(QString,QString)) );
 
-    QObject::connect(m_mraProto, SIGNAL(userStatusChanged(QString,int)),
+    QObject::connect(d->mraProto, SIGNAL(userStatusChanged(QString,int)),
                      this, SLOT( slotUserStatusChanged(QString,int) ) );
 
-    QObject::connect(m_mraProto, SIGNAL(typingAMessage(QString)),
+    QObject::connect(d->mraProto, SIGNAL(typingAMessage(QString)),
                      this, SLOT( slotTypingAMessage(QString)) );
 
-    QObject::connect(m_mraProto, SIGNAL(offlineReceived(MRAOfflineMessage)),
+    QObject::connect(d->mraProto, SIGNAL(offlineReceived(MRAOfflineMessage)),
                      this, SLOT(slotReceivedOfflineMessage(MRAOfflineMessage)) );
 
-    QObject::connect(m_mraProto, SIGNAL(avatarLoaded(QString,QImage)),
+    QObject::connect(d->mraProto, SIGNAL(avatarLoaded(QString,QImage)),
                      this, SLOT(slotAvatarLoaded(QString,QImage)) );
 
-    QObject::connect(m_mraProto, SIGNAL(userInfoLoaded(QString,MRAContactInfo)),
+    QObject::connect(d->mraProto, SIGNAL(userInfoLoaded(QString,MRAContactInfo)),
                      this, SLOT(slotUserInfoLoaded(QString,MRAContactInfo)) );
 
-    if (m_mraProto->makeConnection(QString(username).toStdString(), QString(password).toStdString()) ) {
+    QObject::connect(d->mraProto, SIGNAL(addContactAckReceived(int,int)),
+                     this, SLOT(slotAddContactAckReceived(int,int)) );
+
+    if (d->mraProto->makeConnection(QString(d->username), QString(d->password)) ) {
         kWarning() << "connecting...";
     } else {
         kWarning() << "connect problems.";
@@ -115,7 +133,8 @@ void MrimAccount::slotDisconnected(const QString &reason) {
     /// @todo show the reason as notification
     myself()->setOnlineStatus( MrimProtocol::protocol()->mrimOffline );
 
-    m_groups.clear();
+    // d->groups.clear();
+    d->contactList = MRAContactList();
     // Kopete::Account::DisconnectReason reason;
 
     Kopete::Account::disconnected( Kopete::Account::OtherClient ); /// fixme
@@ -126,7 +145,7 @@ void MrimAccount::slotLoginFailed(const QString &reason) {
     /// @todo show the reason as notification
     myself()->setOnlineStatus( MrimProtocol::protocol()->mrimOffline );
 
-    m_groups.clear();
+    d->contactList = MRAContactList();
 
 }
 
@@ -138,19 +157,19 @@ void MrimAccount::authorizeRequestReceived(const QString &from, const QString &t
                                QMessageBox::Yes | QMessageBox::No );
 
     if ( answer == QMessageBox::Yes ) {
-        m_mraProto->authorizeContact(from);
-        m_mraProto->addToContactList(0, 0, from, from);
+        d->mraProto->authorizeContact(from);
+        d->mraProto->addToContactList( 0, 0, from, from, tr("Please, authorize me.") );
     }
 
 }
 
 void MrimAccount::disconnect()
 {
-    if (m_mraProto) {
+    if (d->mraProto) {
         kWarning() << __PRETTY_FUNCTION__;
-        m_mraProto->closeConnection();
-        m_mraProto->deleteLater();
-        m_mraProto = 0;
+        d->mraProto->closeConnection();
+        d->mraProto->deleteLater();
+        d->mraProto = 0;
     }
     myself()->setOnlineStatus( MrimProtocol::protocol()->mrimOffline );
 }
@@ -189,11 +208,11 @@ void MrimAccount::setAway(bool away, const QString& reason)
     if (!isConnected()) {
         connect();
     }
-    if ( m_mraProto ) {
+    if ( d->mraProto ) {
         if (away) {
-            m_mraProto->setStatus(STATUS_AWAY);
+            d->mraProto->setStatus(MRAProtocol::AWAY);
         } else {
-            m_mraProto->setStatus(STATUS_ONLINE);
+            d->mraProto->setStatus(MRAProtocol::ONLINE);
         }
     }
     if (away) {
@@ -213,7 +232,7 @@ void MrimAccount::slotGoOnline ()
         connect();
     else {
         myself()->setOnlineStatus( MrimProtocol::protocol()->mrimOnline );
-        m_mraProto->setStatus(STATUS_ONLINE);
+        d->mraProto->setStatus(MRAProtocol::ONLINE);
     }
 }
 
@@ -231,48 +250,46 @@ void MrimAccount::slotGoOffline()
 void MrimAccount::slotGoAway()
 {
     kWarning() << __PRETTY_FUNCTION__;
-    if ( m_mraProto ) {
-        m_mraProto->setStatus(STATUS_AWAY);
+    if ( d->mraProto ) {
+        d->mraProto->setStatus(MRAProtocol::AWAY);
     }
     myself()->setOnlineStatus( MrimProtocol::protocol()->mrimAway );
 }
 
 void MrimAccount::parseConfig()
 {
-    username = configGroup()->readEntry("username").toLocal8Bit();
-    password = configGroup()->readEntry("password").toLocal8Bit();
+    d->username = configGroup()->readEntry("username").toLocal8Bit();
+    d->password = configGroup()->readEntry("password").toLocal8Bit();
 //	lastName = configGroup()->readEntry("lastName").toLocal8Bit();
 //	emailAddress = configGroup()->readEntry("emailAddress").toLocal8Bit();
 }
 
 void MrimAccount::setUsername(const QByteArray &arg)
 {
-    username = arg;
+    d->username = arg;
 }
 
 const QByteArray MrimAccount::getUsername() const
 {
-    return username;
+    return d->username;
 }
 
 void MrimAccount::setPassword(const QByteArray &arg)
 {
-    password = arg;
+    d->password = arg;
 }
 
 const QByteArray MrimAccount::getPassword() const
 {
-    return password;
+    return d->password;
 }
 
 
-void MrimAccount::slotContactListReceived(const MRAContactList &list) {
+void MrimAccount::slotReceivedContactList(const MRAContactList &list) {
 
-    kWarning() << __PRETTY_FUNCTION__;
+    kDebug() << __PRETTY_FUNCTION__;
 
-    for( int i = 0; i < list.groups().count(); ++i ) {
-        m_groups.push_back( list.groups()[i].name );
-    }
+    d->contactList = list;
 
     for( int i = 0; i < list.count(); ++i ) {
         const MRAContactListEntry &item = list[i];
@@ -298,11 +315,17 @@ void MrimAccount::slotContactListReceived(const MRAContactList &list) {
 void MrimAccount::addNewContactToServerList(const QString &email, const QString &nick, const QString &groupName) {
     int flags = 0;
 
-    int gid = m_groups.indexOf(groupName);
+    int gid = d->contactList.groups().indexOf(groupName);
 
     kWarning() << flags << gid << email << groupName;
 
-    m_mraProto->addToContactList( flags, gid, email, nick );
+    d->adding = MRAContactListEntry(-1);
+    d->adding.setFlags(flags);
+    d->adding.setNick(nick);
+    d->adding.setGroup(gid);
+    d->adding.setAddress(email);
+
+    d->mraProto->addToContactList( flags, gid, email, nick, tr("Please, authorize me.") );
 }
 
 void MrimAccount::slotUserStatusChanged(const QString &user, int newStatus) {
@@ -323,13 +346,16 @@ Kopete::OnlineStatus MrimAccount::mrimStatusToKopete(int mrimStatus) {
     switch(mrimStatus) {
 
     case STATUS_ONLINE:
-        return  p->mrimOnline; // Kopete::OnlineStatus::Online;
+        return  p->mrimOnline;
 
     case STATUS_OFFLINE:
         return Kopete::OnlineStatus::Offline;
 
     case STATUS_AWAY:
         return Kopete::OnlineStatus::Away;
+
+    case STATUS_DONT_DISTRUB:
+        return Kopete::OnlineStatus::Busy;
 
     case STATUS_FLAG_INVISIBLE:
         return Kopete::OnlineStatus::Invisible;
@@ -343,7 +369,7 @@ Kopete::OnlineStatus MrimAccount::mrimStatusToKopete(int mrimStatus) {
 }
 
 void MrimAccount::sendMessage(const QString &to, const QString &text) {
-    m_mraProto->sendText(to, text);
+    d->mraProto->sendText(to, text);
 }
 
 void MrimAccount::slotReceivedMessage( const QString &from, const QString &text )
@@ -383,20 +409,22 @@ void MrimAccount::slotTypingAMessage( const QString &from ) {
 }
 
 void MrimAccount::contactTypingAMessage( const QString &to ) {
-    m_mraProto->sendTypingMessage(to);
+    if (d->mraProto) {
+        d->mraProto->sendTypingMessage(to);
+    }
 }
 
 void MrimAccount::loadAvatar( const QString &email) {
-    if (m_mraProto) {
+    if (d->mraProto) {
         kWarning() << email;
-        m_mraProto->loadAvatar( email );
+        d->mraProto->loadAvatar( email );
     }
 }
 
 void MrimAccount::loadPhoto( const QString &email, QObject *receiver, const char *member ) {
-    if (m_mraProto) {
+    if (d->mraProto) {
         kWarning() << email;
-        m_mraProto->loadAvatar( email, true, receiver, member );
+        d->mraProto->loadAvatar( email, true, receiver, member );
     } else {
         kWarning() << "there's undefined connection" << email;
     }
@@ -416,7 +444,7 @@ void MrimAccount::slotAvatarLoaded(const QString &contact, const QImage &image) 
 }
 
 void MrimAccount::loadUserInfo( const QString &email ) {
-    m_mraProto->loadUserInfo(email);
+    d->mraProto->loadUserInfo(email);
 }
 
 void MrimAccount::slotUserInfoLoaded(const QString &contact, const MRAContactInfo &info) {
@@ -428,6 +456,38 @@ void MrimAccount::slotUserInfoLoaded(const QString &contact, const MRAContactInf
     } else {
         kWarning() << "user was not found" << contact;
     }
+}
+
+void MrimAccount::deleteContact( const QString &email ) {
+    const MRAContactListEntry *ce = d->contactList.getByAddress( email );
+
+    if ( ce ) {
+        d->mraProto->deleteContact( ce->id(), ce->address(), ce->nick() );
+    }
+}
+
+
+void MrimAccount::slotAddContactAckReceived(int status, int contactId) {
+
+    if (d->adding.id() == -1) {
+        return;
+    }
+
+    QString groupName = d->contactList.groups()[ d->adding.group() ].name;
+
+    Kopete::Group *g=Kopete::ContactList::self()->findGroup(groupName);
+
+    Kopete::MetaContact *mc = addContact(d->adding.address(), d->adding.nick(), g, Kopete::Account::ChangeKABC);
+
+    MrimContact *c = (MrimContact *) mc->findContact( // ???
+                    protocol()->pluginId(),
+                    accountId(),
+                    d->adding.address()
+                );
+
+    c->setOnlineStatus( mrimStatusToKopete(d->adding.status()) );
+
+    d->adding = MRAContactListEntry();
 
 }
 

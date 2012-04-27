@@ -132,7 +132,7 @@ void MrimContact::typingMessage() {
 void MrimContact::slotTypingTimeOut() {
     manager(CanCreate)->receivedTypingMsg( this, false );
     m_typingTimer->deleteLater();
-
+    m_typingTimer = 0;
 }
 
 void MrimContact::slotMyselfTyping(bool typing) {
@@ -216,6 +216,14 @@ void MrimContact::avatarLoaded(const QImage &avatar) {
         setProperty( MrimProtocol::protocol()->propPhoto, entry.dataPath );
     }
 
+}
+
+void MrimContact::deleteContact() {
+
+    MrimAccount *a = dynamic_cast<MrimAccount*>( account() );
+    a->deleteContact( contactId() );
+
+    Kopete::Contact::deleteContact();
 }
 
 #include "mrimcontact.moc"

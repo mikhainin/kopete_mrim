@@ -1,4 +1,5 @@
 #include <QtCore>
+#include <QTextCodec>
 #include <string>
 #include "mradata.h"
 
@@ -65,6 +66,14 @@ void MRAData::addData(const void *data_, ssize_t size)
     m_data.append(static_cast<const char*>(data_), size);
 }
 
+void MRAData::addData(const QByteArray &data) {
+    m_data.append(data);
+}
+
+void MRAData::addBinaryString(const QByteArray &data) {
+    addInt32(data.size());
+    addData(data);
+}
 
 /*!
     \fn MRAData::addInt32(long int value)
@@ -103,12 +112,12 @@ quint32 MRAData::getInt32()
     if (m_pointer <= (getSize() - static_cast<int>(sizeof result)) ) {
 
         result     = *(quint32*)(getData() + m_pointer) ;
-
+/*
         std::cout << std::hex << static_cast< unsigned int >( *(getData() + m_pointer) )<< " " <<
                      static_cast< unsigned int >( *(getData() + m_pointer+1) )<< " " <<
                      static_cast< unsigned int >( *(getData() + m_pointer+2) )<< " " <<
                      static_cast< unsigned int >( *(getData() + m_pointer+3) ) << " = " << std::dec << result
-                     << std::endl;
+                     << std::endl; */
         m_pointer +=  sizeof(result);
     }
     return result;
@@ -122,6 +131,35 @@ QString MRAData::getString()
         CodecHolder holder("Windows-1251");
 
         QString result = QString::fromAscii( m_data.mid(m_pointer, len).constData() );
+
+        m_pointer += len;
+
+        return result;
+    } else {
+        return QString();
+    }
+}
+
+void MRAData::addUnicodeString(const QString &str) {
+
+    QTextCodec *codec = QTextCodec::codecForName("UTF-16LE");
+
+    QByteArray ba = codec->fromUnicode(str);
+
+    ba = ba.remove(0, 2); // remove BOM (Byte Order Mark)
+
+    addInt32(ba.size());
+    addData(ba.constData(), ba.size());
+
+}
+
+QString MRAData::getUnicodeString() {
+    int len = getInt32();
+
+    if (m_data.size() >= (m_pointer + len)) {
+        CodecHolder holder("UTF-16LE");
+
+        QString result = QString::fromAscii( m_data.mid(m_pointer, len).constData(), len );
 
         m_pointer += len;
 

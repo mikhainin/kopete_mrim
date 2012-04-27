@@ -99,6 +99,8 @@ public:
 
     void loadUserInfo( const QString &email );
 
+    void deleteContact( const QString &email );
+
 signals:
 
 public slots:
@@ -124,7 +126,7 @@ public slots:
     void slotTypingAMessage( const QString &from );
 private slots:
 
-    void slotContactListReceived(const MRAContactList &list);
+    void slotReceivedContactList(const MRAContactList &list);
 
     void slotConnected();
     void slotDisconnected(const QString &reason);
@@ -138,11 +140,11 @@ private slots:
 
     void slotUserInfoLoaded(const QString &contact, const MRAContactInfo &info);
 
+    void slotAddContactAckReceived(int status, int contactId);
+
 private:
-    QByteArray username;
-    QByteArray password;
-    MRAProtocol *m_mraProto;
-    QVector<QString> m_groups;
+    class Private;
+    Private *d;
 
     Kopete::OnlineStatus mrimStatusToKopete(int mrimStatus);
 };

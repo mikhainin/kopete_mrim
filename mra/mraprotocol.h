@@ -1,12 +1,6 @@
 #ifndef MRAPROTOCOL_H
 #define MRAPROTOCOL_H
 
-// #include "mra_proto.h"
-// #include "mradata.h"
-// #include "mraconnection.h"
-// #include "mracontactlist.h"
-// #include "mraofflinemessage.h"
-
 #include <QObject>
 
 class QImage;
@@ -17,58 +11,79 @@ class MRAAvatarLoader;
 class MRAData;
 class MRAOfflineMessage;
 class MRAContactList;
+class MRAConnection;
+class MRAContactListEntry;
 
 class MRAProtocol : public QObject
 {
     Q_OBJECT
 
 public:
+
+    enum STATUS {
+        OFFLINE,
+        ONLINE,
+        AWAY,
+        DONT_DISTRUB,
+        CHATTY,
+        INVISIBLE
+    };
+
     MRAProtocol(QObject *parent = 0);
 
     ~MRAProtocol();
 
-    bool makeConnection(const std::string &login, const std::string &password);
-    void closeConnection();
+    virtual bool makeConnection(const QString &login, const QString &password);
+    virtual void closeConnection();
 
-    void sendText(const QString &to, const QString &text);
-
-
-
-    void handleMessage(const u_long &msg, MRAData *data);
-    void addToContactList(int flags, int groupId, const QString &address, const QString nick);
-    void authorizeContact(const QString &contact);
-    void removeContact(const QString &contact);
-
-    void sendTypingMessage(const QString &contact);
-
-    void loadAvatar(const QString &contact, bool large = false, QObject *receiver = 0, const char *member = 0);
-    void loadAvatarLoop();
-
-    void loadUserInfo(const QString &contact);
+    virtual void sendText(const QString &to, const QString &text);
 
 
-    void setStatus(int status);
+
+    virtual void handleMessage(const ulong &msg, MRAData *data);
+    virtual void addToContactList(int flags, int groupId, const QString &address, const QString &nick, const QString &authMessage);
+    virtual void authorizeContact(const QString &contact);
+    virtual void removeContact(const QString &contact);
+
+    virtual void sendTypingMessage(const QString &contact);
+
+    virtual void loadAvatar(const QString &contact, bool large = false, QObject *receiver = 0, const char *member = 0);
+    virtual void loadAvatarLoop();
+
+    virtual void loadUserInfo(const QString &contact);
+
+    virtual void setStatus(STATUS status);
+
+    virtual void deleteContact(uint id, const QString &contact, const QString &contactName);
+
 private:
     class MRAProtocolPrivate;
     MRAProtocolPrivate *d;
 
-private:
-    void sendHello();
-    void sendLogin(const std::string &login, const std::string &password);
-    QVector<QVariant> readVectorByMask(MRAData & data, const QString &mask);
+protected:
+    MRAConnection *connection();
+    virtual void sendHello();
+    virtual void sendLogin(const QString &login, const QString &password);
+    virtual void readLoginAck(MRAData & data);
 
-    void readContactList(MRAData & data);
-    void readUserInfo(MRAData & data);
-    void readMessage(MRAData & data);
-    void readAuthorizeAck(MRAData & data);
-    void readConnectionRejected(MRAData & data);
-    void readLogoutMessage(MRAData & data);
-    void readUserSataus(MRAData & data);
-    void readConnectionParams(MRAData & data);
-    void readOfflineMessage(MRAData & data);
-    void emitOfflineMessagesReceived();
+    virtual QVector<QVariant> readVectorByMask(MRAData & data, const QString &mask);
+    virtual void fillUserInfo(QVector<QVariant> &protoData, MRAContactListEntry &item);
 
-    void readAnketaInfo(MRAData & data);
+    virtual void readContactList(MRAData & data);
+    virtual void readUserInfo(MRAData & data);
+    virtual void readMessage(MRAData & data);
+    virtual void readAuthorizeAck(MRAData & data);
+    virtual void readConnectionRejected(MRAData & data);
+    virtual void readLogoutMessage(MRAData & data);
+    virtual void readUserSataus(MRAData & data);
+    virtual void readConnectionParams(MRAData & data);
+    virtual void readOfflineMessage(MRAData & data);
+    virtual void emitOfflineMessagesReceived();
+
+    virtual void readAnketaInfo(MRAData & data);
+    int statusToInt(STATUS status);
+
+    virtual void readAddContactAck(MRAData & data);
 
 private slots:
     void slotPing();
@@ -93,6 +108,8 @@ signals:
 
     void avatarLoaded(const QString &contact, const QImage &image);
     void userInfoLoaded(const QString &contact, const MRAContactInfo &info);
+
+    void addContactAckReceived(int status, int contactId);
 };
 
 #endif

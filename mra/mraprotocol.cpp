@@ -1,6 +1,7 @@
 #include <kdebug.h>
 #include <QTimer>
-#include <QHttp>
+#include <QStringList>
+// #include <QHttp>
 
 #include "mracontactlist.h"
 #include "mraavatarloader.h"
@@ -8,6 +9,7 @@
 #include "mracontactinfo.h"
 #include "mraconnection.h"
 #include "mraofflinemessage.h"
+#include "mra_proto.h"
 
 #include "../version.h"
 
@@ -50,7 +52,11 @@ MRAProtocol::~MRAProtocol()
     delete d;
 }
 
-bool MRAProtocol::makeConnection(const std::string &login, const std::string &password)
+MRAConnection *MRAProtocol::connection() {
+    return d->connection;
+}
+
+bool MRAProtocol::makeConnection(const QString &login, const QString &password)
 {
     d->connection = new MRAConnection(this);
     if ( !d->connection->connectToHost() ) {
@@ -127,20 +133,23 @@ void MRAProtocol::readConnectionParams(MRAData & data) {
 /*!
     \fn MRAMsg::sendLogin()
  */
-void MRAProtocol::sendLogin(const std::string &login, const std::string &password)
+void MRAProtocol::sendLogin(const QString &login, const QString &password)
 {
     MRAData data;
 
-    data.addString(login.c_str());
-    data.addString(password.c_str());
+    // proto v1.07/1.08
+    data.addString(login);
+    data.addString(password);
     data.addInt32(STATUS_ONLINE);
     data.addString("Kopete MRIM plugin v" + kopeteMrimVersion() );
 
-
     d->connection->sendMsg(MRIM_CS_LOGIN2, &data);
-
 }
 
+void MRAProtocol::readLoginAck(MRAData & data) {
+    Q_UNUSED(data);
+    emit connected();
+}
 
 /*!
     \fn MRAMsg::sendMessage()
@@ -154,7 +163,7 @@ void MRAProtocol::sendText(const QString &to, const QString &text)
     data.addInt32(flags);
     data.addString(to);
     data.addString(text);
-    data.addString(" ");// RTF has not supported yet
+    data.addString(" ");// RTF is not supported yet
 
     d->connection->sendMsg(MRIM_CS_MESSAGE, &data);
 }
@@ -212,8 +221,8 @@ void MRAProtocol::readContactList(MRAData & data)
     QString gmask;
     QString umask;
 
-    gmask = data.getString(); // "us" - флаги и название
-    umask = data.getString(); // uussuus (флаги, группа, адрес, ник, серверные флаги, текущий статус в сети)
+    gmask = data.getString(); // "us" - flags and name
+    umask = data.getString(); // uussuus (flags, group num, email address, nickname, server flags, current status)
 
     kWarning() << "gmask=" << gmask << " umask=" << umask;
     ulong flags;
@@ -234,16 +243,13 @@ void MRAProtocol::readContactList(MRAData & data)
         list.groups().add(g);
     }
 
+    ulong userNumber = 20;
     while( !data.eof() ) {
-        MRAContactListEntry item;
+        MRAContactListEntry item(userNumber++);
 
         QVector<QVariant> protoData = readVectorByMask(data, umask);
-        item.setFlags(   protoData[0].toUInt() );
-        item.setGroup(   protoData[1].toUInt() );
-        item.setAddress( protoData[2].toString() );
-        item.setNick(    protoData[3].toString() );
-        item.setServerFlags( protoData[4].toUInt() );
-        item.setStatus(  protoData[5].toUInt() );
+
+        fillUserInfo(protoData, item);
 
         list.addEntry(item);
 
@@ -255,6 +261,15 @@ void MRAProtocol::readContactList(MRAData & data)
     d->contactListReceived = true;
 
     emitOfflineMessagesReceived();
+}
+
+void MRAProtocol::fillUserInfo(QVector<QVariant> &protoData, MRAContactListEntry &item) {
+    item.setFlags(   protoData[0].toUInt() );
+    item.setGroup(   protoData[1].toUInt() );
+    item.setAddress( protoData[2].toString() );
+    item.setNick(    protoData[3].toString() );
+    item.setServerFlags( protoData[4].toUInt() );
+    item.setStatus(  protoData[5].toUInt() );
 }
 
 void MRAProtocol::readUserInfo(MRAData & data)
@@ -340,8 +355,11 @@ void MRAProtocol::authorizeContact(const QString &contact) {
 
 }
 
-void MRAProtocol::addToContactList(int flags, int groupId, const QString &address, const QString nick) {
-    MRAData addData; /// TODO: use this function
+void MRAProtocol::addToContactList(int flags, int groupId, const QString &address, const QString &nick, const QString &authMessage) {
+
+    Q_UNUSED(authMessage); // in proto v1.23
+
+    MRAData addData;
 
     addData.addInt32(flags);
     addData.addInt32(groupId);
@@ -353,7 +371,7 @@ void MRAProtocol::addToContactList(int flags, int groupId, const QString &addres
 }
 
 void MRAProtocol::removeContact(const QString &contact) {
-    addToContactList(CONTACT_FLAG_REMOVED, 0, contact, contact);
+    addToContactList(CONTACT_FLAG_REMOVED, 0, contact, contact, "please, quthorize me");
 }
 
 void MRAProtocol::readUserSataus(MRAData & data) {
@@ -363,11 +381,22 @@ void MRAProtocol::readUserSataus(MRAData & data) {
     emit userStatusChanged(user, status);
 }
 
-void MRAProtocol::setStatus(int status) {
+void MRAProtocol::setStatus(STATUS status) {
     MRAData data;
-    data.addInt32(status);
+    data.addInt32(statusToInt(status));
 
     d->connection->sendMsg(MRIM_CS_CHANGE_STATUS, &data);
+}
+
+int MRAProtocol::statusToInt(STATUS status) {
+    if (status == ONLINE) {
+        return STATUS_ONLINE;
+    } else if (status == OFFLINE) {
+        return STATUS_OFFLINE;
+    } else if (status == AWAY) {
+        return STATUS_AWAY;
+    }
+    return STATUS_UNDETERMINATED;
 }
 
 void MRAProtocol::readOfflineMessage(MRAData & data) {
@@ -519,10 +548,30 @@ void MRAProtocol::readAnketaInfo(MRAData & data) {
 
     }
 
-    emit userInfoLoaded( info.email(), info );
+    this->emit userInfoLoaded( info.email(), info );
 }
 
-void MRAProtocol::handleMessage(const u_long &msg, MRAData *data)
+void MRAProtocol::deleteContact(uint id, const QString &contact, const QString &contactName) {
+    MRAData data;
+
+    data.addInt32( id );
+    data.addInt32( CONTACT_FLAG_REMOVED );
+    data.addInt32( 0 ); // don't care about group
+    data.addString( contact );
+    data.addString( contactName );
+    data.addString( QString() );
+
+    connection()->sendMsg( MRIM_CS_MODIFY_CONTACT, &data );
+}
+
+void MRAProtocol::readAddContactAck(MRAData & data) {
+    int status    = data.getInt32();
+    int contactId = data.getInt32();
+
+    emit addContactAckReceived(status, contactId);
+}
+
+void MRAProtocol::handleMessage(const ulong &msg, MRAData *data)
 {
     kWarning() << "Accepting message " << msg;
     switch (msg) {
@@ -540,7 +589,7 @@ void MRAProtocol::handleMessage(const u_long &msg, MRAData *data)
             break;
 
         case MRIM_CS_LOGIN_ACK:
-            emit connected();/// TODO: handle this event
+            readLoginAck(*data);
             return;
 
         case MRIM_CS_LOGIN_REJ:
@@ -571,9 +620,12 @@ void MRAProtocol::handleMessage(const u_long &msg, MRAData *data)
             readAnketaInfo(*data);
             break;
 
+        case MRIM_CS_ADD_CONTACT_ACK:
+            readAddContactAck(*data);
+            break;
+
         case MRIM_CS_MESSAGE_STATUS:
 
-        case MRIM_CS_ADD_CONTACT_ACK:
         case MRIM_CS_MPOP_SESSION:
         // case MRIM_CS_FILE_TRANSFER_ACK:
             kWarning() << "there is no handler for " << msg;

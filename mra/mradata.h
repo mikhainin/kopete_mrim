@@ -15,7 +15,9 @@ public:
     ~MRAData();
     void addString(const QString &str);
     QString getString();
-    QByteArray getUIDL();
+
+    void addUnicodeString(const QString &str);
+    QString getUnicodeString();
 
     void addInt32(quint32 value);
     quint32 getInt32();
@@ -23,7 +25,11 @@ public:
     const char *getData();
     int getSize() const;
     void addData(const void *data_, ssize_t size);
+    void addBinaryString(const QByteArray &data);
+    void addData(const QByteArray &data);
+
     void addUIDL(const QByteArray &str);
+    QByteArray getUIDL();
 
     bool eof() const;
 
