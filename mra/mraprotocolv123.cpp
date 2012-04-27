@@ -1,6 +1,7 @@
 #include <kdebug.h>
 #include <QCryptographicHash>
 #include <QTextCodec>
+#include <QByteArray>
 
 #include "mradata.h"
 #include "mraconnection.h"
@@ -78,7 +79,15 @@ void MRAProtocolV123::readMessage(MRAData & data) {
     QString from = data.getString();
     QString text;
     if (flags & MESSAGE_FLAG_UNICODE) {
-        text = data.getUnicodeString();
+        if (flags & MESSAGE_FLAG_AUTHORIZE) {
+            QTextCodec *codec = QTextCodec::codecForName("UTF-16LE");
+
+
+            text = codec->toUnicode( QByteArray::fromBase64(data.getString().toAscii()) );
+
+        } else {
+            text = data.getUnicodeString();
+        }
     } else {
         text = data.getString();
     }
