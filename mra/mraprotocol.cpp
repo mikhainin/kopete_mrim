@@ -638,9 +638,9 @@ void MRAProtocol::handleMessage(const ulong &msg, MRAData *data)
 }
 
 void MRAProtocol::slotPing() {
-    kWarning() << "sending ping";
+    kDebug() << "sending ping";
     d->connection->sendMsg(MRIM_CS_PING, NULL);
-    kDebug() << "ping sent";
+
 }
 
 void MRAProtocol::slotOnDataFromServer() {
