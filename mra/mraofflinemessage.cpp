@@ -244,7 +244,7 @@ void MRAOfflineMessage::parseTextPart(MessagePart &mainPart, MessagePart &textPa
         m_text = codec->toUnicode(data);
     }
 
-    if ( mainPart.hasHeader("Sender") || mainPart.hasHeader("Subject") ) {
+    if ( !mainPart.subject().isEmpty() || mainPart.hasHeader("Sender") ) {
         m_text = mainPart.subject() + '(' + mainPart.header("Sender") + "):\n" + m_text;
     }
 
