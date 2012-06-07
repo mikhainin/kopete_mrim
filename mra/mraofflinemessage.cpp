@@ -135,7 +135,10 @@ void MRAOfflineMessage::parse(const QString &rfc822) {
 
     m_date      = KDateTime::fromString(message.header("Date"), KDateTime::RFCDate);
     m_from      = message.header("From");
-    m_subject   = message.header("Subject");
+
+    if (message.hasHeader("Subject")) {
+        m_subject   = message.header("Subject");
+    }
 
     QStringList version;
     if (message.hasHeader("Version")) {
@@ -244,7 +247,7 @@ void MRAOfflineMessage::parseTextPart(MessagePart &mainPart, MessagePart &textPa
         m_text = codec->toUnicode(data);
     }
 
-    if ( mainPart.hasHeader("Sender") || mainPart.hasHeader("Subject") ) {
+    if ( !mainPart.subject().isEmpty() || mainPart.hasHeader("Sender") ) {
         m_text = mainPart.subject() + '(' + mainPart.header("Sender") + "):\n" + m_text;
     }
 
