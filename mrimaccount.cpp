@@ -36,11 +36,6 @@ MrimAccount::MrimAccount( MrimProtocol *parent, const QString& accountID )
     setMyself( new MrimContact( this, accountId(), accountId(), Kopete::ContactList::self()->myself() ) );
     myself()->setOnlineStatus( MrimProtocol::protocol()->mrimOffline );
 
-        // group = Kopete::ContactList::self()->findGroup("MRIM");
-
-    // Clean out Contacts from last time when kopete starts up
-    // wipeOutAllContacts();
-
     parseConfig();
 
 }
@@ -155,8 +150,34 @@ void MrimAccount::authorizeRequestReceived(const QString &from, const QString &t
                                QMessageBox::Yes | QMessageBox::No );
 
     if ( answer == QMessageBox::Yes ) {
-        d->mraProto->authorizeContact(from);
+
+        d->adding = MRAContactListEntry(-1);
+
+        d->adding.setFlags(0);
+        d->adding.setGroup(0);
+        d->adding.setNick(from);
+        d->adding.setAddress(from);
+
+
+        QString groupName = d->contactList.groups()[ d->adding.group() ].name;
+
+        Kopete::Group *g=Kopete::ContactList::self()->findGroup(groupName);
+
+        Kopete::MetaContact *mc = addContact(d->adding.address(), d->adding.nick(), g, Kopete::Account::ChangeKABC);
+        (MrimContact *) mc->findContact(
+                        protocol()->pluginId(),
+                        accountId(),
+                        d->adding.address()
+                    );
+
+
         d->mraProto->addToContactList( 0, 0, from, from, myself()->contactId(), tr("Please, authorize me.") );
+        d->mraProto->authorizeContact(from);
+
+
+
+        kWarning() << "contact:" << d->adding.address() << d->adding.address() << d->adding.status() << d->adding.group();
+
     }
 
 }
@@ -262,8 +283,7 @@ void MrimAccount::parseConfig()
 {
     d->username = configGroup()->readEntry("username").toLocal8Bit();
     d->password = configGroup()->readEntry("password").toLocal8Bit();
-//	lastName = configGroup()->readEntry("lastName").toLocal8Bit();
-//	emailAddress = configGroup()->readEntry("emailAddress").toLocal8Bit();
+
 }
 
 void MrimAccount::setUsername(const QByteArray &arg)
@@ -478,10 +498,11 @@ void MrimAccount::slotAddContactAckReceived(int status, int contactId) {
         return;
     }
 
-    QString groupName = d->contactList.groups()[ d->adding.group() ].name;
-
-    if (!addContact(d->adding.address(), d->addingMetacontact, Kopete::Account::ChangeKABC)) {
-        kWarning() << "Can't add contact";
+    if (d->addingMetacontact) {
+        if (!addContact(d->adding.address(), d->addingMetacontact, Kopete::Account::ChangeKABC)) {
+            kWarning() << "Can't add contact";
+            return;
+        }
     }
 
     d->adding.setId(contactId);
