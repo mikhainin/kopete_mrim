@@ -3,8 +3,6 @@ v0.1
 
 v0.2
 [kopete] show disconnect reason in the notification area
-[ui]     add contacts to list on receiving AUTH_ACK (without reconnect)
-[ui]     add contacts after authorization accept
 [proto]  user's (myself) status change
 [kopete] avatars updating
 [proto]  move contacts between groups

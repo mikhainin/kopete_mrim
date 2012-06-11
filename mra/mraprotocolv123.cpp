@@ -189,7 +189,7 @@ void MRAProtocolV123::readUserSataus(MRAData & data) {
 
     QString client      = data.getString(); // client="magent" version="5.10" build="5309"
 
-    kWarning() << statusTitle << str << int1 << user << int2 << client;
+    kWarning() <<status<< statusTitle << str << int1 << user << int2 << client;
 
     emit userStatusChanged(user, status);
 }
