@@ -135,7 +135,10 @@ void MRAOfflineMessage::parse(const QString &rfc822) {
 
     m_date      = KDateTime::fromString(message.header("Date"), KDateTime::RFCDate);
     m_from      = message.header("From");
-    m_subject   = message.header("Subject");
+
+    if (message.hasHeader("Subject")) {
+        m_subject   = message.header("Subject");
+    }
 
     QStringList version;
     if (message.hasHeader("Version")) {
