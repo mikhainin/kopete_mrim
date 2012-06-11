@@ -143,6 +143,12 @@ void MrimAccount::slotLoginFailed(const QString &reason) {
 }
 
 void MrimAccount::authorizeRequestReceived(const QString &from, const QString &text) {
+
+    if (d->contactList.getByAddress(from) || (d->adding.address() == from) )  {
+        d->mraProto->authorizeContact(from);
+        return;
+    }
+
     QMessageBox::StandardButton answer =
         QMessageBox::question( 0,
                                "Authorization request",
