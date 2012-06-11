@@ -12,29 +12,62 @@
 #include "mrimprotocol.h"
 #include "mrimcontact.h"
 
+struct MrimContact::Private {
+    Kopete::ChatSession* msgManager;
+    QTimer *typingTimer;
+    QTimer *myselfTypingTimer;
+    ContactInfo *infoDialog;
+    KAction *requestForAuthorization;
+
+    Private()
+        : msgManager(NULL)
+        , typingTimer(0)
+        , myselfTypingTimer(0)
+        , infoDialog(0) {
+    }
+
+};
+
 MrimContact::MrimContact( Kopete::Account* _account, const QString &uniqueName,
                           const QString &displayName,
                           Kopete::MetaContact *parent )
     : Kopete::Contact( _account, uniqueName, parent, QString("mrim_protocol") )
-    , m_msgManager(NULL)
-    , m_typingTimer(0)
-    , m_myselfTypingTimer(0)
-    , m_infoDialog(0)
+    , d(new Private)
 {
     kDebug()<< " uniqueName: " << uniqueName << ", displayName: " << displayName;
-    kWarning() << __PRETTY_FUNCTION__;
 
     QTimer::singleShot( 10 * 1000, this, SLOT(slotLoadAvatar()) );
 
+    d->requestForAuthorization = new KAction( KIcon("mail-reply-sender"), tr( "(Re)request Authorization From" ), this );
+    connect( d->requestForAuthorization, SIGNAL(triggered(bool)), this, SLOT(slotPerformRequestForAuthorization()) );
+
+}
+
+MrimContact::~MrimContact() {
+    delete d;
+}
+
+void MrimContact::slotPerformRequestForAuthorization() {
+    kWarning() << __PRETTY_FUNCTION__;
+    MrimAccount *a = dynamic_cast<MrimAccount*>( account() );
+    a->requestForAuthorization(contactId() );
+}
+
+QList<KAction *> *MrimContact::customContextMenuActions( Kopete::ChatSession *manager ) {
+    kWarning() << __PRETTY_FUNCTION__;
+    QList<KAction *> *list = new QList<KAction *>();
+    list->append(d->requestForAuthorization);
+
+    return list;
 }
 
 Kopete::ChatSession* MrimContact::manager( CanCreateFlags canCreateFlags )
 {
     kWarning() << __PRETTY_FUNCTION__;
 
-    if ( m_msgManager )
+    if ( d->msgManager )
     {
-        return m_msgManager;
+        return d->msgManager;
     }
     else if ( canCreateFlags == CanCreate )
     {
@@ -44,17 +77,17 @@ Kopete::ChatSession* MrimContact::manager( CanCreateFlags canCreateFlags )
 
         Kopete::ChatSession::Form form = ( Kopete::ChatSession::Small );
 
-        m_msgManager = Kopete::ChatSessionManager::self()->create(account()->myself(), contacts, protocol(), form );
+        d->msgManager = Kopete::ChatSessionManager::self()->create(account()->myself(), contacts, protocol(), form );
 
-        connect(m_msgManager, SIGNAL(messageSent(Kopete::Message&,Kopete::ChatSession*)),
+        connect(d->msgManager, SIGNAL(messageSent(Kopete::Message&,Kopete::ChatSession*)),
                 this, SLOT(sendMessage(Kopete::Message&)) );
 
-        connect(m_msgManager, SIGNAL(myselfTyping(bool)),
+        connect(d->msgManager, SIGNAL(myselfTyping(bool)),
                 this, SLOT(slotMyselfTyping(bool)) );
 
-        connect(m_msgManager, SIGNAL(destroyed()), this, SLOT(slotChatSessionDestroyed()));
+        connect(d->msgManager, SIGNAL(destroyed()), this, SLOT(slotChatSessionDestroyed()));
 
-        return m_msgManager;
+        return d->msgManager;
     }
     else
     {
@@ -67,7 +100,7 @@ Kopete::ChatSession* MrimContact::manager( CanCreateFlags canCreateFlags )
 
 void MrimContact::slotChatSessionDestroyed()
 {
-    m_msgManager = 0;
+    d->msgManager = 0;
 }
 
 void MrimContact::sendMessage( Kopete::Message &message )
@@ -115,39 +148,39 @@ void MrimContact::receivedOfflineMessage( const MRAOfflineMessage &message ) {
 }
 
 void MrimContact::typingMessage() {
-    if ( m_typingTimer  ) {
-        m_typingTimer->stop();
-        m_typingTimer->deleteLater();
-        m_typingTimer = 0;
+    if ( d->typingTimer  ) {
+        d->typingTimer->stop();
+        d->typingTimer->deleteLater();
+        d->typingTimer = 0;
     }
 
     manager(CanCreate)->receivedTypingMsg( this, true );
 
-    m_typingTimer = new QTimer(this);
-    connect(m_typingTimer, SIGNAL(timeout()), this, SLOT(slotTypingTimeOut()));
-    m_typingTimer->setSingleShot(true);
-    m_typingTimer->setInterval(10 * 1000);
+    d->typingTimer = new QTimer(this);
+    connect(d->typingTimer, SIGNAL(timeout()), this, SLOT(slotTypingTimeOut()));
+    d->typingTimer->setSingleShot(true);
+    d->typingTimer->setInterval(10 * 1000);
 }
 
 void MrimContact::slotTypingTimeOut() {
     manager(CanCreate)->receivedTypingMsg( this, false );
-    m_typingTimer->deleteLater();
-    m_typingTimer = 0;
+    d->typingTimer->deleteLater();
+    d->typingTimer = 0;
 }
 
 void MrimContact::slotMyselfTyping(bool typing) {
-    if (typing && !m_myselfTypingTimer) {
-        m_myselfTypingTimer = new QTimer(this);
+    if (typing && !d->myselfTypingTimer) {
+        d->myselfTypingTimer = new QTimer(this);
 
-        connect(m_myselfTypingTimer, SIGNAL(timeout()), this, SLOT(slotMyselfTypingTimeout()));
-        m_myselfTypingTimer->setInterval(10 * 1000);
+        connect(d->myselfTypingTimer, SIGNAL(timeout()), this, SLOT(slotMyselfTypingTimeout()));
+        d->myselfTypingTimer->setInterval(10 * 1000);
 
         slotMyselfTypingTimeout();
 
-    } else if ( !typing && m_myselfTypingTimer ) {
-        m_myselfTypingTimer->stop();
-        m_myselfTypingTimer->deleteLater();
-        m_myselfTypingTimer = 0;
+    } else if ( !typing && d->myselfTypingTimer ) {
+        d->myselfTypingTimer->stop();
+        d->myselfTypingTimer->deleteLater();
+        d->myselfTypingTimer = 0;
     }
 }
 

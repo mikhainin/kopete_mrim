@@ -124,6 +124,8 @@ public slots:
     void slotReceivedMessage( const QString &from, const QString &text );
     void slotReceivedOfflineMessage( const MRAOfflineMessage &message );
     void slotTypingAMessage( const QString &from );
+
+    void requestForAuthorization( const QString &contact );
 private slots:
 
     void slotReceivedContactList(const MRAContactList &list);

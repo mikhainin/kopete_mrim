@@ -491,4 +491,8 @@ void MrimAccount::slotAddContactAckReceived(int status, int contactId) {
 
 }
 
+void MrimAccount::requestForAuthorization( const QString &contact ) {
+    d->mraProto->sendAuthorizationRequest(contact, myself()->contactId(), tr("Please, authorize me."));
+}
+
 #include "mrimaccount.moc"

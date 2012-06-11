@@ -24,6 +24,12 @@ MRAData::MRAData(QObject * parent)
 {
 }
 
+MRAData::MRAData(const QByteArray &data, QObject * parent)
+    : QObject(parent)
+    , m_data(data)
+    , m_pointer(0) {
+
+}
 
 MRAData::~MRAData()
 {
@@ -186,6 +192,9 @@ QByteArray MRAData::getUIDL() {
 
 }
 
+QString MRAData::toBase64() {
+    return m_data.toBase64();
+}
 
 bool MRAData::eof() const
 {

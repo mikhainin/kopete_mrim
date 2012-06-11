@@ -19,6 +19,8 @@ public:
                           const QString &displayName,
                           Kopete::MetaContact *parent );
 
+    virtual ~MrimContact();
+
     /**
      * @brief Returns a Kopete::ChatSession associated with this contact
      *
@@ -35,7 +37,9 @@ public:
 
     void avatarLoaded(const QImage &avatar);
 
-    virtual bool isReachable() {return true;}
+    virtual bool isReachable() { return true; }
+
+    virtual QList<KAction *> *customContextMenuActions( Kopete::ChatSession *manager );
 
     void loadUserInfo();
     void slotUserInfoLoaded(const MRAContactInfo &info);
@@ -53,6 +57,8 @@ public slots:
     void slotMyselfTypingTimeout();
 
     void slotLoadAvatar();
+    void slotPerformRequestForAuthorization();
+
 
     /**
      * Show "info dialog" for the contact
@@ -62,10 +68,8 @@ public slots:
 
 
 private:
-    Kopete::ChatSession* m_msgManager;
-    QTimer *m_typingTimer;
-    QTimer *m_myselfTypingTimer;
-    ContactInfo *m_infoDialog;
+    class Private;
+    Private *d;
 };
 
 #endif // MRIMCONTACT_H

@@ -352,6 +352,17 @@ void MRAProtocol::authorizeContact(const QString &contact) {
     authData.addString(contact);
 
     d->connection->sendMsg( MRIM_CS_AUTHORIZE, &authData );
+}
+
+void MRAProtocol::sendAuthorizationRequest(const QString &contact, const QString &myAddress, const QString &message) {
+    MRAData authData;
+    unsigned long int authFlags = MESSAGE_FLAG_NORECV | MESSAGE_FLAG_AUTHORIZE | MESSAGE_FLAG_UNICODE;
+    authData.addInt32(authFlags);
+    authData.addString(contact);
+    authData.addString(message);
+    authData.addString("");// RTF is not supported yet
+
+    connection()->sendMsg(MRIM_CS_MESSAGE, &authData);
 
 }
 

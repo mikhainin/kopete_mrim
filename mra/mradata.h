@@ -11,6 +11,7 @@ class MRAData : public QObject {
     Q_OBJECT
 public:
     MRAData(QObject * parent = 0);
+    MRAData(const QByteArray &data, QObject * parent = 0);
 
     ~MRAData();
     void addString(const QString &str);
@@ -35,6 +36,8 @@ public:
 
     void clear();
     void dumpData();
+    QString toBase64();
+
 private:
 private:
     QByteArray m_data;

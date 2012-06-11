@@ -80,10 +80,13 @@ void MRAProtocolV123::readMessage(MRAData & data) {
     QString text;
     if (flags & MESSAGE_FLAG_UNICODE) {
         if (flags & MESSAGE_FLAG_AUTHORIZE) {
-            QTextCodec *codec = QTextCodec::codecForName("UTF-16LE");
+            // QTextCodec *codec = QTextCodec::codecForName("UTF-16LE");
 
-
-            text = codec->toUnicode( QByteArray::fromBase64(data.getString().toAscii()) );
+            MRAData authMessage( QByteArray::fromBase64(data.getString().toAscii()) );
+            // text = codec->toUnicode(  );
+            authMessage.getInt32(); // 0x02 // ???
+            kWarning() << authMessage.getUnicodeString();// WTF? sender?
+            text = authMessage.getUnicodeString();
 
         } else {
             text = data.getUnicodeString();
@@ -272,6 +275,37 @@ void MRAProtocolV123::addToContactList(int flags, int groupId, const QString &ad
     addData.addInt32( 1 );
 
     connection()->sendMsg(MRIM_CS_ADD_CONTACT, &addData);
+
+
+    MRAData authData;
+    unsigned long int authFlags = MESSAGE_FLAG_NORECV | MESSAGE_FLAG_AUTHORIZE | MESSAGE_FLAG_UNICODE;
+    authData.addInt32(authFlags);
+    authData.addString(address);
+    authData.addString(data.toBase64());
+    authData.addString("");// RTF is not supported yet
+
+    connection()->sendMsg(MRIM_CS_MESSAGE, &authData);
+
+
+}
+
+void MRAProtocolV123::sendAuthorizationRequest(const QString &contact, const QString &myAddress, const QString &message) {
+    MRAData authData;
+    unsigned long int authFlags = MESSAGE_FLAG_NORECV | MESSAGE_FLAG_AUTHORIZE | MESSAGE_FLAG_UNICODE;
+    authData.addInt32(authFlags);
+    authData.addString(contact);
+
+    MRAData authMessage;
+
+    authMessage.addInt32(0x02); // ???
+    authMessage.addUnicodeString(myAddress);
+    authMessage.addUnicodeString(message);
+
+    authData.addString(authMessage.toBase64());
+    authData.addString("");// RTF is not supported yet
+
+    connection()->sendMsg(MRIM_CS_MESSAGE, &authData);
+
 }
 
 void MRAProtocolV123::deleteContact(uint id, const QString &contact, const QString &contactName) {
