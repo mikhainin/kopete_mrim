@@ -39,3 +39,13 @@ const MRAContactListEntry *MRAContactList::getByAddress(const QString &address) 
     }
     return 0;
 }
+
+void MRAContactList::deleteContact(const QString &address) {
+    for(int i = 0; i < m_items.size(); ++i) {
+        if (m_items[i].address() == address) {
+            m_items.remove(i, 1);
+        }
+    }
+}
+
+

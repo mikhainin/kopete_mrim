@@ -493,6 +493,7 @@ void MrimAccount::deleteContact( const QString &email ) {
 
     if ( ce ) {
         d->mraProto->deleteContact( ce->id(), ce->address(), ce->nick() );
+        d->contactList.deleteContact( email );
     }
 }
 

@@ -65,6 +65,7 @@ public:
     int status() const;
 
     const MRAContactListEntry *getByAddress(const QString &address) const;
+    void deleteContact(const QString &address);
 };
 
 #endif /*MRACONTACTLIST_H_*/
