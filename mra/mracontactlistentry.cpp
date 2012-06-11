@@ -75,3 +75,7 @@ ulong MRAContactListEntry::status() const {
 void MRAContactListEntry::setStatus(const ulong status) {
     _status = status;
 }
+
+void MRAContactListEntry::setId(int id) {
+    _id = id;
+}

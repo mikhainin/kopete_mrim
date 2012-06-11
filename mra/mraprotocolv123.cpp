@@ -246,7 +246,7 @@ void MRAProtocolV123::readAnketaInfo(MRAData & data) {
     Q_UNUSED(contact);
 } */
 
-void MRAProtocolV123::addToContactList(int flags, int groupId, const QString &address, const QString &nick, const QString &authMessage) {
+void MRAProtocolV123::addToContactList(int flags, int groupId, const QString &address, const QString &nick, const QString &myAddress, const QString &authMessage) {
 /*
 #define MRIM_CS_ADD_CONTACT			0x1019	// C -> S
     // added by negram. since v1.23:
@@ -267,25 +267,18 @@ void MRAProtocolV123::addToContactList(int flags, int groupId, const QString &ad
     addData.addUnicodeString(nick);
     addData.addString(""); // unused
 
-    QTextCodec *codec = QTextCodec::codecForName("UTF-16LE");
-    QByteArray data = codec->fromUnicode(authMessage);
+    MRAData authMessageData;
 
-    addData.addString( data.toBase64() );
+    authMessageData.addInt32(0x02); // ???
+    authMessageData.addUnicodeString(myAddress);
+    authMessageData.addUnicodeString(authMessage);
+
+
+    addData.addString( authMessageData.toBase64() );
 
     addData.addInt32( 1 );
 
     connection()->sendMsg(MRIM_CS_ADD_CONTACT, &addData);
-
-
-    MRAData authData;
-    unsigned long int authFlags = MESSAGE_FLAG_NORECV | MESSAGE_FLAG_AUTHORIZE | MESSAGE_FLAG_UNICODE;
-    authData.addInt32(authFlags);
-    authData.addString(address);
-    authData.addString(data.toBase64());
-    authData.addString("");// RTF is not supported yet
-
-    connection()->sendMsg(MRIM_CS_MESSAGE, &authData);
-
 
 }
 

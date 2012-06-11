@@ -89,7 +89,7 @@ public:
 
     void sendMessage(const QString &to, const QString &text);
 
-    void addNewContactToServerList(const QString &email, const QString &nick, const QString &groupName);
+    void addNewContactToServerList(const QString &email, const QString &nick, const QString &groupName, Kopete::MetaContact *m);
 
     void contactTypingAMessage( const QString &to );
 

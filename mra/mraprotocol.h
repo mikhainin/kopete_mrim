@@ -41,7 +41,7 @@ public:
 
 
     virtual void handleMessage(const ulong &msg, MRAData *data);
-    virtual void addToContactList(int flags, int groupId, const QString &address, const QString &nick, const QString &authMessage);
+    virtual void addToContactList(int flags, int groupId, const QString &address, const QString &nick, const QString &myAddress, const QString &authMessage);
     virtual void authorizeContact(const QString &contact);
     virtual void sendAuthorizationRequest(const QString &contact, const QString &myAddress, const QString &message);
     virtual void removeContact(const QString &contact);

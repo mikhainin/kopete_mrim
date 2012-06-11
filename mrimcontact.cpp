@@ -55,6 +55,7 @@ void MrimContact::slotPerformRequestForAuthorization() {
 
 QList<KAction *> *MrimContact::customContextMenuActions( Kopete::ChatSession *manager ) {
     kWarning() << __PRETTY_FUNCTION__;
+    Q_UNUSED(manager)
     QList<KAction *> *list = new QList<KAction *>();
     list->append(d->requestForAuthorization);
 

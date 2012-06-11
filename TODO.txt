@@ -2,7 +2,7 @@ v0.1
 <done>
 
 v0.2
-[kopete] show disconnect reason in notification area
+[kopete] show disconnect reason in the notification area
 [ui]     add contacts to list on receiving AUTH_ACK (without reconnect)
 [ui]     add contacts after authorization accept
 [proto]  user's (myself) status change

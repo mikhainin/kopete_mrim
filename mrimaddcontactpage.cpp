@@ -27,14 +27,13 @@ bool MrimAddContactPage::apply( Kopete::Account* /*a*/, Kopete::MetaContact* m )
 {
     kWarning() << __PRETTY_FUNCTION__;
 
-    // MrimAccount *ma = dynamic_cast<MrimAccount *>(a);
-
     m_account->addNewContactToServerList(
                       m_mrimAddUI.editEmail->text()
                     , m_mrimAddUI.editNick->text()
                     , m->groups()[0]->displayName()
+                    , m
                 );
-    return false;
+    return true;
 }
 
 bool MrimAddContactPage::validateData()

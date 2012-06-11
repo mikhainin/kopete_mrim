@@ -366,9 +366,10 @@ void MRAProtocol::sendAuthorizationRequest(const QString &contact, const QString
 
 }
 
-void MRAProtocol::addToContactList(int flags, int groupId, const QString &address, const QString &nick, const QString &authMessage) {
+void MRAProtocol::addToContactList(int flags, int groupId, const QString &address, const QString &nick, const QString &myAddress, const QString &authMessage) {
 
     Q_UNUSED(authMessage); // in proto v1.23
+    Q_UNUSED(myAddress); // in proto v1.23
 
     MRAData addData;
 
@@ -382,7 +383,7 @@ void MRAProtocol::addToContactList(int flags, int groupId, const QString &addres
 }
 
 void MRAProtocol::removeContact(const QString &contact) {
-    addToContactList(CONTACT_FLAG_REMOVED, 0, contact, contact, "please, quthorize me");
+    addToContactList(CONTACT_FLAG_REMOVED, 0, contact, contact, "", "");
 }
 
 void MRAProtocol::readUserSataus(MRAData & data) {

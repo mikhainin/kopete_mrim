@@ -34,6 +34,7 @@ public:
     void setServerFlags(const ulong sflags);
 
     int id() const;
+    void setId(int id);
 
 private:
     int _id;
