@@ -88,6 +88,10 @@ public:
      */
     const Kopete::OnlineStatus mrimOffline;
     /**
+     * Represents contacts that are Busy
+     */
+    const Kopete::OnlineStatus mrimDontDistrub;
+    /**
      * Represents contacts that are Away
      */
     const Kopete::OnlineStatus mrimUnknown;

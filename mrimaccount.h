@@ -121,6 +121,8 @@ public slots:
      */
     void slotGoOffline();
 
+    void slotGoBusy();
+
     void slotReceivedMessage( const QString &from, const QString &text );
     void slotReceivedOfflineMessage( const MRAOfflineMessage &message );
     void slotTypingAMessage( const QString &from );

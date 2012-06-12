@@ -215,6 +215,8 @@ void MrimAccount::setOnlineStatus(const Kopete::OnlineStatus& status , const Kop
         slotGoOffline();
     else if ( status.status() == Kopete::OnlineStatus::Away )
         slotGoAway( /* reason */ );
+    else if ( status.status() == Kopete::OnlineStatus::Busy )
+        slotGoBusy();
     else
         slotGoOnline();
 
@@ -283,6 +285,18 @@ void MrimAccount::slotGoAway()
     }
     d->mraProto->setStatus(MRAProtocol::AWAY);
     myself()->setOnlineStatus( MrimProtocol::protocol()->mrimAway );
+}
+
+void MrimAccount::slotGoBusy() {
+    if ( !isConnected() ) {
+        connect();
+    }
+    if ( !d->mraProto ) {
+        kWarning() << "connected but connection is not available";
+    }
+    d->mraProto->setStatus(MRAProtocol::DONT_DISTRUB);
+    myself()->setOnlineStatus( MrimProtocol::protocol()->mrimDontDistrub );
+
 }
 
 void MrimAccount::parseConfig()

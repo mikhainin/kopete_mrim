@@ -32,8 +32,13 @@ MrimProtocol::MrimProtocol(QObject *parent, const QStringList &)
     , mrimOffline(  Kopete::OnlineStatus::Offline, 25, this, STATUS_OFFLINE,  QStringList(QString()),
                  i18n( "Offline" ),   i18n( "O&ffline" ), Kopete::OnlineStatusManager::Offline )
 
+    , mrimDontDistrub( Kopete::OnlineStatus::Busy, 25, this, STATUS_DONT_DISTRUB, QStringList( QString() ),
+                       i18nc( "This Means the User is Busy", "Busy" ),   i18nc("This Means the User is Busy", "&Busy" ),
+                       Kopete::OnlineStatusManager::Busy )
+
     , mrimUnknown( Kopete::OnlineStatus::Unknown, 25, this, STATUS_UNDETERMINATED, QStringList( "status_unknown" ),
                    i18n( "Unknown" ) )
+
     , propPhoto( Kopete::Global::Properties::self()->photo() )
 {
 
