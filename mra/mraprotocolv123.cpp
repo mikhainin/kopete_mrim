@@ -301,6 +301,23 @@ void MRAProtocolV123::sendAuthorizationRequest(const QString &contact, const QSt
 
 }
 
+void MRAProtocolV123::readUserInfo(MRAData & data)
+{
+    QString str;
+    QString val;
+    while (!data.eof()) {
+        str = data.getString();
+        if (str == "MRIM.NICKNAME" || str == "connect.xml") {
+            val = data.getUnicodeString();
+        } else {
+            val = data.getString();
+        }
+        kWarning() << str << " " << val;
+    }
+
+}
+
+
 void MRAProtocolV123::deleteContact(uint id, const QString &contact, const QString &contactName) {
     kWarning() << __PRETTY_FUNCTION__;
 /*

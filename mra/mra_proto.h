@@ -148,14 +148,15 @@ typedef uint32_t mrim_msg_t;
     // LPS authorization message, 'please, authorize me': base64(unicode(message))
     // UL ??? (0x00000001)
 
-    #define CONTACT_FLAG_REMOVED	0x00000001
-    #define CONTACT_FLAG_GROUP	0x00000002
-    #define CONTACT_FLAG_INVISIBLE	0x00000004
-    #define CONTACT_FLAG_VISIBLE	0x00000008
-    #define CONTACT_FLAG_IGNORE	0x00000010
-    #define CONTACT_FLAG_SHADOW	0x00000020
+    #define CONTACT_FLAG_REMOVED    0x00000001
+    #define CONTACT_FLAG_GROUP      0x00000002
+    #define CONTACT_FLAG_INVISIBLE  0x00000004
+    #define CONTACT_FLAG_VISIBLE    0x00000008
+    #define CONTACT_FLAG_IGNORE     0x00000010
+    #define CONTACT_FLAG_SHADOW     0x00000020
 
-    #define CONTACT_FLAG_UNKNOWN 0x00000200 /* added by negram, used with 'remove'. Perhaps, means "unicode name" */
+    #define CONTACT_FLAG_UNKNOWN    0x00000200 /* added by negram, used with 'remove'. Perhaps, means "unicode name" */
+    #define CONTACT_FLAG_CHAT       0x00000080
 
 #define MRIM_CS_ADD_CONTACT_ACK			0x101A	// S -> C
     // UL status
