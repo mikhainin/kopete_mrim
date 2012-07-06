@@ -319,7 +319,7 @@ void MRAProtocolV123::deleteContact(uint id, const QString &contact, const QStri
     data.addInt32( CONTACT_FLAG_REMOVED | CONTACT_FLAG_UNKNOWN );
     data.addInt32( 0 ); // don't care about group
     data.addString( contact );
-    data.addUnicodeString( contact );
+    data.addUnicodeString( contactName );
     data.addString( QString() );
 
     connection()->sendMsg( MRIM_CS_MODIFY_CONTACT, &data );

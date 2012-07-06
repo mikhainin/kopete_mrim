@@ -3,13 +3,19 @@ v0.1
 
 v0.2
 [kopete] show disconnect reason in the notification area
-[proto]  user's (myself) status change
 [kopete] avatars updating
 [proto]  move contacts between groups
 [proto]  load avatars via 3 permanent connections
 [proto]  chats: show list of users in chatroom
+[proto]  accept chat's invitations
 
 v0.3
 [proto]  status message
 [proto]  delivery status
 [kopete] message status: sent, delivered, rejected, etc...
+[proto]  chats: add and remove users
+[protot] create rooms
+[ui]     edit contacts
+
+v0.4
+[proto]  file transfer
