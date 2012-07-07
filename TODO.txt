@@ -7,6 +7,7 @@ v0.2
 [proto]  move contacts between groups
 [proto]  load avatars via 3 permanent connections
 [proto]  chats: show list of users in chatroom
+[proto]  accept chat's invitations
 
 v0.3
 [proto]  status message
