@@ -61,6 +61,7 @@ Kopete::Contact *MrimProtocol::deserializeContact(
     QString contactId = serializedData[ "contactId" ];
     QString accountId = serializedData[ "accountId" ];
     QString displayName = serializedData[ "displayName" ];
+    int flags  =  serializedData[ "flags" ].toInt();
 
     QList<Kopete::Account*> accounts = Kopete::AccountManager::self()->accounts( this );
     Kopete::Account* account = 0;
@@ -76,7 +77,7 @@ Kopete::Contact *MrimProtocol::deserializeContact(
         return 0;
     }
 
-    MrimContact * contact = new MrimContact(account, contactId, displayName, metaContact);
+    MrimContact * contact = new MrimContact(account, contactId, displayName, flags, metaContact);
     return contact;
 }
 

@@ -57,6 +57,8 @@ public:
 
     virtual void deleteContact(uint id, const QString &contact, const QString &contactName);
 
+    virtual void loadChatMembersList(const QString &to);
+
 private:
     class MRAProtocolPrivate;
     MRAProtocolPrivate *d;
@@ -111,6 +113,8 @@ signals:
     void userInfoLoaded(const QString &contact, const MRAContactInfo &info);
 
     void addContactAckReceived(int status, int contactId);
+
+    void chatMembersListReceived(const QString &chat, const QList<QString> &list);
 };
 
 #endif

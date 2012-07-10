@@ -89,6 +89,8 @@ public:
 
     void sendMessage(const QString &to, const QString &text);
 
+    void loadChatMembersList(const QString &to);
+
     void addNewContactToServerList(const QString &email, const QString &nick, const QString &groupName, Kopete::MetaContact *m);
 
     void contactTypingAMessage( const QString &to );
@@ -145,6 +147,8 @@ private slots:
     void slotUserInfoLoaded(const QString &contact, const MRAContactInfo &info);
 
     void slotAddContactAckReceived(int status, int contactId);
+
+    void slotChatMembersListReceived(const QString &chat, const QList<QString> &list);
 
 private:
     class Private;

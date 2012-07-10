@@ -15,8 +15,10 @@ class MrimContact : public Kopete::Contact
 {
     Q_OBJECT
 public:
-    explicit MrimContact( Kopete::Account* _account, const QString &uniqueName,
+    explicit MrimContact( Kopete::Account* _account,
+                          const QString &uniqueName,
                           const QString &displayName,
+                          int flags,
                           Kopete::MetaContact *parent );
 
     virtual ~MrimContact();
@@ -39,10 +41,16 @@ public:
 
     virtual bool isReachable() { return true; }
 
-    virtual QList<KAction *> *customContextMenuActions( Kopete::ChatSession *manager );
 
     void loadUserInfo();
     void slotUserInfoLoaded(const MRAContactInfo &info);
+    void setFlags(int arg);
+
+    void loadChatMembersList();
+    void slotChatMembersListReceived(const QList<QString> &list);
+public:
+    virtual QList<KAction *> *customContextMenuActions( Kopete::ChatSession *manager );
+
 signals:
     void userInfoLoaded(const MRAContactInfo &info);
 

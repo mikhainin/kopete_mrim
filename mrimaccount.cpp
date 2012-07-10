@@ -33,7 +33,7 @@ MrimAccount::MrimAccount( MrimProtocol *parent, const QString& accountID )
 {
     kWarning() << __PRETTY_FUNCTION__;
     // Init the myself contact
-    setMyself( new MrimContact( this, accountId(), accountId(), Kopete::ContactList::self()->myself() ) );
+    setMyself( new MrimContact( this, accountId(), accountId(), 0, Kopete::ContactList::self()->myself() ) );
     myself()->setOnlineStatus( MrimProtocol::protocol()->mrimOffline );
 
     parseConfig();
@@ -54,7 +54,7 @@ bool MrimAccount::createContact(const QString& contactId, Kopete::MetaContact* p
 {
     kWarning() << __PRETTY_FUNCTION__;
 
-    MrimContact* newContact = new MrimContact( this, contactId, parentContact->displayName(), parentContact );
+    MrimContact* newContact = new MrimContact( this, contactId, parentContact->displayName(), 0, parentContact );
     return newContact != NULL;
 }
 
@@ -109,6 +109,9 @@ void MrimAccount::connect( const Kopete::OnlineStatus& /*initialStatus*/ )
 
     QObject::connect(d->mraProto, SIGNAL(addContactAckReceived(int,int)),
                      this, SLOT(slotAddContactAckReceived(int,int)) );
+
+    QObject::connect(d->mraProto, SIGNAL(chatMembersListReceived(QString,QList<QString>)),
+                     this, SLOT(slotChatMembersListReceived(QString,QList<QString>)));
 
     if (d->mraProto->makeConnection(QString(d->username), QString(d->password)) ) {
         kWarning() << "connecting...";
@@ -224,13 +227,15 @@ void MrimAccount::setOnlineStatus(const Kopete::OnlineStatus& status , const Kop
 
 void MrimAccount::setStatusMessage(const Kopete::StatusMessage& statusMessage)
 {
-    kWarning() << __PRETTY_FUNCTION__;
-
+    // kWarning() << __PRETTY_FUNCTION__;
+    /// TODO: set status message
+    Q_UNUSED(statusMessage);
 }
 
 void MrimAccount::setAway(bool away, const QString& reason)
 {
-    kWarning() << __PRETTY_FUNCTION__;
+    kDebug() << __PRETTY_FUNCTION__;
+    Q_UNUSED(reason); /// FIXME
 
     if (!isConnected()) {
         connect();
@@ -351,6 +356,8 @@ void MrimAccount::slotReceivedContactList(const MRAContactList &list) {
         kWarning() << "contact:" << item.address() << item.address() << item.status() << item.group();
 
         c->setOnlineStatus( mrimStatusToKopete(item.status()) );
+
+        c->setFlags( item.flags() );
     }
 }
 
@@ -414,6 +421,10 @@ Kopete::OnlineStatus MrimAccount::mrimStatusToKopete(int mrimStatus) {
 
 void MrimAccount::sendMessage(const QString &to, const QString &text) {
     d->mraProto->sendText(to, text);
+}
+
+void MrimAccount::loadChatMembersList(const QString &to) {
+    d->mraProto->loadChatMembersList( to );
 }
 
 void MrimAccount::slotReceivedMessage( const QString &from, const QString &text )
@@ -536,6 +547,14 @@ void MrimAccount::slotAddContactAckReceived(int status, int contactId) {
 
 void MrimAccount::requestForAuthorization( const QString &contact ) {
     d->mraProto->sendAuthorizationRequest(contact, myself()->contactId(), tr("Please, authorize me."));
+}
+
+void MrimAccount::slotChatMembersListReceived(const QString &chat, const QList<QString> &list) {
+    MrimContact *c = dynamic_cast<MrimContact *>( contacts().value(chat) );
+
+    if (c) {
+        c->slotChatMembersListReceived( list );
+    }
 }
 
 #include "mrimaccount.moc"

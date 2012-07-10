@@ -77,6 +77,10 @@ bool MRAProtocol::makeConnection(const QString &login, const QString &password)
     return true;
 }
 
+void MRAProtocol::loadChatMembersList(const QString &to) {
+    Q_UNUSED(to);
+}
+
 void MRAProtocol::closeConnection() {
 
     d->contactListReceived = false;

@@ -30,7 +30,11 @@ public:
     virtual void addToContactList(int flags, int groupId, const QString &address, const QString &nick, const QString &myAddress, const QString &authMessage);
 //    virtual void authorizeContact(const QString &contact);
     virtual void sendAuthorizationRequest(const QString &contact, const QString &myAddress, const QString &message);
+
     virtual void readUserInfo(MRAData & data);
+
+    virtual void loadChatMembersList(const QString &to);
+
 protected:
     virtual void readMessage(MRAData & data);
     virtual void readUserSataus(MRAData & data);

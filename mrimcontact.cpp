@@ -8,6 +8,7 @@
 
 #include "ui/contactinfo.h"
 #include "mra/mraofflinemessage.h"
+#include "mra/mra_proto.h"
 #include "mrimaccount.h"
 #include "mrimprotocol.h"
 #include "mrimcontact.h"
@@ -18,18 +19,22 @@ struct MrimContact::Private {
     QTimer *myselfTypingTimer;
     ContactInfo *infoDialog;
     KAction *requestForAuthorization;
+    int flags;
 
     Private()
         : msgManager(NULL)
         , typingTimer(0)
         , myselfTypingTimer(0)
-        , infoDialog(0) {
+        , infoDialog(0)
+        , flags(0) {
     }
 
 };
 
-MrimContact::MrimContact( Kopete::Account* _account, const QString &uniqueName,
+MrimContact::MrimContact( Kopete::Account* _account,
+                          const QString &uniqueName,
                           const QString &displayName,
+                          int flags,
                           Kopete::MetaContact *parent )
     : Kopete::Contact( _account, uniqueName, parent, QString("mrim_protocol") )
     , d(new Private)
@@ -41,10 +46,15 @@ MrimContact::MrimContact( Kopete::Account* _account, const QString &uniqueName,
     d->requestForAuthorization = new KAction( KIcon("mail-reply-sender"), tr( "(Re)request Authorization From" ), this );
     connect( d->requestForAuthorization, SIGNAL(triggered(bool)), this, SLOT(slotPerformRequestForAuthorization()) );
 
+    d->flags = flags;
 }
 
 MrimContact::~MrimContact() {
     delete d;
+}
+
+void MrimContact::setFlags(int arg) {
+    d->flags = arg;
 }
 
 void MrimContact::slotPerformRequestForAuthorization() {
@@ -64,7 +74,6 @@ QList<KAction *> *MrimContact::customContextMenuActions( Kopete::ChatSession *ma
 
 Kopete::ChatSession* MrimContact::manager( CanCreateFlags canCreateFlags )
 {
-    kWarning() << __PRETTY_FUNCTION__;
 
     if ( d->msgManager )
     {
@@ -76,7 +85,12 @@ Kopete::ChatSession* MrimContact::manager( CanCreateFlags canCreateFlags )
 
         contacts.append(this);
 
-        Kopete::ChatSession::Form form = ( Kopete::ChatSession::Small );
+        Kopete::ChatSession::Form form = Kopete::ChatSession::Small;
+        if (d->flags & CONTACT_FLAG_CHAT) {
+            form = Kopete::ChatSession::Chatroom;
+            kWarning() << "Chat!";
+            loadChatMembersList();
+        }
 
         d->msgManager = Kopete::ChatSessionManager::self()->create(account()->myself(), contacts, protocol(), form );
 
@@ -258,6 +272,20 @@ void MrimContact::deleteContact() {
     a->deleteContact( contactId() );
 
     Kopete::Contact::deleteContact();
+}
+
+void MrimContact::loadChatMembersList() {
+    MrimAccount *a = dynamic_cast<MrimAccount*>( account() );
+    a->loadChatMembersList( contactId() );
+}
+
+void MrimContact::slotChatMembersListReceived(const QList<QString> &list) {
+    foreach(const QString &contact, list) {
+        kWarning() << contact;
+        if ( account()->contacts().value(contact) ) {
+            manager()->addContact( account()->contacts().value(contact) );
+        }
+    }
 }
 
 #include "mrimcontact.moc"

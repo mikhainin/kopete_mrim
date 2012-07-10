@@ -105,17 +105,40 @@ void MRAProtocolV123::readMessage(MRAData & data) {
         emit authorizeRequestReceived(from, text);
     } else {
         if ( (flags & MESSAGE_FLAG_CHAT) && !data.eof() ) {
-            data.getInt32(); // ??
-            data.getInt32(); // ??
-            QString chatTitle  = data.getUnicodeString(); // subject
-            QString chatMember = data.getString();        // sender
+            int i1 = data.getInt32(); // 0x3b ??
+            int i2 = data.getInt32(); // 0x00 ??
 
-            text = chatTitle + '(' + chatMember + ')' + '\n' + text;
+            if (i1 == 0x3b) {
+                QString chatTitle  = data.getUnicodeString(); // subject
+                QString chatMember = data.getString();        // sender
+
+                text = chatTitle + '(' + chatMember + ')' + '\n' + text;
+            } else {
+                QString chatTitle  = data.getUnicodeString(); // subject
+                int i3 = data.getInt32();
+
+                int numMembers = data.getInt32();
+
+                QList<QString> membersList;
+
+                for(; numMembers > 0; --numMembers) {
+                    membersList.append( data.getString() );
+                }
+
+                emit chatMembersListReceived(from, membersList);
+
+                Q_UNUSED(i2);
+                Q_UNUSED(i3);
+                Q_UNUSED(chatTitle);
+
+                goto sendrecv;
+            }
         }
 
         emit messageReceived( from, text );
     }
 
+sendrecv:
     if ( (flags & MESSAGE_FLAG_NORECV) == 0 ) {
 
         MRAData ackData;
@@ -141,6 +164,32 @@ void MRAProtocolV123::sendText(const QString &to, const QString &text)
     data.addString(" ");// RTF is not supported yet
 
     connection()->sendMsg(MRIM_CS_MESSAGE, &data);
+}
+
+void MRAProtocolV123::loadChatMembersList(const QString &to) {
+    MRAData data;
+    unsigned long int flags = MESSAGE_FLAG_RTF;
+    data.addInt32(flags);
+    data.addString(to);
+    data.addString("");
+    data.addString("");
+    data.addInt32(0x04); // whatis 4?
+    data.addInt32(0x01); // whatis 4?
+
+    connection()->sendMsg(MRIM_CS_MESSAGE, &data);
+
+    /*
+      ack: flags: 0x00400084 = MESSAGE_FLAG_NORECV | MESSAGE_FLAG_RTF | MESSAGE_FLAG_CHAT
+
+      chat int 1: 0x53
+      chat int 2: 0x02
+      lps chatTitle
+      chat int 3: 0x2d
+      chat int 4: 0x02 (members number?)
+      lps*number
+
+      */
+
 }
 
 
