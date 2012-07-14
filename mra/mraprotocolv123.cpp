@@ -105,10 +105,11 @@ void MRAProtocolV123::readMessage(MRAData & data) {
         emit authorizeRequestReceived(from, text);
     } else {
         if ( (flags & MESSAGE_FLAG_CHAT) && !data.eof() ) {
-            int i1 = data.getInt32(); // 0x3b ??
+            int i1 = data.getInt32(); // 0x3b,0x3d ??
             int i2 = data.getInt32(); // 0x00 ??
 
-            if (i1 == 0x3b) {
+            const int UNKNOWN_CHAT_CONST = 0x0100;
+            if ( i1 & UNKNOWN_CHAT_CONST ) {
                 QString chatTitle  = data.getUnicodeString(); // subject
                 QString chatMember = data.getString();        // sender
 
