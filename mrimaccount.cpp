@@ -110,8 +110,8 @@ void MrimAccount::connect( const Kopete::OnlineStatus& /*initialStatus*/ )
     QObject::connect(d->mraProto, SIGNAL(addContactAckReceived(int,int)),
                      this, SLOT(slotAddContactAckReceived(int,int)) );
 
-    QObject::connect(d->mraProto, SIGNAL(chatMembersListReceived(QString,QList<QString>)),
-                     this, SLOT(slotChatMembersListReceived(QString,QList<QString>)));
+    QObject::connect(d->mraProto, SIGNAL(chatMembersListReceived(QString,QString,QList<QString>)),
+                     this, SLOT(slotChatMembersListReceived(QString,QString,QList<QString>)));
 
     if (d->mraProto->makeConnection(QString(d->username), QString(d->password)) ) {
         kWarning() << "connecting...";
@@ -549,11 +549,11 @@ void MrimAccount::requestForAuthorization( const QString &contact ) {
     d->mraProto->sendAuthorizationRequest(contact, myself()->contactId(), tr("Please, authorize me."));
 }
 
-void MrimAccount::slotChatMembersListReceived(const QString &chat, const QList<QString> &list) {
+void MrimAccount::slotChatMembersListReceived(const QString &chat, const QString &title, const QList<QString> &list) {
     MrimContact *c = dynamic_cast<MrimContact *>( contacts().value(chat) );
 
     if (c) {
-        c->slotChatMembersListReceived( list );
+        c->slotChatMembersListReceived( title, list );
     }
 }
 

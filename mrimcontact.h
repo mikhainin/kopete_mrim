@@ -47,7 +47,7 @@ public:
     void setFlags(int arg);
 
     void loadChatMembersList();
-    void slotChatMembersListReceived(const QList<QString> &list);
+    void slotChatMembersListReceived(const QString &title, const QList<QString> &list);
 public:
     virtual QList<KAction *> *customContextMenuActions( Kopete::ChatSession *manager );
 

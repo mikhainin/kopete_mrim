@@ -279,13 +279,14 @@ void MrimContact::loadChatMembersList() {
     a->loadChatMembersList( contactId() );
 }
 
-void MrimContact::slotChatMembersListReceived(const QList<QString> &list) {
+void MrimContact::slotChatMembersListReceived(const QString &title, const QList<QString> &list) {
     foreach(const QString &contact, list) {
         kWarning() << contact;
         if ( account()->contacts().value(contact) ) {
             manager()->addContact( account()->contacts().value(contact) );
         }
     }
+    manager()->setDisplayName(title);
 }
 
 #include "mrimcontact.moc"

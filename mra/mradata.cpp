@@ -134,6 +134,11 @@ QString MRAData::getString()
     int len = getInt32();
 
     if (m_data.size() >= (m_pointer + len)) {
+
+        if (len == 0) {
+            return QString();
+        }
+
         CodecHolder holder("Windows-1251");
 
         QString result = QString::fromAscii( m_data.mid(m_pointer, len).constData() );
@@ -163,6 +168,11 @@ QString MRAData::getUnicodeString() {
     int len = getInt32();
 
     if (m_data.size() >= (m_pointer + len)) {
+
+        if (len == 0) {
+            return QString();
+        }
+
         CodecHolder holder("UTF-16LE");
 
         QString result = QString::fromAscii( m_data.mid(m_pointer, len).constData(), len );

@@ -105,16 +105,23 @@ void MRAProtocolV123::readMessage(MRAData & data) {
         emit authorizeRequestReceived(from, text);
     } else {
         if ( (flags & MESSAGE_FLAG_CHAT) && !data.eof() ) {
+
+            // 0x3d 0b00111101 -- old client (non unicode message)
+            // 0x3b 0b00111011 -- normal chat message
+            // 0x2d 0b00101101 -- ???
+            // 0x53 0b01010011 -- chat list membets
+
             int i1 = data.getInt32(); // 0x3b,0x3d ??
             int i2 = data.getInt32(); // 0x00 ??
 
-            const int UNKNOWN_CHAT_CONST = 0x0100;
-            if ( i1 & UNKNOWN_CHAT_CONST ) {
+            const int CHAT_TEXT_MESSAGE = 0x0028;
+            if ( i1 & CHAT_TEXT_MESSAGE ) {
+                kWarning() << "i1=" << i1 << "from=" <<from;
                 QString chatTitle  = data.getUnicodeString(); // subject
                 QString chatMember = data.getString();        // sender
 
                 text = chatTitle + '(' + chatMember + ')' + '\n' + text;
-            } else {
+            } else if ( i1 == 0x53 ) {
                 QString chatTitle  = data.getUnicodeString(); // subject
                 int i3 = data.getInt32();
 
@@ -126,20 +133,20 @@ void MRAProtocolV123::readMessage(MRAData & data) {
                     membersList.append( data.getString() );
                 }
 
-                emit chatMembersListReceived(from, membersList);
+                emit chatMembersListReceived(from, chatTitle, membersList);
 
                 Q_UNUSED(i2);
                 Q_UNUSED(i3);
-                Q_UNUSED(chatTitle);
 
-                goto sendrecv;
+            } else {
+                kWarning() << "unknown i1 =" << i1;
             }
         }
-
-        emit messageReceived( from, text );
+        if ( not (flags & MESSAGE_FLAG_SYSTEM) ) {
+            emit messageReceived( from, text );
+        }
     }
 
-sendrecv:
     if ( (flags & MESSAGE_FLAG_NORECV) == 0 ) {
 
         MRAData ackData;
