@@ -106,22 +106,24 @@ void MRAProtocolV123::readMessage(MRAData & data) {
     } else {
         if ( (flags & MESSAGE_FLAG_CHAT) && !data.eof() ) {
 
-            // 0x3d 0b00111101 -- old client (non unicode message)
-            // 0x3b 0b00111011 -- normal chat message
-            // 0x2d 0b00101101 -- ???
-            // 0x53 0b01010011 -- chat list membets
+            //  0x3d  0b00111101 -- old client (non unicode message)
+            //  0x3b  0b00111011 -- normal chat message
+            //  0x2d  0b00101101 -- ???
+            //  0x53  0b01010011 -- chat list membets
+            // 0x120 0b100100000 -- updated (?) members list
 
-            int i1 = data.getInt32(); // 0x3b,0x3d ??
+
+            int messageType = data.getInt32(); // 0x3b,0x3d ??
             int i2 = data.getInt32(); // 0x00 ??
 
             const int CHAT_TEXT_MESSAGE = 0x0028;
-            if ( i1 & CHAT_TEXT_MESSAGE ) {
-                kWarning() << "i1=" << i1 << "from=" <<from;
+            if ( (messageType & CHAT_TEXT_MESSAGE) == CHAT_TEXT_MESSAGE ) {
+                kWarning() << "i1=" << messageType << "from=" <<from;
                 QString chatTitle  = data.getUnicodeString(); // subject
                 QString chatMember = data.getString();        // sender
 
                 text = chatTitle + '(' + chatMember + ')' + '\n' + text;
-            } else if ( i1 == 0x53 ) {
+            } else if ( (messageType == 0x53) || (messageType == 0x120) ) {
                 QString chatTitle  = data.getUnicodeString(); // subject
                 int i3 = data.getInt32();
 
@@ -139,7 +141,7 @@ void MRAProtocolV123::readMessage(MRAData & data) {
                 Q_UNUSED(i3);
 
             } else {
-                kWarning() << "unknown i1 =" << i1;
+                kWarning() << "unknown messageType =" << messageType;
             }
         }
         if ( not (flags & MESSAGE_FLAG_SYSTEM) ) {
