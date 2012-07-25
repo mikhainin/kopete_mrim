@@ -99,6 +99,8 @@ void MRAProtocolV123::readMessage(MRAData & data) {
         Q_UNUSED(rtf);
     }
 
+    bool isSystemMessage = (flags & MESSAGE_FLAG_SYSTEM) != 0;
+
     if ( (flags & MESSAGE_FLAG_NOTIFY) != 0 ) {
         emit typingAMessage( from );
     } else if ( (flags & MESSAGE_FLAG_AUTHORIZE) != 0) {
@@ -109,21 +111,19 @@ void MRAProtocolV123::readMessage(MRAData & data) {
             //  0x3d  0b00111101 -- old client (non unicode message)
             //  0x3b  0b00111011 -- normal chat message
             //  0x2d  0b00101101 -- ???
+            //  0x35  0b00110101 -- ???
             //  0x53  0b01010011 -- chat list membets
             // 0x120 0b100100000 -- updated (?) members list
 
 
             int messageType = data.getInt32(); // 0x3b,0x3d ??
             int i2 = data.getInt32(); // 0x00 ??
-
+            kWarning() << "messageType =" << messageType;
             const int CHAT_TEXT_MESSAGE = 0x0028;
-            if ( (messageType & CHAT_TEXT_MESSAGE) == CHAT_TEXT_MESSAGE ) {
-                kWarning() << "i1=" << messageType << "from=" <<from;
-                QString chatTitle  = data.getUnicodeString(); // subject
-                QString chatMember = data.getString();        // sender
+            if ( (messageType == 0x53) || (messageType == 0x120) ) {
 
-                text = chatTitle + '(' + chatMember + ')' + '\n' + text;
-            } else if ( (messageType == 0x53) || (messageType == 0x120) ) {
+                isSystemMessage = true;
+
                 QString chatTitle  = data.getUnicodeString(); // subject
                 int i3 = data.getInt32();
 
@@ -140,11 +140,18 @@ void MRAProtocolV123::readMessage(MRAData & data) {
                 Q_UNUSED(i2);
                 Q_UNUSED(i3);
 
+            } else if ( (messageType & CHAT_TEXT_MESSAGE) ) {
+                kWarning() << "i1=" << messageType << "from=" <<from;
+                QString chatTitle  = data.getUnicodeString(); // subject
+                QString chatMember = data.getString();        // sender
+
+                text = chatTitle + '(' + chatMember + ')' + '\n' + text;
             } else {
                 kWarning() << "unknown messageType =" << messageType;
             }
         }
-        if ( not (flags & MESSAGE_FLAG_SYSTEM) ) {
+
+        if ( not isSystemMessage ) {
             emit messageReceived( from, text );
         }
     }
