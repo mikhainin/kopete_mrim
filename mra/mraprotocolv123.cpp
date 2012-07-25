@@ -401,6 +401,19 @@ void MRAProtocolV123::deleteContact(uint id, const QString &contact, const QStri
     connection()->sendMsg( MRIM_CS_MODIFY_CONTACT, &data );
 }
 
+void MRAProtocolV123::renameContact(uint id, const QString &contact, uint groupId, const QString &newContactName) {
+    MRAData data;
+
+    data.addInt32( id );
+    data.addInt32( CONTACT_FLAG_UNKNOWN );
+    data.addInt32( groupId );
+    data.addString( contact );
+    data.addUnicodeString( newContactName );
+    data.addString( QString() );
+
+    connection()->sendMsg( MRIM_CS_MODIFY_CONTACT, &data );
+}
+
 QVector<QVariant> MRAProtocolV123::readVectorByMask(MRAData & data, const QString &mask)
 {
     QVector<QVariant> result;

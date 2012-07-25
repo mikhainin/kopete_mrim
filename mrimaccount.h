@@ -103,6 +103,7 @@ public:
 
     void deleteContact( const QString &email );
 
+    void renameContact( const QString &email, const QString &newName );
 signals:
 
 public slots:

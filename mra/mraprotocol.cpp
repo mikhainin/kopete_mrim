@@ -580,6 +580,19 @@ void MRAProtocol::deleteContact(uint id, const QString &contact, const QString &
     connection()->sendMsg( MRIM_CS_MODIFY_CONTACT, &data );
 }
 
+void MRAProtocol::renameContact(uint id, const QString &contact, uint groupId, const QString &newContactName) {
+    MRAData data;
+
+    data.addInt32( id );
+    data.addInt32( 0 );
+    data.addInt32( groupId ); // don't care about group
+    data.addString( contact );
+    data.addString( newContactName );
+    data.addString( QString() );
+
+    connection()->sendMsg( MRIM_CS_MODIFY_CONTACT, &data );
+}
+
 void MRAProtocol::readAddContactAck(MRAData & data) {
     int status    = data.getInt32();
     int contactId = data.getInt32();

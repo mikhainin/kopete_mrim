@@ -27,6 +27,8 @@ public:
 
     virtual void deleteContact(uint id, const QString &contact, const QString &contactName);
 
+    void renameContact(uint id, const QString &contact, uint groupId, const QString &newContactName);
+
     virtual void addToContactList(int flags, int groupId, const QString &address, const QString &nick, const QString &myAddress, const QString &authMessage);
 //    virtual void authorizeContact(const QString &contact);
     virtual void sendAuthorizationRequest(const QString &contact, const QString &myAddress, const QString &message);

@@ -57,6 +57,8 @@ public:
 
     virtual void deleteContact(uint id, const QString &contact, const QString &contactName);
 
+    virtual void renameContact(uint id, const QString &contact, uint groupId, const QString &newContactName);
+
     virtual void loadChatMembersList(const QString &to);
 
 private:

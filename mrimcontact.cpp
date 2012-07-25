@@ -5,6 +5,7 @@
 #include <QMessageBox>
 #include <kopeteavatarmanager.h>
 #include <kopeteuiglobal.h>
+#include <kopetemetacontact.h>
 
 #include "ui/contactinfo.h"
 #include "mra/mraofflinemessage.h"
@@ -287,6 +288,19 @@ void MrimContact::slotChatMembersListReceived(const QString &title, const QList<
         }
     }
     manager()->setDisplayName(title);
+}
+
+void MrimContact::sync(unsigned int changed) {
+    //
+    if (changed & MovedBetweenGroup) {
+
+    } else if (changed & DisplayNameChanged){
+        kWarning() << metaContact()->displayName();
+        MrimAccount *a = dynamic_cast<MrimAccount*>( account() );
+        a->renameContact( contactId(), metaContact()->displayName() );
+    } else {
+        kWarning() << "unknown change action:" << changed;
+    }
 }
 
 #include "mrimcontact.moc"

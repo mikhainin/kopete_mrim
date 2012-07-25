@@ -522,6 +522,15 @@ void MrimAccount::deleteContact( const QString &email ) {
     }
 }
 
+void MrimAccount::renameContact( const QString &email, const QString &newName ) {
+    const MRAContactListEntry *ce = d->contactList.getByAddress( email );
+
+    if ( ce ) {
+        d->mraProto->renameContact( ce->id(), ce->address(), ce->group(), newName );
+    }
+
+}
+
 
 void MrimAccount::slotAddContactAckReceived(int status, int contactId) {
 

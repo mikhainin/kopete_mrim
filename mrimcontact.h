@@ -74,6 +74,7 @@ public slots:
     virtual void slotUserInfo ();
     // void slotUserInfoClosed();
 
+    virtual void sync(unsigned int changed = 0xFF);
 
 private:
     class Private;
