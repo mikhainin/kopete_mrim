@@ -580,7 +580,7 @@ void MRAProtocol::deleteContact(uint id, const QString &contact, const QString &
     connection()->sendMsg( MRIM_CS_MODIFY_CONTACT, &data );
 }
 
-void MRAProtocol::renameContact(uint id, const QString &contact, uint groupId, const QString &newContactName) {
+void MRAProtocol::editContact(uint id, const QString &contact, uint groupId, const QString &newContactName) {
     MRAData data;
 
     data.addInt32( id );

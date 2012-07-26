@@ -104,6 +104,9 @@ public:
     void deleteContact( const QString &email );
 
     void renameContact( const QString &email, const QString &newName );
+
+    void moveContactToGroup( const QString &email, const QString &newGroupName );
+
 signals:
 
 public slots:
@@ -150,6 +153,7 @@ private slots:
     void slotAddContactAckReceived(int status, int contactId);
 
     void slotChatMembersListReceived(const QString &chat, const QString &title, const QList<QString> &list);
+
 
 private:
     class Private;

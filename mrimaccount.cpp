@@ -526,11 +526,25 @@ void MrimAccount::renameContact( const QString &email, const QString &newName ) 
     const MRAContactListEntry *ce = d->contactList.getByAddress( email );
 
     if ( ce ) {
-        d->mraProto->renameContact( ce->id(), ce->address(), ce->group(), newName );
+        d->mraProto->editContact( ce->id(), ce->address(), ce->group(), newName );
     }
 
 }
 
+void MrimAccount::moveContactToGroup( const QString &email, const QString &newGroupName ) {
+    const MRAContactListEntry *ce = d->contactList.getByAddress( email );
+
+    const int newGroupId = d->contactList.groups().indexOf( newGroupName );
+
+    if ( newGroupId == -1 ) {
+        kWarning() << "can't find group " << newGroupName;
+        return;
+    }
+
+    if ( ce ) {
+        d->mraProto->editContact( ce->id(), ce->address(), newGroupId, ce->nick() );
+    }
+}
 
 void MrimAccount::slotAddContactAckReceived(int status, int contactId) {
 
