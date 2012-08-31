@@ -112,15 +112,15 @@ void MRAProtocolV123::readMessage(MRAData & data) {
             //  0x3b  0b00111011 -- normal chat message
             //  0x2d  0b00101101 -- ???
             //  0x35  0b00110101 -- ???
-            //  0x53  0b01010011 -- chat list membets
+            //  0x53  0b01010011 -- chat list members
             // 0x120 0b100100000 -- updated (?) members list
-
+            // 0x12c 0b100101100 -- chat list members, chat created by mac agent
 
             int messageType = data.getInt32(); // 0x3b,0x3d ??
             int i2 = data.getInt32(); // 0x00 ??
             kWarning() << "messageType =" << messageType;
             const int CHAT_TEXT_MESSAGE = 0x0028;
-            if ( (messageType == 0x53) || (messageType == 0x120) ) {
+            if ( (messageType == 0x53) || (messageType == 0x120) || (messageType == 0x12c) ) {
 
                 isSystemMessage = true;
 

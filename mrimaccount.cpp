@@ -5,6 +5,7 @@
 #include <kopetemetacontact.h>
 #include <kopetemessage.h>
 #include <kopeteaccount.h>
+#include <kopeteutils.h>
 
 #include "mra/mraprotocol.h"
 #include "mra/mraprotocolv123.h"
@@ -134,6 +135,9 @@ void MrimAccount::slotDisconnected(const QString &reason) {
     // Kopete::Account::DisconnectReason reason;
 
     Kopete::Account::disconnected( Kopete::Account::OtherClient ); /// fixme
+
+    Kopete::Utils::notifyConnectionLost(this, QString(), reason);
+    // notifyConnectionLost();
 }
 
 void MrimAccount::slotLoginFailed(const QString &reason) {
@@ -142,6 +146,7 @@ void MrimAccount::slotLoginFailed(const QString &reason) {
     myself()->setOnlineStatus( MrimProtocol::protocol()->mrimOffline );
 
     d->contactList = MRAContactList();
+    Kopete::Utils::notifyConnectionLost(this, QString(), reason);
 
 }
 

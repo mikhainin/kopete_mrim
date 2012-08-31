@@ -2,13 +2,12 @@ v0.1
 <done>
 
 v0.2
-[kopete] show disconnect reason in the notification area
 [kopete] avatars updating
 [proto]  load avatars via 3 permanent connections
 [proto]  accept chat's invitations
 
 v0.2.1
-[kopete] add group if it is not in server's contact list
+[kopete] When moving contact, add group if it is not in server's contact list
 
 v0.3
 [proto]  status message
