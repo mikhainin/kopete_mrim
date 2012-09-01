@@ -153,6 +153,7 @@ private slots:
     void slotAddContactAckReceived(int status, int contactId);
 
     void slotChatMembersListReceived(const QString &chat, const QString &title, const QList<QString> &list);
+    void slotChatInvitationReceived(const QString &chat, const QString &title, const QString &from);
 
 
 private:

@@ -117,6 +117,7 @@ signals:
     void addContactAckReceived(int status, int contactId);
 
     void chatMembersListReceived(const QString &chat, const QString &title, const QList<QString> &list);
+    void chatIvitationReceived(const QString &chat, const QString &title, const QString &from);
 };
 
 #endif

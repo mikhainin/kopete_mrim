@@ -117,31 +117,21 @@ void MRAProtocolV123::readMessage(MRAData & data) {
             // 0x12c 0b100101100 -- chat list members, chat created by mac agent
 
             int messageType = data.getInt32(); // 0x3b,0x3d ??
-            int i2 = data.getInt32(); // 0x00 ??
-            kWarning() << "messageType =" << messageType;
-            const int CHAT_TEXT_MESSAGE = 0x0028;
-            if ( (messageType == 0x53) || (messageType == 0x120) || (messageType == 0x12c) ) {
+            int chatMessageType = data.getInt32(); // 0x00 ??
+            kWarning() << "messageType =" << messageType << "chatMessageType="<<chatMessageType;
+            const int CHAT_TEXT_MESSAGE = 0x0028; // 0b00101000
+            if ( isMemberListOfChat(messageType) ) {
 
                 isSystemMessage = true;
+                receiveChatMembersList(data, from);
 
-                QString chatTitle  = data.getUnicodeString(); // subject
-                int i3 = data.getInt32();
+            } else if ( isYouHaveBeenAddedToTheChat(chatMessageType) ) {
 
-                int numMembers = data.getInt32();
-
-                QList<QString> membersList;
-
-                for(; numMembers > 0; --numMembers) {
-                    membersList.append( data.getString() );
-                }
-
-                emit chatMembersListReceived(from, chatTitle, membersList);
-
-                Q_UNUSED(i2);
-                Q_UNUSED(i3);
+                isSystemMessage = true;
+                receiveChatInvitation(data, from);
 
             } else if ( (messageType & CHAT_TEXT_MESSAGE) ) {
-                kWarning() << "i1=" << messageType << "from=" <<from;
+                kWarning() << "chatMessageType=" << messageType << "from=" <<from;
                 QString chatTitle  = data.getUnicodeString(); // subject
                 QString chatMember = data.getString();        // sender
 
@@ -166,6 +156,45 @@ void MRAProtocolV123::readMessage(MRAData & data) {
         connection()->sendMsg(MRIM_CS_MESSAGE_RECV, &ackData);
     }
 }
+
+bool MRAProtocolV123::isMemberListOfChat(int chatMessageType) {
+    //  0x53  0b01010011 -- chat list members
+    // 0x120 0b100100000 -- updated (?) members list
+    // 0x12c 0b100101100 -- chat list members, chat created by mac agent
+    return (chatMessageType == 0x53) || (chatMessageType == 0x120) || (chatMessageType == 0x12c);
+}
+
+void MRAProtocolV123::receiveChatMembersList(MRAData & data, const QString &from) {
+
+    QString chatTitle  = data.getUnicodeString(); // subject
+    int i3 = data.getInt32();
+
+    int numMembers = data.getInt32();
+
+    QList<QString> membersList;
+
+    for(; numMembers > 0; --numMembers) {
+        membersList.append( data.getString() );
+    }
+
+    emit chatMembersListReceived(from, chatTitle, membersList);
+
+    Q_UNUSED(i3);
+
+}
+
+bool MRAProtocolV123::isYouHaveBeenAddedToTheChat(int chatMessageType) {
+    return (chatMessageType == 0x07);
+}
+
+void MRAProtocolV123::receiveChatInvitation(MRAData & data, const QString &from) {
+    QString chatTitle = data.getUnicodeString(); // subject
+    QString whoAdd    = data.getString();
+
+    emit chatIvitationReceived(from, chatTitle, whoAdd);
+}
+
+
 /*!
     \fn MRAMsg::sendMessage()
  */

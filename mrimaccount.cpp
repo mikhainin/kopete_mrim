@@ -114,6 +114,9 @@ void MrimAccount::connect( const Kopete::OnlineStatus& /*initialStatus*/ )
     QObject::connect(d->mraProto, SIGNAL(chatMembersListReceived(QString,QString,QList<QString>)),
                      this, SLOT(slotChatMembersListReceived(QString,QString,QList<QString>)));
 
+    QObject::connect(d->mraProto, SIGNAL(chatIvitationReceived(QString,QString,QString)),
+                     this, SLOT(slotChatInvitationReceived(QString,QString,QString)));
+
     if (d->mraProto->makeConnection(QString(d->username), QString(d->password)) ) {
         kWarning() << "connecting...";
     } else {
@@ -583,6 +586,19 @@ void MrimAccount::slotChatMembersListReceived(const QString &chat, const QString
     if (c) {
         c->slotChatMembersListReceived( title, list );
     }
+}
+
+void MrimAccount::slotChatInvitationReceived(const QString &chat, const QString &title, const QString &from) {
+    kWarning() << chat << title << from;
+
+    d->adding = MRAContactListEntry(-1);
+    d->adding.setFlags(0);
+    d->adding.setNick(title);
+    d->adding.setGroup(0);
+    d->adding.setAddress(chat);
+
+    d->mraProto->addToContactList( 0, 0, chat, title, myself()->contactId(), tr("Please, authorize me.") );
+    d->addingMetacontact = addContact(chat, title, 0, Kopete::Account::Temporary);
 }
 
 #include "mrimaccount.moc"

@@ -1,10 +1,6 @@
-v0.1
-<done>
-
 v0.2
 [kopete] avatars updating
 [proto]  load avatars via 3 permanent connections
-[proto]  accept chat's invitations
 
 v0.2.1
 [kopete] When moving contact, add group if it is not in server's contact list

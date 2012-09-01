@@ -49,6 +49,12 @@ signals:
 
 public slots:
 
+private:
+    bool isMemberListOfChat(int chatMessageType);
+    void receiveChatMembersList(MRAData & data, const QString &from);
+
+    bool isYouHaveBeenAddedToTheChat(int chatMessageType);
+    void receiveChatInvitation(MRAData & data, const QString &from);
 };
 
 #endif // MRAPROTOCOLV123_H
