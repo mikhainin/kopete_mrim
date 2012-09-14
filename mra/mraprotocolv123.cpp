@@ -78,7 +78,10 @@ void MRAProtocolV123::readMessage(MRAData & data) {
     int flags  = data.getInt32();
     QString from = data.getString();
     QString text;
-    if (flags & MESSAGE_FLAG_UNICODE) {
+
+    bool msgContainsUnicode = (flags & MESSAGE_FLAG_UNICODE) &&
+                                !(flags & MESSAGE_FLAG_UNKNOWN);
+    if (msgContainsUnicode) {
         if (flags & MESSAGE_FLAG_AUTHORIZE) {
             // QTextCodec *codec = QTextCodec::codecForName("UTF-16LE");
 
