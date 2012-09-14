@@ -1,9 +1,9 @@
 v0.2
-[kopete] avatars updating
 [proto]  load avatars via 3 permanent connections
 
 v0.2.1
 [kopete] When moving contact, add group if it is not in server's contact list
+[kopete] Switch protocol version
 
 v0.3
 [proto]  status message

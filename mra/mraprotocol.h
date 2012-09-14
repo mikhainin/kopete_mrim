@@ -95,6 +95,7 @@ private slots:
     void slotOnDataFromServer();
     void slotDisconnected(const QString &reason);
     void slotAvatarLoaded(bool success, MRAAvatarLoader *loader);
+    void slotOfflineMessagesReceived();
 
 signals:
     void contactListReceived(const MRAContactList &list);

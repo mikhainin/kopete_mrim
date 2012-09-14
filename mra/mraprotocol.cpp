@@ -20,14 +20,18 @@ struct MRAProtocol::MRAProtocolPrivate {
     int secCount;
 
     QTimer *keepAliveTimer;
-    bool contactListReceived;
+    QTimer *offlineMessagesTimer;
+    // bool contactListReceived;
     QList<MRAOfflineMessage*> offlineMessages;
     QList<MRAAvatarLoader*> avatarLoaders;
     int avatarLoadersCount;
 
-    MRAProtocolPrivate(): connection(0)
+    MRAProtocolPrivate()
+      : connection(0)
       , secCount(0)
-      , contactListReceived(false)
+      , keepAliveTimer(0)
+      , offlineMessagesTimer(0)
+      // , contactListReceived(false)
       , avatarLoadersCount(0) {
     }
 };
@@ -83,7 +87,7 @@ void MRAProtocol::loadChatMembersList(const QString &to) {
 
 void MRAProtocol::closeConnection() {
 
-    d->contactListReceived = false;
+    // d->contactListReceived = false;
 
     if (d->connection) {
         d->connection->disconnect();
@@ -262,7 +266,7 @@ void MRAProtocol::readContactList(MRAData & data)
 
     emit contactListReceived(list);
 
-    d->contactListReceived = true;
+    // d->contactListReceived = true;
 
     emitOfflineMessagesReceived();
 }
@@ -426,11 +430,30 @@ void MRAProtocol::readOfflineMessage(MRAData & data) {
 
     kWarning() << "offline message pushed" << d->offlineMessages.size();
 
-    if (d->contactListReceived) {
-        emitOfflineMessagesReceived();
+    if (d->offlineMessagesTimer == 0) {
+        d->offlineMessagesTimer = new QTimer(this);
+
+        connect(d->offlineMessagesTimer,SIGNAL(timeout()),
+                this, SLOT(slotOfflineMessagesReceived())
+                );
+
+        d->offlineMessagesTimer->setSingleShot(true);
+        d->offlineMessagesTimer->start(5000);
+
+    } else {
+        d->offlineMessagesTimer->start(5000);
     }
+//    if (d->contactListReceived) {
+//        emitOfflineMessagesReceived();
+//    }
 
 
+}
+
+void MRAProtocol::slotOfflineMessagesReceived() {
+    d->offlineMessagesTimer->deleteLater();
+    d->offlineMessagesTimer = 0;
+    emitOfflineMessagesReceived();
 }
 
 bool MessageDateLessThan(MRAOfflineMessage *a, MRAOfflineMessage *b) {
