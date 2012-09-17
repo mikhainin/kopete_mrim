@@ -79,9 +79,13 @@ typedef uint32_t mrim_msg_t;
     #define MESSAGE_FLAG_UNICODE        0x00100000
     #define MESSAGE_FLAG_UNKNOWN        0x00200000
     #define MESSAGE_FLAG_CHAT           0x00400000
-                                      //    200000 -- from old client
-                                      //    500084 -- from chat
-                                      //  0010000C -- auth request
+
+
+                                     //     100000
+                                     //     200000 -- from old client
+                                     //     500084 -- from chat, unicode message
+                                     //     400084 -- from chat, "contact list" message, msgtype = 0x142
+                                     //   0010000C -- auth request
 #define MAX_MULTICAST_RECIPIENTS 50
     #define MESSAGE_USERFLAGS_MASK	0x000036A8	// Flags that user is allowed to set himself
 
