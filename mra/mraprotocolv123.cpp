@@ -8,6 +8,7 @@
 #include "mracontactlist.h"
 #include "mracontactinfo.h"
 #include "mraprotocolv123.h"
+#include "../version.h"
 
 MRAProtocolV123::MRAProtocolV123(QObject *parent) :
     MRAProtocol(parent)
@@ -37,12 +38,13 @@ void MRAProtocolV123::sendLogin(const QString &login, const QString &password)
     data.addString(login);
     data.addBinaryString(QCryptographicHash::hash(password.toAscii(), QCryptographicHash::Md5) );
     data.addInt32(0x00000bff);
-    data.addString("client=\"magent\" version=\"5.10\" build=\"5282\"");
+    data.addString("client=\"kopete mrim plugin\" version=\"0.2\" build=\"5282\"");
     data.addString("ru");
     data.addInt32(0x10);
     data.addInt32(0x01);
     data.addString("geo-list");
-    data.addString("MRA 5.10 (build 5282);");
+    // data.addString("MRA 5.10 (build 5282);");
+    data.addString("Kopete MRIM plugin (v" + kopeteMrimVersion() + ");");
 
     connection()->sendMsg(MRIM_CS_LOGIN3, &data);
 }

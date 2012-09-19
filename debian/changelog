@@ -1,3 +1,11 @@
+kopete-mrim (0.2.0-1) unstable; urgency=low
+
+  * 0.2.0 beta
+
+    Added support for unicode, basic contactlist managment and initial chat support
+
+ -- Galanin Mikhail <bespoleznyak@narod.ru>  Wed, 19 Sep 2012 22:12:49 +0400
+
 kopete-mrim (0.1.0-1) unstable; urgency=low
 
   * Initial release 
