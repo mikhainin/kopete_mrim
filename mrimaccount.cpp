@@ -71,6 +71,7 @@ void MrimAccount::connect( const Kopete::OnlineStatus& /*initialStatus*/ )
     d->adding      = MRAContactListEntry();
 
     d->mraProto = new MRAProtocolV123(this); /// @todo: make the protocol's version optional
+    // d->mraProto = new MRAProtocol(this); /// @todo: make the protocol's version optional
 
     QObject::connect(d->mraProto, SIGNAL(contactListReceived(MRAContactList)),
             this, SLOT(slotReceivedContactList(MRAContactList)) );

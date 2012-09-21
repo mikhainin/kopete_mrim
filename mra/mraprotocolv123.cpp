@@ -115,6 +115,7 @@ void MRAProtocolV123::readMessage(MRAData & data) {
 
             //  0x3d  0b00111101 -- old client (non unicode message)
             //  0x3b  0b00111011 -- normal chat message
+            //  0x42  0b01000010 -- chat message (chat created by mac agent)
             //  0x2d  0b00101101 -- ???
             //  0x35  0b00110101 -- ???
             //  0x53  0b01010011 -- chat list members
@@ -135,8 +136,9 @@ void MRAProtocolV123::readMessage(MRAData & data) {
                 isSystemMessage = true;
                 receiveChatInvitation(data, from);
 
-            } else if ( (messageType & CHAT_TEXT_MESSAGE) ) {
+            } else if ( (messageType & CHAT_TEXT_MESSAGE) || (messageType == 0x42) ) {
                 kWarning() << "chatMessageType=" << messageType << "from=" <<from;
+
                 QString chatTitle  = data.getUnicodeString(); // subject
                 QString chatMember = data.getString();        // sender
 
