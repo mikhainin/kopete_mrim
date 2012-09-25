@@ -116,6 +116,7 @@ void MRAProtocolV123::readMessage(MRAData & data) {
             //  0x3d  0b00111101 -- old client (non unicode message)
             //  0x3b  0b00111011 -- normal chat message
             //  0x42  0b01000010 -- chat message (chat created by mac agent)
+            //  0x43  0b01000011 -- chat message (chat created by mac agent)
             //  0x2d  0b00101101 -- ???
             //  0x35  0b00110101 -- ???
             //  0x53  0b01010011 -- chat list members
@@ -125,7 +126,7 @@ void MRAProtocolV123::readMessage(MRAData & data) {
             int messageType = data.getInt32(); // 0x3b,0x3d ??
             int chatMessageType = data.getInt32(); // 0x00 ??
             kWarning() << "messageType =" << messageType << "chatMessageType="<<chatMessageType;
-            const int CHAT_TEXT_MESSAGE = 0x0028; // 0b00101000
+
             if ( isMemberListOfChat(messageType) ) {
 
                 isSystemMessage = true;
@@ -136,7 +137,7 @@ void MRAProtocolV123::readMessage(MRAData & data) {
                 isSystemMessage = true;
                 receiveChatInvitation(data, from);
 
-            } else if ( (messageType & CHAT_TEXT_MESSAGE) || (messageType == 0x42) ) {
+            } else if ( isChatTextMessage(messageType) ) {
                 kWarning() << "chatMessageType=" << messageType << "from=" <<from;
 
                 QString chatTitle  = data.getUnicodeString(); // subject
@@ -169,6 +170,15 @@ bool MRAProtocolV123::isMemberListOfChat(int chatMessageType) {
     // 0x120 0b100100000 -- updated (?) members list
     // 0x12c 0b100101100 -- chat list members, chat created by mac agent
     return (chatMessageType == 0x53) || (chatMessageType == 0x120) || (chatMessageType == 0x12c);
+}
+
+bool MRAProtocolV123::isChatTextMessage(int chatMessageType) {
+    const int CHAT_TEXT_MESSAGE = 0x0028;
+    //  0x42  0b01000010 -- chat message (chat created by mac agent)
+    //  0x43  0b01000011 -- chat message (chat created by mac agent)
+    return (chatMessageType & CHAT_TEXT_MESSAGE) ||
+            (chatMessageType == 0x42) ||
+            (chatMessageType == 0x43);
 }
 
 void MRAProtocolV123::receiveChatMembersList(MRAData & data, const QString &from) {

@@ -51,6 +51,7 @@ public slots:
 
 private:
     bool isMemberListOfChat(int chatMessageType);
+    bool isChatTextMessage(int chatMessageType);
     void receiveChatMembersList(MRAData & data, const QString &from);
 
     bool isYouHaveBeenAddedToTheChat(int chatMessageType);
