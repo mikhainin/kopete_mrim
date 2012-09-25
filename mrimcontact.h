@@ -48,8 +48,9 @@ public:
 
     void loadChatMembersList();
     void slotChatMembersListReceived(const QString &title, const QList<QString> &list);
-public:
-    virtual QList<KAction *> *customContextMenuActions( Kopete::ChatSession *manager );
+
+    virtual QList<KAction *> *customContextMenuActions(  );
+    virtual QList<KAction *> *customContextMenuActions( Kopete::ChatSession* );
 
 signals:
     void userInfoLoaded(const MRAContactInfo &info);
