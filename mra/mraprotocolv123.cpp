@@ -119,9 +119,11 @@ void MRAProtocolV123::readMessage(MRAData & data) {
             //  0x43  0b01000011 -- chat message (chat created by mac agent)
             //  0x2d  0b00101101 -- ???
             //  0x35  0b00110101 -- ???
+
             //  0x53  0b01010011 -- chat list members
             // 0x120 0b100100000 -- updated (?) members list
             // 0x12c 0b100101100 -- chat list members, chat created by mac agent
+            // 0x142 0b101000010 -- chat list members, chat created by mac agent (again!)
 
             int messageType = data.getInt32(); // 0x3b,0x3d ??
             int chatMessageType = data.getInt32(); // 0x00 ??
@@ -144,6 +146,9 @@ void MRAProtocolV123::readMessage(MRAData & data) {
                 QString chatMember = data.getString();        // sender
 
                 text = chatTitle + '(' + chatMember + ')' + '\n' + text;
+
+                kWarning() << "chatMessageType=" << messageType << "from=" <<from << "sender=" << chatMember;
+
             } else {
                 kWarning() << "unknown messageType =" << messageType;
             }
@@ -169,7 +174,11 @@ bool MRAProtocolV123::isMemberListOfChat(int chatMessageType) {
     //  0x53  0b01010011 -- chat list members
     // 0x120 0b100100000 -- updated (?) members list
     // 0x12c 0b100101100 -- chat list members, chat created by mac agent
-    return (chatMessageType == 0x53) || (chatMessageType == 0x120) || (chatMessageType == 0x12c);
+    // 0x142 0b101000010 -- chat list members, chat created by mac agent (again!)
+    return (chatMessageType == 0x53) ||
+           (chatMessageType == 0x120) ||
+           (chatMessageType == 0x12c) ||
+           (chatMessageType == 0x142);
 }
 
 bool MRAProtocolV123::isChatTextMessage(int chatMessageType) {
