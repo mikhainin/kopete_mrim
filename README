@@ -17,3 +17,6 @@ $ cmake -RCMAKE_INSTALL_PREFIX=/ -DEXEC_INSTALL_PREFIX=/usr -DSHARE_INSTALL_PREF
 $ make
 $ make install
 
+# only first time
+$ kbuildsycoca4 
+

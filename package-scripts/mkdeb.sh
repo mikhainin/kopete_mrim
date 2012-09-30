@@ -1,5 +1,5 @@
 #!/bin/sh
 
-apt-get install libkopete-dev
+apt-get install libkopete-dev git-buildpackage
 git-buildpackage --git-upstream-tree=master --git-ignore-new
 
