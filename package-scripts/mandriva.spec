@@ -22,8 +22,8 @@ License:        BSD
 Group:          Chat 
 URL:            https://github.com/negram/kopete_mrim
 
-# https://github.com/downloads/negram/kopete_mrim/kopete-mrim_0.2.0.orig.tar.gz
-Source0:        kopete-mrim_0.2.0.orig.tar.gz
+# https://github.com/downloads/negram/kopete_mrim/kopete-mrim-0.2.0-beta2.tar.gz
+Source0:        kopete-mrim-0.2.0-beta2.tar.gz
 
 BuildRoot:      %_tmppath/%name-buildroot
 
