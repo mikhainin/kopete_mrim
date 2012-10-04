@@ -44,20 +44,18 @@ MrimProtocol::MrimProtocol(QObject *parent, const QStringList &)
 
     setCapabilities( Kopete::Protocol::CanSendOffline );
 
-    kWarning() << __PRETTY_FUNCTION__;
     s_protocol = this;
 }
 
 MrimProtocol::~MrimProtocol()
 {
-    kWarning() << __PRETTY_FUNCTION__;
 }
 
 Kopete::Contact *MrimProtocol::deserializeContact(
     Kopete::MetaContact *metaContact, const QMap<QString, QString> &serializedData,
     const QMap<QString, QString> &/* addressBookData */)
 {
-    kWarning() << __PRETTY_FUNCTION__;
+//     kWarning() << __PRETTY_FUNCTION__;
     QString contactId = serializedData[ "contactId" ];
     QString accountId = serializedData[ "accountId" ];
     QString displayName = serializedData[ "displayName" ];
@@ -83,25 +81,21 @@ Kopete::Contact *MrimProtocol::deserializeContact(
 
 AddContactPage * MrimProtocol::createAddContactWidget( QWidget *parent, Kopete::Account * account )
 {
-    kWarning()<< "Creating Add Contact Page";
     return new MrimAddContactPage( parent, dynamic_cast<MrimAccount *>(account) );
 }
 
 KopeteEditAccountWidget * MrimProtocol::createEditAccountWidget( Kopete::Account *account, QWidget *parent )
 {
-    kWarning() << "Creating Edit Account Page";
     return new MrimEditAccountWidget( parent, account );
 }
 
 Kopete::Account *MrimProtocol::createNewAccount( const QString &accountId )
 {
-    kWarning() << __PRETTY_FUNCTION__;
     return new MrimAccount( this, accountId );
 }
 
 MrimProtocol *MrimProtocol::protocol()
 {
-    kWarning() << __PRETTY_FUNCTION__;
     return s_protocol;
 }
 
