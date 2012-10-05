@@ -57,6 +57,7 @@ bool MRAConnection::connectToHost()
 
     m_socket->connectToHost(list[0], list[1].toInt());
 
+    // TODO: error if not connected
     if (m_socket->waitForConnected(-1))
         kDebug() << "Connected!";
     else
@@ -119,7 +120,7 @@ ssize_t MRAConnection::read(char* buf, ssize_t size)
         temp += read;
 
     } while(temp != size);
-    kWarning() << "buf:" << size << " read:" << temp;
+    kDebug() << "buf:" << size << " read:" << temp;
     return temp;
 }
 
@@ -165,7 +166,7 @@ void MRAConnection::sendMsg(mrim_msg_t msg, MRAData *data)
 
     if (data != NULL) {
         currHeader.dlen = data->getSize();
-        kWarning() << "dlen: " << currHeader.dlen;
+        kDebug() << "dlen: " << currHeader.dlen;
     } else {
         currHeader.dlen = 0;
     }
