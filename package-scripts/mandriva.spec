@@ -23,7 +23,11 @@ Group:          Chat
 URL:            https://github.com/negram/kopete_mrim
 
 # https://github.com/downloads/negram/kopete_mrim/kopete-mrim-0.2.0-beta2.tar.gz
-Source0:        kopete-mrim-0.2.0-beta2.tar.gz
+%define source kopete-mrim-0.2.0-beta2
+
+# https://github.com/downloads/negram/kopete_mrim/kopete-mrim-0.2.0-beta2.tar.gz
+
+Source0:        %{source}.tar.gz
 
 BuildRoot:      %_tmppath/%name-buildroot
 
@@ -44,7 +48,7 @@ Mail.ru@agent protocol support for Kopete
 
 
 %prep
-%setup -q
+%setup -q -n %{source}
 
 
 %build
@@ -80,5 +84,5 @@ rm -rf %buildroot
 
 
 %changelog
-* Sun Sep 30 2012 Mikhail Galanin <bespoleznyak@narod.ru> 0.2.0-00beta2
+* Tue Oct  2 2012 Mikhail Galanin <bespoleznyak@narod.ru> 0.2.0-00beta2
 - first RPM for Mandriva
