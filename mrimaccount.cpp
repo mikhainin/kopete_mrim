@@ -563,6 +563,7 @@ void MrimAccount::slotAddContactAckReceived(int status, int contactId) {
     }
 
     if (d->addingMetacontact) {
+        d->addingMetacontact->setDisplayName( d->adding.nick() );
         if (!addContact(d->adding.address(), d->addingMetacontact, Kopete::Account::ChangeKABC)) {
             kWarning() << "Can't add contact";
             return;

@@ -1,5 +1,3 @@
-v0.2
-[proto]  load avatars via 3 permanent connections
 
 v0.2.1
 [kopete] When moving contact, add group if it is not in server's contact list
@@ -10,8 +8,12 @@ v0.3
 [proto]  delivery status
 [kopete] message status: sent, delivered, rejected, etc...
 [proto]  chats: add and remove users
-[protot] create rooms
+[proto]  create rooms
 [ui]     edit contacts
 
 v0.4
 [proto]  file transfer
+
+
+further
+[proto]  load avatars via 3 permanent connections

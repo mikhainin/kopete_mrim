@@ -4,9 +4,10 @@
 #include <kopeteaccountmanager.h>
 #include <kopeteaccount.h>
 
+#include "ui/mrimeditaccountwidget.h"
+
 #include "mrimcontact.h"
 #include "mrimaddcontactpage.h"
-#include "mrimeditaccountwidget.h"
 #include "mrimaccount.h"
 #include "mrimprotocol.h"
 #include "mra/mra_proto.h"
