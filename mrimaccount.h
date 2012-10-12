@@ -87,6 +87,13 @@ public:
     void setPassword(const QByteArray &arg);
     const QByteArray getPassword() const;
 
+
+    Q_PROPERTY(QByteArray protocolVersion READ getProtocolVersion WRITE setProtocolVersion)
+
+    void setProtocolVersion(const QByteArray &arg);
+    const QByteArray getProtocolVersion() const;
+
+
     void sendMessage(const QString &to, const QString &text);
 
     void loadChatMembersList(const QString &to);

@@ -20,6 +20,7 @@
 struct MrimAccount::Private {
     QByteArray username;
     QByteArray password;
+    QByteArray protocolVersion;
     MRAProtocol *mraProto;
     MRAContactListEntry adding;
     MRAContactList contactList;
@@ -70,8 +71,11 @@ void MrimAccount::connect( const Kopete::OnlineStatus& /*initialStatus*/ )
     d->contactList = MRAContactList();
     d->adding      = MRAContactListEntry();
 
-    d->mraProto = new MRAProtocolV123(this); /// @todo: make the protocol's version optional
-    // d->mraProto = new MRAProtocol(this); /// @todo: make the protocol's version optional
+    if (d->protocolVersion == "1.8") {
+        d->mraProto = new MRAProtocol(this);
+    } else {
+        d->mraProto = new MRAProtocolV123(this);
+    }
 
     QObject::connect(d->mraProto, SIGNAL(contactListReceived(MRAContactList)),
             this, SLOT(slotReceivedContactList(MRAContactList)) );
@@ -317,6 +321,7 @@ void MrimAccount::parseConfig()
 {
     d->username = configGroup()->readEntry("username").toLocal8Bit();
     d->password = configGroup()->readEntry("password").toLocal8Bit();
+    d->protocolVersion = configGroup()->readEntry("protocolVersion").toLocal8Bit();
 
 }
 
@@ -339,6 +344,15 @@ const QByteArray MrimAccount::getPassword() const
 {
     return d->password;
 }
+
+void MrimAccount::setProtocolVersion(const QByteArray &arg) {
+    d->protocolVersion = arg;
+}
+
+const QByteArray MrimAccount::getProtocolVersion() const {
+    return d->protocolVersion;
+}
+
 
 
 void MrimAccount::slotReceivedContactList(const MRAContactList &list) {

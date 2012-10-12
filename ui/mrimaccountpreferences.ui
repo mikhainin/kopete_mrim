@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>379</width>
-    <height>380</height>
+    <width>195</width>
+    <height>221</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,6 +22,9 @@
    </property>
    <item>
     <widget class="QTabWidget" name="tabWidget11">
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
        <string>B&amp;asic Setup</string>
@@ -77,6 +80,34 @@
            </widget>
           </item>
          </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab_2">
+      <attribute name="title">
+       <string>Settings</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Protocol version:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="kcfg_protoVersion">
+         <item>
+          <property name="text">
+           <string>1.8</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>1.23</string>
+          </property>
+         </item>
         </widget>
        </item>
       </layout>

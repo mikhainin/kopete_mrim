@@ -13,71 +13,55 @@ MrimEditAccountWidget::MrimEditAccountWidget( QWidget* parent, Kopete::Account* 
     , KopeteEditAccountWidget(account)
 {
     kWarning() << __PRETTY_FUNCTION__;
-    
-    
+
+
     QVBoxLayout *layout = new QVBoxLayout( this );
     QWidget *widget = new QWidget( this );
-    
-	m_preferencesWidget.setupUi( widget );
 
-	if (account) {
-		group = account->configGroup();
-	
-		m_preferencesWidget.kcfg_username->setText(group->readEntry("username"));
-		m_preferencesWidget.kcfg_password->setText(group->readEntry("password"));
-//		m_preferencesWidget.kcfg_lastName->setText(group->readEntry("lastName"));
-//		m_preferencesWidget.kcfg_emailAddress->setText(group->readEntry("emailAddress"));
-	} else {
+    m_preferencesWidget.setupUi( widget );
 
-		// In this block, we populate the default values
-		QString password, login;
-		QStringList names;
+    if (account) {
+        group = account->configGroup();
 
-		// Create a KUser object with default values
-		// We May be able to get username and Real Name from here
-		KUser user = KUser();
+        m_preferencesWidget.kcfg_username->setText(group->readEntry("username"));
+        m_preferencesWidget.kcfg_password->setText(group->readEntry("password"));
+        m_preferencesWidget.kcfg_protoVersion->setCurrentIndex(
+                            m_preferencesWidget.kcfg_protoVersion->findText(group->readEntry("protoVersion"))
+                         );
+    } else {
 
-		if (user.isValid()) {
-			// Get the login name from KUser
-			login = user.loginName();
+        // In this block, we populate the default values
+        QString password, login;
+        QStringList names;
 
-			// First Get the Names from KUser
-			names = user.property(KUser::FullName).toString().split(' ');
-		}
+        // Create a KUser object with default values
+        // We May be able to get username and Real Name from here
+        KUser user = KUser();
 
-		// Next try via the default identity
-		KPIMIdentities::IdentityManager manager(true);
-		const KPIMIdentities::Identity & ident = manager.defaultIdentity();
+        if (user.isValid()) {
+            // Get the login name from KUser
+            login = user.loginName();
 
-		if (! ident.isNull()) {
-			// Get the full name from identity (only if not available via KUser)
-			if ( names.isEmpty() )
-				names = ident.fullName().split(' ');
+            // First Get the Names from KUser
+            names = user.property(KUser::FullName).toString().split(' ');
+        }
 
-			// Get the email address
-			// emailAddress = ident.emailAddr();
-		}
+        // Next try via the default identity
+        KPIMIdentities::IdentityManager manager(true);
+        const KPIMIdentities::Identity & ident = manager.defaultIdentity();
 
-		// Split the names array into firstName and lastName
-		/*
-        if (! names.isEmpty()) {
-			firstName = names.takeFirst();
-			lastName = names.join(" ");
-		}
-        */
+        if (! ident.isNull()) {
+            // Get the full name from identity (only if not available via KUser)
+            if ( names.isEmpty() )
+                names = ident.fullName().split(' ');
+        }
 
-		if (! login.isEmpty())
-			m_preferencesWidget.kcfg_username->setText(login);
-		if (! password.isEmpty())
-			m_preferencesWidget.kcfg_password->setText(password);
-        /*
-		if (! lastName.isEmpty())
-			m_preferencesWidget.kcfg_lastName->setText(lastName);
-		if (! emailAddress.isEmpty())
-			m_preferencesWidget.kcfg_emailAddress->setText(emailAddress);
-         */
+        if (! login.isEmpty())
+            m_preferencesWidget.kcfg_username->setText(login);
+        if (! password.isEmpty())
+            m_preferencesWidget.kcfg_password->setText(password);
 
-	}
+    }
     layout->addWidget( widget );
 }
 
@@ -88,20 +72,18 @@ MrimEditAccountWidget::~MrimEditAccountWidget()
 
 Kopete::Account* MrimEditAccountWidget::apply() {
     kWarning() << __PRETTY_FUNCTION__;
-    
+
     if (! account() ) {
-		setAccount( new MrimAccount ( MrimProtocol::protocol(), m_preferencesWidget.kcfg_username->text()));
+        setAccount( new MrimAccount ( MrimProtocol::protocol(), m_preferencesWidget.kcfg_username->text()));
         kWarning() << "Write Group!";
-	}
+    }
 
-	account()->configGroup()->writeEntry("username", m_preferencesWidget.kcfg_username->text());
-	account()->configGroup()->writeEntry("password", m_preferencesWidget.kcfg_password->text());
-//	group->writeEntry("lastName", m_preferencesWidget->kcfg_lastName->text());
-//	group->writeEntry("emailAddress", m_preferencesWidget->kcfg_emailAddress->text());
+    account()->configGroup()->writeEntry("username", m_preferencesWidget.kcfg_username->text());
+    account()->configGroup()->writeEntry("password", m_preferencesWidget.kcfg_password->text());
+    account()->configGroup()->writeEntry("protoVersion", m_preferencesWidget.kcfg_protoVersion->currentText());
+    ((MrimAccount *)account())->parseConfig();
 
-	((MrimAccount *)account())->parseConfig();
-
-	return account();
+    return account();
 }
 
 bool MrimEditAccountWidget::validateData() {
