@@ -200,8 +200,9 @@ bool MRAProtocolV123::isChatTextMessage(int chatMessageType) {
             (chatMessageType == 0x41) ||
             (chatMessageType == 0x42) ||
             (chatMessageType == 0x43) ||
-            (chatMessageType == 0x50) || 
-            (chatMessageType == 0x54) || 
+            (chatMessageType == 0x50) ||
+            (chatMessageType == 0x54) ||
+            (chatMessageType == 0x56) ||
             (chatMessageType == 0x57)   ;
 }
 
