@@ -187,6 +187,7 @@ bool MRAProtocolV123::isMemberListOfChat(int chatMessageType) {
            (chatMessageType == 0x13c) ||
            (chatMessageType == 0x142) ||
            (chatMessageType == 0x144) ||
+           (chatMessageType == 0x157) ||
            (chatMessageType == 0x15e);
 }
 
@@ -197,6 +198,7 @@ bool MRAProtocolV123::isChatTextMessage(int chatMessageType) {
     //  0x42  0b01000010 -- chat message (chat created by mac agent)
     //  0x43  0b01000011 -- chat message (chat created by mac agent)
     return (chatMessageType & CHAT_TEXT_MESSAGE) ||
+            (chatMessageType == 0x40) || // from Kopete
             (chatMessageType == 0x41) ||
             (chatMessageType == 0x42) ||
             (chatMessageType == 0x43) ||
