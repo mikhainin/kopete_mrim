@@ -179,6 +179,8 @@ bool MRAProtocolV123::isMemberListOfChat(int chatMessageType) {
     // 0x13c 0b100111100-- chat list members
     // 0x142 0b101000010 -- chat list members, chat created by mac agent (again!)
     // 0x144
+    // 0x154
+    // 0x157
     // 0x15e 0b101011110 
     return (chatMessageType == 0x53 ) ||
            (chatMessageType == 0x105) ||
@@ -189,6 +191,7 @@ bool MRAProtocolV123::isMemberListOfChat(int chatMessageType) {
            (chatMessageType == 0x13c) ||
            (chatMessageType == 0x142) ||
            (chatMessageType == 0x144) ||
+           (chatMessageType == 0x154) ||
            (chatMessageType == 0x157) ||
            (chatMessageType == 0x15e);
 }
