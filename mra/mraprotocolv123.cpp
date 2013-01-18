@@ -173,6 +173,7 @@ void MRAProtocolV123::readMessage(MRAData & data) {
 bool MRAProtocolV123::isMemberListOfChat(int chatMessageType) {
     //  0x53  0b01010011 -- chat list members
     // 0x105 0b100000101 -- the same
+    // 0x106 0b100000110 -- the same
     // 0x120 0b100100000 -- updated (?) members list
     // 0x12c 0b100101100 -- chat list members, chat created by mac agent
     // 0x13c 0b100111100-- chat list members
@@ -181,6 +182,7 @@ bool MRAProtocolV123::isMemberListOfChat(int chatMessageType) {
     // 0x15e 0b101011110 
     return (chatMessageType == 0x53 ) ||
            (chatMessageType == 0x105) ||
+           (chatMessageType == 0x106) ||
            (chatMessageType == 0x11f) ||
            (chatMessageType == 0x120) ||
            (chatMessageType == 0x12c) ||
