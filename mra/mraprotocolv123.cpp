@@ -105,6 +105,15 @@ void MRAProtocolV123::readMessage(MRAData & data) {
     }
 
     bool isSystemMessage = (flags & MESSAGE_FLAG_SYSTEM) != 0;
+    /*
+    messageType = 64 chatMessageType= 5: user has deleted itself from the chat
+    messageType = 96 chatMessageType= 3: user invited smb to the chat
+    messageType = 64 chatMessageType= 0: message
+    messageType = 350 chatMessageType= 2: members' list
+    messageType = 61 chatMessageType= 7: you have been invited to a chat
+    messageType = 61 chatMessageType= 9: you have been kicked off from the chat
+
+    */
 
     if ( (flags & MESSAGE_FLAG_NOTIFY) != 0 ) {
         emit typingAMessage( from );
