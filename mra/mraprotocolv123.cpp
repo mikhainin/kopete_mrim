@@ -115,6 +115,13 @@ void MRAProtocolV123::readMessage(MRAData & data) {
 
     */
 
+    const int CHAT_MESSAGE_TEXT = 0;
+    const int CHAT_MESSAGE_PARTICIPANTS_LIST = 2;
+    const int CHAT_MESSAGE_USER_INVITED = 3;
+    const int CHAT_MESSAGE_USER_DELETED_ITSELF = 5;
+    const int CHAT_MESSAGE_YOU_HAVE_BEEN_INVITED = 7;
+    const int CHAT_MESSAGE_YOU_HAVE_BEEN_KICKED_OFF = 9;
+
     if ( (flags & MESSAGE_FLAG_NOTIFY) != 0 ) {
         emit typingAMessage( from );
     } else if ( (flags & MESSAGE_FLAG_AUTHORIZE) != 0) {
@@ -138,17 +145,17 @@ void MRAProtocolV123::readMessage(MRAData & data) {
             int chatMessageType = data.getInt32(); // 0x00 ??
             kWarning() << "messageType =" << messageType << "chatMessageType="<<chatMessageType;
 
-            if ( isMemberListOfChat(messageType) ) {
+            if ( chatMessageType == CHAT_MESSAGE_PARTICIPANTS_LIST ) {
 
                 isSystemMessage = true;
                 receiveChatMembersList(data, from);
 
-            } else if ( isYouHaveBeenAddedToTheChat(chatMessageType) ) {
+            } else if ( chatMessageType == CHAT_MESSAGE_YOU_HAVE_BEEN_INVITED ) {
 
                 isSystemMessage = true;
                 receiveChatInvitation(data, from);
 
-            } else if ( isChatTextMessage(messageType) ) {
+            } else if ( chatMessageType == CHAT_MESSAGE_TEXT ) {
                 kWarning() << "chatMessageType=" << messageType << "from=" <<from;
 
                 QString chatTitle  = data.getUnicodeString(); // subject
@@ -157,7 +164,12 @@ void MRAProtocolV123::readMessage(MRAData & data) {
                 text = chatTitle + '(' + chatMember + ')' + '\n' + text;
 
                 kWarning() << "chatMessageType=" << messageType << "from=" <<from << "sender=" << chatMember;
-
+            } else if ( chatMessageType == CHAT_MESSAGE_USER_INVITED ) {
+                // TODO
+            } else if ( chatMessageType == CHAT_MESSAGE_USER_DELETED_ITSELF ) {
+                // TODO
+            } else if ( chatMessageType == CHAT_MESSAGE_YOU_HAVE_BEEN_KICKED_OFF ) {
+                // TODO
             } else {
                 kWarning() << "unknown messageType =" << messageType;
             }
