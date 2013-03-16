@@ -98,8 +98,6 @@ public:
 
     void loadChatMembersList(const QString &to);
 
-    void addNewContactToServerList(const QString &email, const QString &nick, const QString &groupName, Kopete::MetaContact *m);
-
     void contactTypingAMessage( const QString &to );
 
     void loadAvatar( const QString &email );
@@ -113,6 +111,14 @@ public:
     void renameContact( const QString &email, const QString &newName );
 
     void moveContactToGroup( const QString &email, const QString &newGroupName );
+
+    int getGroupIdByName( const QString &groupName );
+
+    int addGroupAndReturnId(const QString groupName);
+
+    MRAProtocol *getMraProtocol();
+
+
 
 signals:
 
@@ -141,6 +147,7 @@ public slots:
     void slotTypingAMessage( const QString &from );
 
     void requestForAuthorization( const QString &contact );
+
 private slots:
 
     void slotReceivedContactList(const MRAContactList &list);

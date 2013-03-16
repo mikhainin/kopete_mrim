@@ -52,6 +52,10 @@ MrimAccount::~MrimAccount()
     delete d;
 }
 
+MRAProtocol *MrimAccount::getMraProtocol() {
+    return d->mraProto;
+}
+
 bool MrimAccount::createContact(const QString& contactId, Kopete::MetaContact* parentContact)
 {
     kWarning() << __PRETTY_FUNCTION__;
@@ -193,7 +197,7 @@ void MrimAccount::authorizeRequestReceived(const QString &from, const QString &t
                     );
 
 
-        d->mraProto->addToContactList( 0, 0, from, from, myself()->contactId(), tr("Please, authorize me.") );
+        d->mraProto->addToContactList( 0, 0, from, from, myself()->contactId(), tr("Please, authorize me."), 0 );
         d->mraProto->authorizeContact(from);
 
 
@@ -240,7 +244,6 @@ void MrimAccount::setOnlineStatus(const Kopete::OnlineStatus& status , const Kop
 
 void MrimAccount::setStatusMessage(const Kopete::StatusMessage& statusMessage)
 {
-    // kWarning() << __PRETTY_FUNCTION__;
     /// TODO: set status message
     Q_UNUSED(statusMessage);
 }
@@ -284,8 +287,6 @@ void MrimAccount::slotGoOnline ()
 
 void MrimAccount::slotGoOffline()
 {
-    kWarning() << __PRETTY_FUNCTION__;
-
     foreach( Kopete::Contact *contact, contacts() ) {
         contact->setOnlineStatus( MrimProtocol::protocol()->mrimOffline );
     }
@@ -384,22 +385,13 @@ void MrimAccount::slotReceivedContactList(const MRAContactList &list) {
     }
 }
 
-void MrimAccount::addNewContactToServerList(const QString &email, const QString &nick, const QString &groupName, Kopete::MetaContact *m ) {
-    int flags = 0;
+int MrimAccount::getGroupIdByName( const QString &groupName ) {
+    return d->contactList.groups().indexOf(groupName);
+}
 
-    int gid = d->contactList.groups().indexOf(groupName);
-
-    kWarning() << flags << gid << email << groupName;
-
-    d->adding = MRAContactListEntry(-1);
-    d->adding.setFlags(flags);
-    d->adding.setNick(nick);
-    d->adding.setGroup(gid);
-    d->adding.setAddress(email);
-
-    d->mraProto->addToContactList( flags, gid, email, nick, myself()->contactId(), tr("Please, authorize me.") );
-
-    d->addingMetacontact = m;
+int MrimAccount::addGroupAndReturnId(const QString groupName) {
+    d->contactList.groups().add(MRAGroup(groupName));
+    return getGroupIdByName(groupName);
 }
 
 void MrimAccount::slotUserStatusChanged(const QString &user, int newStatus) {
@@ -613,7 +605,7 @@ void MrimAccount::slotChatInvitationReceived(const QString &chat, const QString 
     d->adding.setGroup(0);
     d->adding.setAddress(chat);
 
-    d->mraProto->addToContactList( 0, 0, chat, title, myself()->contactId(), tr("Please, authorize me.") );
+    d->mraProto->addToContactList( 0, 0, chat, title, myself()->contactId(), tr("Please, authorize me."), 0 );
     d->addingMetacontact = addContact(chat, title, 0, Kopete::Account::Temporary);
 }
 

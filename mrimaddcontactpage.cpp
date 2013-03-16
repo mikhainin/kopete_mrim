@@ -3,6 +3,9 @@
 #include <kopetemetacontact.h>
 #include <kopetegroup.h>
 
+#include "mra/mracontactlistentry.h"
+
+#include "addcontacttask.h"
 #include "mrimaccount.h"
 
 #include "mrimaddcontactpage.h"
@@ -11,7 +14,6 @@ MrimAddContactPage::MrimAddContactPage(QWidget *parent, MrimAccount *a) :
     AddContactPage(parent)
   , m_account(a)
 {
-    kWarning() << __PRETTY_FUNCTION__;
     QVBoxLayout* l = new QVBoxLayout( this );
     QWidget* w = new QWidget();
     m_mrimAddUI.setupUi( w );
@@ -20,25 +22,39 @@ MrimAddContactPage::MrimAddContactPage(QWidget *parent, MrimAccount *a) :
 
 MrimAddContactPage::~MrimAddContactPage()
 {
-    kWarning() << __PRETTY_FUNCTION__;
 }
 
 bool MrimAddContactPage::apply( Kopete::Account* /*a*/, Kopete::MetaContact* m )
 {
-    kWarning() << __PRETTY_FUNCTION__;
 
-    m_account->addNewContactToServerList(
-                      m_mrimAddUI.editEmail->text()
-                    , m_mrimAddUI.editNick->text()
-                    , m->groups()[0]->displayName()
-                    , m
-                );
+    MRAContactListEntry ce;
+
+    ce.setAddress( m_mrimAddUI.editEmail->text() );
+    ce.setNick( m_mrimAddUI.editNick->text() );
+
+
+    AddContactTask *task = new AddContactTask(m_account);
+
+    task->setGroupName( m->groups()[0]->displayName() );
+    task->setNickName( m_mrimAddUI.editNick->text() );
+    task->setEmail( m_mrimAddUI.editEmail->text() );
+    task->setMetaContact( m );
+    task->run();
+
     return true;
 }
 
 bool MrimAddContactPage::validateData()
 {
-    kWarning() << __PRETTY_FUNCTION__;
+    if (m_mrimAddUI.editEmail->text().isEmpty()) {
+        return false;
+    }
+
+    if (m_mrimAddUI.editNick->text().isEmpty()) {
+        /// TODO: resolve nickname
+        m_mrimAddUI.editNick->setText(m_mrimAddUI.editEmail->text());
+    }
+
     return true;
 }
 

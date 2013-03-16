@@ -302,7 +302,7 @@ void MrimContact::sync(unsigned int changed) {
     if (changed & MovedBetweenGroup) {
         const QString &newGroup = metaContact()->groups().first()->displayName();
         a->moveContactToGroup( contactId(), newGroup );
-    } else if (changed & DisplayNameChanged){
+    } else if (changed & DisplayNameChanged) {
         a->renameContact( contactId(), metaContact()->displayName() );
     } else {
         kWarning() << "unknown change action:" << changed;

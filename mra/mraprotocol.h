@@ -14,6 +14,25 @@ class MRAContactList;
 class MRAConnection;
 class MRAContactListEntry;
 
+
+
+class IMRAProtocolGroupReceiver {
+public:
+    virtual ~IMRAProtocolGroupReceiver() {}
+
+    virtual void groupAddedSuccessfully() = 0;
+    virtual void groupAddFailed(int status) = 0;
+};
+
+class IMRAProtocolContactReceiver {
+public:
+    virtual ~IMRAProtocolContactReceiver() {}
+
+    virtual void contactAddedSuccessfully() = 0;
+    virtual void contactAddFailed(int status) = 0;
+
+};
+
 class MRAProtocol : public QObject
 {
     Q_OBJECT
@@ -41,7 +60,7 @@ public:
 
 
     virtual void handleMessage(const ulong &msg, MRAData *data);
-    virtual void addToContactList(int flags, int groupId, const QString &address, const QString &nick, const QString &myAddress, const QString &authMessage);
+    virtual void addToContactList(int flags, int groupId, const QString &address, const QString &nick, const QString &myAddress, const QString &authMessage, IMRAProtocolContactReceiver *contactAddReceiver);
     virtual void authorizeContact(const QString &contact);
     virtual void sendAuthorizationRequest(const QString &contact, const QString &myAddress, const QString &message);
     virtual void removeContact(const QString &contact);
@@ -60,6 +79,8 @@ public:
     virtual void editContact(uint id, const QString &contact, uint groupId, const QString &newContactName);
 
     virtual void loadChatMembersList(const QString &to);
+
+    virtual void addGroupToContactList(const QString &groupName, IMRAProtocolGroupReceiver *groupAddedReveiver);
 
 private:
     class MRAProtocolPrivate;
@@ -90,6 +111,8 @@ protected:
 
     virtual void readAddContactAck(MRAData & data);
 
+    void setGroupReceiver(IMRAProtocolGroupReceiver *groupReceiver);
+    void setContactReceiver(IMRAProtocolContactReceiver *contactReceiver);
 private slots:
     void slotPing();
     void slotOnDataFromServer();

@@ -29,13 +29,15 @@ public:
 
     void editContact(uint id, const QString &contact, uint groupId, const QString &newContactName);
 
-    virtual void addToContactList(int flags, int groupId, const QString &address, const QString &nick, const QString &myAddress, const QString &authMessage);
-//    virtual void authorizeContact(const QString &contact);
+    virtual void addToContactList(int flags, int groupId, const QString &address, const QString &nick, const QString &myAddress, const QString &authMessage, IMRAProtocolContactReceiver *contactAddReceiver);
+
     virtual void sendAuthorizationRequest(const QString &contact, const QString &myAddress, const QString &message);
 
     virtual void readUserInfo(MRAData & data);
 
     virtual void loadChatMembersList(const QString &to);
+
+    virtual void addGroupToContactList(const QString &groupName, IMRAProtocolGroupReceiver *groupAddedReveiver);
 
 protected:
     virtual void readMessage(MRAData & data);

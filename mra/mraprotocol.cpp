@@ -21,18 +21,21 @@ struct MRAProtocol::MRAProtocolPrivate {
 
     QTimer *keepAliveTimer;
     QTimer *offlineMessagesTimer;
-    // bool contactListReceived;
     QList<MRAOfflineMessage*> offlineMessages;
     QList<MRAAvatarLoader*> avatarLoaders;
     int avatarLoadersCount;
+    IMRAProtocolGroupReceiver *grouReceiver;
+    IMRAProtocolContactReceiver *contactReceiver;
 
     MRAProtocolPrivate()
       : connection(0)
       , secCount(0)
       , keepAliveTimer(0)
       , offlineMessagesTimer(0)
-      // , contactListReceived(false)
-      , avatarLoadersCount(0) {
+      , avatarLoadersCount(0)
+      , grouReceiver(0)
+      , contactReceiver(0)
+    {
     }
 };
 
@@ -82,8 +85,28 @@ bool MRAProtocol::makeConnection(const QString &login, const QString &password)
 }
 
 void MRAProtocol::loadChatMembersList(const QString &to) {
-    Q_UNUSED(to);
+    Q_UNUSED(to); // proto v1.23
 }
+
+
+
+
+void MRAProtocol::addGroupToContactList(const QString &groupName, IMRAProtocolGroupReceiver *groupAddedReveiver) {
+
+    MRAData addData;
+
+    addData.addInt32(CONTACT_FLAG_GROUP);
+    addData.addInt32(0);
+    addData.addString("");
+    addData.addString(groupName);
+    addData.addString(""); // unused LPS
+
+    d->connection->sendMsg(MRIM_CS_ADD_CONTACT, &addData);
+
+    setGroupReceiver(groupAddedReveiver);
+
+}
+
 
 void MRAProtocol::closeConnection() {
 
@@ -363,6 +386,9 @@ void MRAProtocol::authorizeContact(const QString &contact) {
 }
 
 void MRAProtocol::sendAuthorizationRequest(const QString &contact, const QString &myAddress, const QString &message) {
+
+    Q_UNUSED(myAddress); // proto v1.23
+
     MRAData authData;
     unsigned long int authFlags = MESSAGE_FLAG_NORECV | MESSAGE_FLAG_AUTHORIZE | MESSAGE_FLAG_UNICODE;
     authData.addInt32(authFlags);
@@ -374,7 +400,7 @@ void MRAProtocol::sendAuthorizationRequest(const QString &contact, const QString
 
 }
 
-void MRAProtocol::addToContactList(int flags, int groupId, const QString &address, const QString &nick, const QString &myAddress, const QString &authMessage) {
+void MRAProtocol::addToContactList(int flags, int groupId, const QString &address, const QString &nick, const QString &myAddress, const QString &authMessage, IMRAProtocolContactReceiver *contactAddReceiver) {
 
     Q_UNUSED(authMessage); // in proto v1.23
     Q_UNUSED(myAddress); // in proto v1.23
@@ -388,11 +414,14 @@ void MRAProtocol::addToContactList(int flags, int groupId, const QString &addres
     addData.addString(" "); // unused LPS
 
     d->connection->sendMsg(MRIM_CS_ADD_CONTACT, &addData);
+
+    setContactReceiver(contactAddReceiver);
 }
 
 void MRAProtocol::removeContact(const QString &contact) {
-    addToContactList(CONTACT_FLAG_REMOVED, 0, contact, contact, "", "");
+    addToContactList(CONTACT_FLAG_REMOVED, 0, contact, contact, "", "", 0);
 }
+
 
 void MRAProtocol::readUserSataus(MRAData & data) {
     int status   = data.getInt32();
@@ -620,8 +649,27 @@ void MRAProtocol::readAddContactAck(MRAData & data) {
     int status    = data.getInt32();
     int contactId = data.getInt32();
 
-    emit addContactAckReceived(status, contactId);
+    if (d->grouReceiver) {
+        // TODO: it may be not only successfully
+        d->grouReceiver->groupAddedSuccessfully();
+        d->grouReceiver = 0;
+    } else if (d->contactReceiver) {
+        // TODO: it may be not only successfully
+        d->contactReceiver->contactAddedSuccessfully();
+        d->contactReceiver = 0;
+    } else {
+        emit addContactAckReceived(status, contactId);
+    }
 }
+
+void MRAProtocol::setGroupReceiver(IMRAProtocolGroupReceiver*groupReceiver) {
+    d->grouReceiver = groupReceiver;
+}
+
+void MRAProtocol::setContactReceiver(IMRAProtocolContactReceiver *contactReceiver) {
+    d->contactReceiver = contactReceiver;
+}
+
 
 void MRAProtocol::handleMessage(const ulong &msg, MRAData *data)
 {

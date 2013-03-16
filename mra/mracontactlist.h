@@ -8,6 +8,10 @@
 struct  MRAGroup {
     ulong flags;
     QString name;
+    MRAGroup(const QString &name) : flags(0), name(name) {
+    }
+    MRAGroup() : flags(0) {
+    }
 };
 
 
@@ -15,7 +19,7 @@ class MRAGroups {
 private:
     QVector <MRAGroup>m_groups;
 public:
-    void add(MRAGroup& newGroup){
+    void add(const MRAGroup& newGroup){
         m_groups.push_back(newGroup);
     }
 

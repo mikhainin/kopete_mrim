@@ -106,10 +106,10 @@ void MRAProtocolV123::readMessage(MRAData & data) {
 
     bool isSystemMessage = (flags & MESSAGE_FLAG_SYSTEM) != 0;
     /*
-    messageType = 64 chatMessageType= 5: user has deleted itself from the chat
-    messageType = 96 chatMessageType= 3: user invited smb to the chat
     messageType = 64 chatMessageType= 0: message
     messageType = 350 chatMessageType= 2: members' list
+    messageType = 96 chatMessageType= 3: user invited smb to the chat
+    messageType = 64 chatMessageType= 5: user has deleted itself from the chat
     messageType = 61 chatMessageType= 7: you have been invited to a chat
     messageType = 61 chatMessageType= 9: you have been kicked off from the chat
 
@@ -202,7 +202,7 @@ bool MRAProtocolV123::isMemberListOfChat(int chatMessageType) {
     // 0x144
     // 0x154
     // 0x157
-    // 0x15e 0b101011110 
+    // 0x15e 0b101011110
     return (chatMessageType == 0x53 ) ||
            (chatMessageType == 0x105) ||
            (chatMessageType == 0x106) ||
@@ -233,7 +233,7 @@ bool MRAProtocolV123::isChatTextMessage(int chatMessageType) {
             (chatMessageType == 0x50) ||
             (chatMessageType == 0x54) ||
             (chatMessageType == 0x56) ||
-            (chatMessageType == 0x57) 
+            (chatMessageType == 0x57)
             ;
 }
 
@@ -293,7 +293,7 @@ void MRAProtocolV123::loadChatMembersList(const QString &to) {
     data.addString("");
     data.addString("");
     data.addInt32(0x04); // whatis 4?
-    data.addInt32(0x01); // whatis 4?
+    data.addInt32(0x01); // whatis 1?
 
     connection()->sendMsg(MRIM_CS_MESSAGE, &data);
 
@@ -414,7 +414,7 @@ void MRAProtocolV123::readAnketaInfo(MRAData & data) {
     Q_UNUSED(contact);
 } */
 
-void MRAProtocolV123::addToContactList(int flags, int groupId, const QString &address, const QString &nick, const QString &myAddress, const QString &authMessage) {
+void MRAProtocolV123::addToContactList(int flags, int groupId, const QString &address, const QString &nick, const QString &myAddress, const QString &authMessage, IMRAProtocolContactReceiver *contactAddReceiver) {
 /*
 #define MRIM_CS_ADD_CONTACT			0x1019	// C -> S
     // added by negram. since v1.23:
@@ -448,6 +448,40 @@ void MRAProtocolV123::addToContactList(int flags, int groupId, const QString &ad
 
     connection()->sendMsg(MRIM_CS_ADD_CONTACT, &addData);
 
+    setContactReceiver(contactAddReceiver);
+
+}
+
+void MRAProtocolV123::addGroupToContactList(const QString &groupName, IMRAProtocolGroupReceiver *groupAddedReveiver) {
+    // UL flags (group(2) or usual(0)  = CONTACT_FLAG_GROUP
+    // UL group id (unused if contact is group) = 0
+    // LPS contact = groupName
+    // LPS name (unicode) = groupName
+    // LPS unused
+    // LPS authorization message, 'please, authorize me': base64(unicode(message))
+    // UL ??? (0x00000001)
+    int CONTACT_FLAG_UNICODE_GROUP = 0x05000000;
+    MRAData addData;
+    addData.addInt32( CONTACT_FLAG_GROUP | CONTACT_FLAG_UNICODE_GROUP );
+    addData.addInt32(0);
+    addData.addString(""); // ??? unicode?
+    addData.addUnicodeString(groupName);
+    addData.addString(""); // unused
+
+    MRAData authMessageData;
+
+    authMessageData.addInt32(0x02); // ???
+    authMessageData.addUnicodeString("");
+    authMessageData.addUnicodeString("");
+
+    addData.addString( authMessageData.toBase64() );
+
+    addData.addInt32( 0 );
+
+    connection()->sendMsg(MRIM_CS_ADD_CONTACT, &addData);
+
+    setGroupReceiver(groupAddedReveiver);
+
 }
 
 void MRAProtocolV123::sendAuthorizationRequest(const QString &contact, const QString &myAddress, const QString &message) {
@@ -471,10 +505,9 @@ void MRAProtocolV123::sendAuthorizationRequest(const QString &contact, const QSt
 
 void MRAProtocolV123::readUserInfo(MRAData & data)
 {
-    QString str;
     QString val;
     while (!data.eof()) {
-        str = data.getString();
+        QString str = data.getString();
         if (str == "MRIM.NICKNAME" || str == "connect.xml") {
             val = data.getUnicodeString();
         } else {
@@ -487,17 +520,6 @@ void MRAProtocolV123::readUserInfo(MRAData & data)
 
 
 void MRAProtocolV123::deleteContact(uint id, const QString &contact, const QString &contactName) {
-    kWarning() << __PRETTY_FUNCTION__;
-/*
-
-#define MRIM_CS_MODIFY_CONTACT			0x101B	// C -> S
-    // UL id
-    // UL flags - same as for MRIM_CS_ADD_CONTACT
-    // UL group id (unused if contact is group)
-    // LPS contact
-    // LPS name
-    // LPS unused
-    */
     MRAData data;
 
     data.addInt32( id );

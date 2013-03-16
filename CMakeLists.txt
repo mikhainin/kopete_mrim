@@ -23,6 +23,7 @@ endif(Kopete_FOUND)
 include_directories(${KDE4_INCLUDES} ${CMAKE_CURRENT_BINARY_DIR})
 
 set(kopete_mrim_SRCS
+    addcontacttask.cpp
     mrimprotocol.cpp
     mrimcontact.cpp
     mrimaddcontactpage.cpp
