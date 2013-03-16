@@ -26,7 +26,6 @@ set(kopete_mrim_SRCS
     addcontacttask.cpp
     mrimprotocol.cpp
     mrimcontact.cpp
-    mrimaddcontactpage.cpp
     mrimaccount.cpp
     version.cpp
 
@@ -42,6 +41,7 @@ set(kopete_mrim_SRCS
 
     ui/contactinfo.cpp
     ui/mrimeditaccountwidget.cpp
+    ui/mrimaddcontactpage.cpp
 )
 
 kde4_add_ui_files(kopete_mrim_SRCS
