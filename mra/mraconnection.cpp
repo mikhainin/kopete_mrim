@@ -2,6 +2,7 @@
 #include <QStringList>
 
 #include <kdebug.h>
+#include "../debug.h"
 
 #include "mraconnection.h"
 #include <arpa/inet.h>
@@ -61,7 +62,7 @@ bool MRAConnection::connectToHost()
     if (m_socket->waitForConnected(-1))
         kDebug() << "Connected!";
     else
-        kWarning() << m_socket->errorString();
+        kWarning(kdeDebugArea()) << m_socket->errorString();
 
     m_localPort = m_socket->localPort();
 
@@ -172,7 +173,7 @@ void MRAConnection::sendMsg(mrim_msg_t msg, MRAData *data)
     }
 
     sz = this->write((char*)&currHeader, sizeof currHeader );
-    
+
     if (sz == 0) {
         disconnect();
         slotDisconnected();

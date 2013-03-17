@@ -5,6 +5,7 @@
 
 #include <kdatetime.h>
 
+#include "../debug.h"
 #include "mrimaccount.h"
 #include "mrimcontact.h"
 #include "mra/mraavatarloader.h"
@@ -56,7 +57,7 @@ void ContactInfo::slotClose()
 
 void ContactInfo::slotUserInfoLoaded(const MRAContactInfo &info) {
 
-    kWarning() << __PRETTY_FUNCTION__;
+    kDebug(kdeDebugArea()) << __PRETTY_FUNCTION__;
 
     typedef QPair<QString, QString> pair_t;
     /*

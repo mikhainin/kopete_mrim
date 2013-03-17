@@ -27,6 +27,7 @@ set(kopete_mrim_SRCS
     mrimprotocol.cpp
     mrimcontact.cpp
     mrimaccount.cpp
+    debug.cpp
     version.cpp
 
     mra/mraconnection.cpp

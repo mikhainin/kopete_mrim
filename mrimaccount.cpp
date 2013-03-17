@@ -13,6 +13,7 @@
 #include "mra/mracontactlist.h"
 #include "mra/mraofflinemessage.h"
 
+#include "debug.h"
 #include "mrimprotocol.h"
 #include "mrimcontact.h"
 #include "mrimaccount.h"
@@ -33,7 +34,7 @@ MrimAccount::MrimAccount( MrimProtocol *parent, const QString& accountID )
     : Kopete::Account(parent, accountID)
     , d(new Private)
 {
-    kWarning() << __PRETTY_FUNCTION__;
+    kDebug(kdeDebugArea()) << __PRETTY_FUNCTION__;
     // Init the myself contact
     setMyself( new MrimContact( this, accountId(), accountId(), 0, Kopete::ContactList::self()->myself() ) );
     myself()->setOnlineStatus( MrimProtocol::protocol()->mrimOffline );
@@ -44,7 +45,7 @@ MrimAccount::MrimAccount( MrimProtocol *parent, const QString& accountID )
 
 MrimAccount::~MrimAccount()
 {
-    kWarning() << __PRETTY_FUNCTION__;
+    kDebug(kdeDebugArea()) << __PRETTY_FUNCTION__;
 
     if (isConnected())
         disconnect();
@@ -58,7 +59,7 @@ MRAProtocol *MrimAccount::getMraProtocol() {
 
 bool MrimAccount::createContact(const QString& contactId, Kopete::MetaContact* parentContact)
 {
-    kWarning() << __PRETTY_FUNCTION__;
+    kDebug(kdeDebugArea()) << __PRETTY_FUNCTION__;
 
     MrimContact* newContact = new MrimContact( this, contactId, parentContact->displayName(), 0, parentContact );
     return newContact != NULL;
@@ -66,7 +67,7 @@ bool MrimAccount::createContact(const QString& contactId, Kopete::MetaContact* p
 
 void MrimAccount::connect( const Kopete::OnlineStatus& /*initialStatus*/ )
 {
-    kWarning() << __PRETTY_FUNCTION__;
+    kDebug(kdeDebugArea()) << __PRETTY_FUNCTION__;
 
 
     if (d->username.isEmpty())
@@ -127,9 +128,9 @@ void MrimAccount::connect( const Kopete::OnlineStatus& /*initialStatus*/ )
                      this, SLOT(slotChatInvitationReceived(QString,QString,QString)));
 
     if (d->mraProto->makeConnection(QString(d->username), QString(d->password)) ) {
-        kWarning() << "connecting...";
+        kDebug(kdeDebugArea()) << "connecting...";
     } else {
-        kWarning() << "connect problems.";
+        kDebug(kdeDebugArea()) << "connect problems.";
     }
 
 }
@@ -139,7 +140,7 @@ void MrimAccount::slotConnected() {
 }
 
 void MrimAccount::slotDisconnected(const QString &reason) {
-    kWarning() << reason;
+    kDebug(kdeDebugArea()) << reason;
     /// @todo show the reason as notification
     myself()->setOnlineStatus( MrimProtocol::protocol()->mrimOffline );
 
@@ -153,7 +154,7 @@ void MrimAccount::slotDisconnected(const QString &reason) {
 }
 
 void MrimAccount::slotLoginFailed(const QString &reason) {
-    kWarning() << reason;
+    kDebug(kdeDebugArea()) << reason;
     /// @todo show the reason as notification
     myself()->setOnlineStatus( MrimProtocol::protocol()->mrimOffline );
 
@@ -202,7 +203,7 @@ void MrimAccount::authorizeRequestReceived(const QString &from, const QString &t
 
 
 
-        kWarning() << "contact:" << d->adding.address() << d->adding.address() << d->adding.status() << d->adding.group();
+        kDebug(kdeDebugArea()) << "contact:" << d->adding.address() << d->adding.address() << d->adding.status() << d->adding.group();
 
     }
 
@@ -211,7 +212,7 @@ void MrimAccount::authorizeRequestReceived(const QString &from, const QString &t
 void MrimAccount::disconnect()
 {
     if (d->mraProto) {
-        kWarning() << __PRETTY_FUNCTION__;
+        kDebug(kdeDebugArea()) << __PRETTY_FUNCTION__;
         d->mraProto->closeConnection();
         d->mraProto->deleteLater();
         d->mraProto = 0;
@@ -222,7 +223,7 @@ void MrimAccount::disconnect()
 void MrimAccount::setOnlineStatus(const Kopete::OnlineStatus& status , const Kopete::StatusMessage &reason,
                              const OnlineStatusOptions& /*options*/ )
 {
-    kWarning() << __PRETTY_FUNCTION__;
+    kDebug(kdeDebugArea()) << __PRETTY_FUNCTION__;
 
     if ( status.status() == Kopete::OnlineStatus::Online &&
             myself()->onlineStatus().status() == Kopete::OnlineStatus::Offline )
@@ -250,7 +251,7 @@ void MrimAccount::setStatusMessage(const Kopete::StatusMessage& statusMessage)
 
 void MrimAccount::setAway(bool away, const QString& reason)
 {
-    kDebug() << __PRETTY_FUNCTION__;
+    kDebug(kdeDebugArea()) << __PRETTY_FUNCTION__;
     Q_UNUSED(reason); /// FIXME
 
     if (!isConnected()) {
@@ -274,7 +275,7 @@ void MrimAccount::setAway(bool away, const QString& reason)
 
 void MrimAccount::slotGoOnline ()
 {
-    kWarning() << __PRETTY_FUNCTION__;
+    kDebug(kdeDebugArea()) << __PRETTY_FUNCTION__;
 
     if (!isConnected())
         connect();
@@ -295,12 +296,12 @@ void MrimAccount::slotGoOffline()
 
 void MrimAccount::slotGoAway()
 {
-    kWarning() << __PRETTY_FUNCTION__;
+    kDebug(kdeDebugArea()) << __PRETTY_FUNCTION__;
     if ( !isConnected() ) {
         connect();
     }
     if ( !d->mraProto ) {
-        kWarning() << "connected but connection is not available";
+        kDebug(kdeDebugArea()) << "connected but connection is not available";
     }
     d->mraProto->setStatus(MRAProtocol::AWAY);
     myself()->setOnlineStatus( MrimProtocol::protocol()->mrimAway );
@@ -311,7 +312,7 @@ void MrimAccount::slotGoBusy() {
         connect();
     }
     if ( !d->mraProto ) {
-        kWarning() << "connected but connection is not available";
+        kDebug(kdeDebugArea()) << "connected but connection is not available";
     }
     d->mraProto->setStatus(MRAProtocol::DONT_DISTRUB);
     myself()->setOnlineStatus( MrimProtocol::protocol()->mrimDontDistrub );
@@ -358,7 +359,7 @@ const QByteArray MrimAccount::getProtocolVersion() const {
 
 void MrimAccount::slotReceivedContactList(const MRAContactList &list) {
 
-    kDebug() << __PRETTY_FUNCTION__;
+    kDebug(kdeDebugArea()) << __PRETTY_FUNCTION__;
 
     d->contactList = list;
 
@@ -377,7 +378,7 @@ void MrimAccount::slotReceivedContactList(const MRAContactList &list) {
                         item.address()
                     );
 
-        kWarning() << "contact:" << item.address() << item.address() << item.status() << item.group();
+        kDebug(kdeDebugArea()) << "contact:" << item.address() << item.address() << item.status() << item.group();
 
         c->setOnlineStatus( mrimStatusToKopete(item.status()) );
 
@@ -400,7 +401,7 @@ void MrimAccount::slotUserStatusChanged(const QString &user, int newStatus) {
     if (c) {
         c->setOnlineStatus( mrimStatusToKopete(newStatus) );
     } else {
-        kWarning() << "user was not found" << user;
+        kDebug(kdeDebugArea()) << "user was not found" << user;
     }
 
 }
@@ -444,37 +445,37 @@ void MrimAccount::loadChatMembersList(const QString &to) {
 
 void MrimAccount::slotReceivedMessage( const QString &from, const QString &text )
 {
-    kWarning() << "from=" << from;
+    kDebug(kdeDebugArea()) << "from=" << from;
     MrimContact *c = dynamic_cast<MrimContact *>( contacts().value(from) );
 
     if (c) {
         c->receivedMessage(text);
     } else {
-        kWarning() << "user was not found" << from;
+        kDebug(kdeDebugArea()) << "user was not found" << from;
     }
 }
 
 void MrimAccount::slotReceivedOfflineMessage( const MRAOfflineMessage &message ) {
-    kWarning() << "from=" << message.from();
+    kDebug(kdeDebugArea()) << "from=" << message.from();
 
     MrimContact *c = dynamic_cast<MrimContact *>( contacts().value(message.from()) );
 
     if (c) {
         c->receivedOfflineMessage(message);
     } else {
-        kWarning() << "user was not found" << message.from();
+        kDebug(kdeDebugArea()) << "user was not found" << message.from();
     }
 
 }
 
 void MrimAccount::slotTypingAMessage( const QString &from ) {
-    kWarning() << "from=" << from;
+    kDebug(kdeDebugArea()) << "from=" << from;
     MrimContact *c = dynamic_cast<MrimContact *>( contacts().value(from) );
 
     if (c) {
         c->typingMessage();
     } else {
-        kWarning() << "user was not found" << from;
+        kDebug(kdeDebugArea()) << "user was not found" << from;
     }
 }
 
@@ -486,29 +487,29 @@ void MrimAccount::contactTypingAMessage( const QString &to ) {
 
 void MrimAccount::loadAvatar( const QString &email) {
     if (d->mraProto) {
-        kWarning() << email;
+        kDebug(kdeDebugArea()) << email;
         d->mraProto->loadAvatar( email );
     }
 }
 
 void MrimAccount::loadPhoto( const QString &email, QObject *receiver, const char *member ) {
     if (d->mraProto) {
-        kWarning() << email;
+        kDebug(kdeDebugArea()) << email;
         d->mraProto->loadAvatar( email, true, receiver, member );
     } else {
-        kWarning() << "there's undefined connection" << email;
+        kDebug(kdeDebugArea()) << "there's undefined connection" << email;
     }
 }
 
 void MrimAccount::slotAvatarLoaded(const QString &contact, const QImage &image) {
 
-    kWarning() << "contact=" << contact;
+    kDebug(kdeDebugArea()) << "contact=" << contact;
     MrimContact *c = dynamic_cast<MrimContact *>( contacts().value(contact) );
 
     if (c) {
         c->avatarLoaded(image);
     } else {
-        kWarning() << "user was not found" << contact;
+        kDebug(kdeDebugArea()) << "user was not found" << contact;
     }
 
 }
@@ -518,13 +519,13 @@ void MrimAccount::loadUserInfo( const QString &email ) {
 }
 
 void MrimAccount::slotUserInfoLoaded(const QString &contact, const MRAContactInfo &info) {
-    kWarning() << "contact=" << contact;
+    kDebug(kdeDebugArea()) << "contact=" << contact;
     MrimContact *c = dynamic_cast<MrimContact *>( contacts().value(contact) );
 
     if (c) {
         c->slotUserInfoLoaded( info );
     } else {
-        kWarning() << "user was not found" << contact;
+        kDebug(kdeDebugArea()) << "user was not found" << contact;
     }
 }
 
@@ -552,7 +553,7 @@ void MrimAccount::moveContactToGroup( const QString &email, const QString &newGr
     const int newGroupId = d->contactList.groups().indexOf( newGroupName );
 
     if ( newGroupId == -1 ) {
-        kWarning() << "can't find group " << newGroupName;
+        kDebug(kdeDebugArea()) << "can't find group " << newGroupName;
         return;
     }
 
@@ -571,7 +572,7 @@ void MrimAccount::slotAddContactAckReceived(int status, int contactId) {
     if (d->addingMetacontact) {
         d->addingMetacontact->setDisplayName( d->adding.nick() );
         if (!addContact(d->adding.address(), d->addingMetacontact, Kopete::Account::ChangeKABC)) {
-            kWarning() << "Can't add contact";
+            kDebug(kdeDebugArea()) << "Can't add contact";
             return;
         }
     }
@@ -597,7 +598,7 @@ void MrimAccount::slotChatMembersListReceived(const QString &chat, const QString
 }
 
 void MrimAccount::slotChatInvitationReceived(const QString &chat, const QString &title, const QString &from) {
-    kWarning() << chat << title << from;
+    kDebug(kdeDebugArea()) << chat << title << from;
 
     d->adding = MRAContactListEntry(-1);
     d->adding.setFlags(0);

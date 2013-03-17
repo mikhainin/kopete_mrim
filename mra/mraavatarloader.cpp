@@ -3,6 +3,7 @@
 #include <QImage>
 #include <QHttp>
 
+#include "../debug.h"
 
 #include "mraavatarloader.h"
 
@@ -61,7 +62,7 @@ void MRAAvatarLoader::run() {
     } else {
         d->address = "http://obraz.foto.mail.ru/%1/%2/_mrimavatarsmall";
     }
-    kWarning() << d->contact << d->address ;
+    kDebug(kdeDebugArea()) << d->contact << d->address ;
     d->address = d->address.arg(items[1], items[0]);
 
     connect(&d->http, SIGNAL(done(bool)), this, SLOT(slotHttpHeadDone(bool)));
@@ -96,7 +97,7 @@ const char *MRAAvatarLoader::member() const {
 }
 
 void MRAAvatarLoader::slotHttpHeadDone(bool error) {
-    kWarning() << error << d->http.errorString();
+    kdWarning(kdeDebugArea()) << error << d->http.errorString();
 
     if (error) {
         emit done(false, this);
@@ -110,7 +111,7 @@ void MRAAvatarLoader::slotHttpHeadHeadersReceived(const QHttpResponseHeader & re
     disconnect(&d->http, SIGNAL(responseHeaderReceived(QHttpResponseHeader)),
                this, SLOT(slotHttpHeadHeadersReceived(QHttpResponseHeader)) );
 
-    kWarning() << resp.statusCode() << d->contact;
+    kDebug(kdeDebugArea()) << resp.statusCode() << d->contact;
 
     if (resp.statusCode() == 404) {
         emit done(false, this);
@@ -136,7 +137,7 @@ void MRAAvatarLoader::slotHttpGetHeadersReceived(const QHttpResponseHeader & res
         return;
     }
 
-    kWarning() << resp.statusCode() << d->contact;
+    kDebug(kdeDebugArea()) << resp.statusCode() << d->contact;
 
 }
 
@@ -151,7 +152,7 @@ void MRAAvatarLoader::slotHttpGetRequestFinished(int id, bool error) {
         return;
     }
 
-    kWarning() << d->http.bytesAvailable() << d->contact;
+    kDebug(kdeDebugArea()) << d->http.bytesAvailable() << d->contact;
 
     QByteArray data = d->http.readAll();
 

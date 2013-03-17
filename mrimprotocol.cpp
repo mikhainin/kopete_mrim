@@ -7,6 +7,7 @@
 #include "ui/mrimeditaccountwidget.h"
 #include "ui/mrimaddcontactpage.h"
 
+#include "debug.h"
 #include "mrimcontact.h"
 #include "mrimaccount.h"
 #include "mrimprotocol.h"
@@ -43,6 +44,8 @@ MrimProtocol::MrimProtocol(QObject *parent, const QStringList &)
     , propPhoto( Kopete::Global::Properties::self()->photo() )
 {
 
+    KDebug::registerArea("");
+
     setCapabilities( Kopete::Protocol::CanSendOffline );
 
     s_protocol = this;
@@ -56,7 +59,6 @@ Kopete::Contact *MrimProtocol::deserializeContact(
     Kopete::MetaContact *metaContact, const QMap<QString, QString> &serializedData,
     const QMap<QString, QString> &/* addressBookData */)
 {
-//     kWarning() << __PRETTY_FUNCTION__;
     QString contactId = serializedData[ "contactId" ];
     QString accountId = serializedData[ "accountId" ];
     QString displayName = serializedData[ "displayName" ];
@@ -72,7 +74,7 @@ Kopete::Contact *MrimProtocol::deserializeContact(
 
     if ( !account )
     {
-        kWarning() << "Account doesn't exist, skipping";
+        kDebug(kdeDebugArea()) << "Account doesn't exist, skipping";
         return 0;
     }
 

@@ -3,6 +3,7 @@
 #include <kopete/kopetecontact.h>
 
 #include "mrimaccount.h"
+#include "debug.h"
 
 #include "addcontacttask.h"
 
@@ -53,10 +54,10 @@ void AddContactTask::setNickName( const QString &nickName ) {
 
 void AddContactTask::run() {
 
-    kWarning() << __PRETTY_FUNCTION__;
+    kDebug(kdeDebugArea()) << __PRETTY_FUNCTION__;
 
     if ( !d->m || d->groupName.isEmpty() ) {
-        kError() << "neither metacontact nor groupName is set";
+        kDebug(kdeDebugArea()) << "neither metacontact nor groupName is set";
         return;
     }
 

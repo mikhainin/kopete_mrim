@@ -3,6 +3,7 @@
 #include <QStringList>
 // #include <QHttp>
 
+#include "../debug.h"
 #include "mracontactlist.h"
 #include "mraavatarloader.h"
 #include "mraprotocol.h"
@@ -139,12 +140,11 @@ void MRAProtocol::sendHello()
     d->connection->sendMsg(MRIM_CS_HELLO, NULL);
     MRAData data;
     mrim_msg_t msg;
-    kWarning() << "HELLO sent";
 
     d->connection->readMessage(msg, &data);
 
     sec_count = data.getInt32();
-    kWarning() << "HELLO ACK received, timeout sec:" << sec_count ;
+    kDebug(kdeDebugArea()) << "HELLO ACK received, timeout sec:" << sec_count ;
 
 }
 
@@ -227,11 +227,9 @@ QVector<QVariant> MRAProtocol::readVectorByMask(MRAData & data, const QString &m
     for (int k = 0; k < mask.length(); ++k) {
         if (mask[k] == 'u') {
             _int = data.getInt32();
-            // kWarning() << "u=" << null_int;
             result.push_back(_int);
         } else if (mask[k] == 's') {
             _string = data.getString();
-            // kWarning() << "s=" << null_string;
             result.push_back(_string);
         }
     }
@@ -255,7 +253,7 @@ void MRAProtocol::readContactList(MRAData & data)
     gmask = data.getString(); // "us" - flags and name
     umask = data.getString(); // uussuus (flags, group num, email address, nickname, server flags, current status)
 
-    kWarning() << "gmask=" << gmask << " umask=" << umask;
+    kDebug(kdeDebugArea()) << "gmask=" << gmask << " umask=" << umask;
     ulong flags;
     QString gname;
 
@@ -269,7 +267,7 @@ void MRAProtocol::readContactList(MRAData & data)
         g.flags = flags;
         g.name = gname;
 
-        kWarning() << "added group " << flags << gname;
+        kDebug(kdeDebugArea()) << "added group " << flags << gname;
 
         list.groups().add(g);
     }
@@ -284,7 +282,7 @@ void MRAProtocol::readContactList(MRAData & data)
 
         list.addEntry(item);
 
-        kWarning() << "added contact" << item.flags() << item.group() << item.nick() << item.address() << protoData[6].toString();
+        kDebug(kdeDebugArea()) << "added contact" << item.flags() << item.group() << item.nick() << item.address() << protoData[6].toString();
     }
 
     emit contactListReceived(list);
@@ -310,7 +308,7 @@ void MRAProtocol::readUserInfo(MRAData & data)
     while (!data.eof()) {
         str = data.getString();
         val = data.getString();
-        kWarning() << str << " " << val;
+        kDebug(kdeDebugArea()) << str << " " << val;
     }
 
 }
@@ -457,7 +455,7 @@ void MRAProtocol::readOfflineMessage(MRAData & data) {
 
     d->offlineMessages.push_back(message);
 
-    kWarning() << "offline message pushed" << d->offlineMessages.size();
+    kDebug(kdeDebugArea()) << "offline message pushed" << d->offlineMessages.size();
 
     if (d->offlineMessagesTimer == 0) {
         d->offlineMessagesTimer = new QTimer(this);
@@ -493,11 +491,11 @@ void MRAProtocol::emitOfflineMessagesReceived() {
 
     // sort the list
 
-    kWarning() << "offline message emmiting" << d->offlineMessages.size();
+    kDebug(kdeDebugArea()) << "offline message emmiting" << d->offlineMessages.size();
 
     qSort(d->offlineMessages.begin(), d->offlineMessages.end(), MessageDateLessThan);
 
-    kWarning() << "offline message emmiting2" << d->offlineMessages.size();
+    kDebug(kdeDebugArea()) << "offline message emmiting2" << d->offlineMessages.size();
 
     foreach( MRAOfflineMessage *message, d->offlineMessages ) {
 
@@ -523,7 +521,7 @@ void MRAProtocol::emitOfflineMessagesReceived() {
 
 void MRAProtocol::loadAvatar(const QString &contact, bool large, QObject *receiver, const char *member) {
 
-    kWarning() << contact;
+    kDebug(kdeDebugArea()) << contact;
     d->avatarLoaders.push_back(
                     new MRAAvatarLoader(contact, this, large, receiver, member)
                 );
@@ -533,7 +531,7 @@ void MRAProtocol::loadAvatar(const QString &contact, bool large, QObject *receiv
 
 void MRAProtocol::loadAvatarLoop() {
 
-    kWarning() << __PRETTY_FUNCTION__ << "loaders" << d->avatarLoadersCount;
+    kDebug(kdeDebugArea()) << __PRETTY_FUNCTION__ << "loaders" << d->avatarLoadersCount;
 
     if ( d->avatarLoadersCount > 3 || d->avatarLoaders.empty() ) {
         return;
@@ -545,7 +543,7 @@ void MRAProtocol::loadAvatarLoop() {
     QObject::connect(loader, SIGNAL(done(bool,MRAAvatarLoader*)),
                      this, SLOT(slotAvatarLoaded(bool,MRAAvatarLoader*)) );
 
-    kWarning() << loader->contact();
+    kDebug(kdeDebugArea()) << loader->contact();
 
     d->avatarLoadersCount++;
 
@@ -555,7 +553,7 @@ void MRAProtocol::loadAvatarLoop() {
 
 void MRAProtocol::slotAvatarLoaded(bool success, MRAAvatarLoader *loader) {
 
-    kWarning() << loader->contact() << success;
+    kDebug(kdeDebugArea()) << loader->contact() << success;
 
     if (success) {
         if ( !loader->receiver() ) {
@@ -592,7 +590,7 @@ void MRAProtocol::readAnketaInfo(MRAData & data) {
     MRAContactInfo info;
 
     uint status     = data.getInt32();
-    kWarning() << "status=" << status;
+    kDebug(kdeDebugArea()) << "status=" << status;
     uint fields_num = data.getInt32();
     uint max_rows   = data.getInt32();
     uint server_time= data.getInt32();
@@ -604,7 +602,7 @@ void MRAProtocol::readAnketaInfo(MRAData & data) {
 
     for( uint i = 0; i < fields_num; ++i ) {
         QString field = data.getString();
-        kWarning() << field;
+        kDebug(kdeDebugArea()) << field;
         vecInfo.append( field );
     }
 
@@ -673,7 +671,7 @@ void MRAProtocol::setContactReceiver(IMRAProtocolContactReceiver *contactReceive
 
 void MRAProtocol::handleMessage(const ulong &msg, MRAData *data)
 {
-    kWarning() << "Accepting message " << msg;
+    kDebug(kdeDebugArea()) << "Accepting message " << msg;
     switch (msg) {
         case MRIM_CS_USER_INFO:
 
@@ -728,11 +726,11 @@ void MRAProtocol::handleMessage(const ulong &msg, MRAData *data)
 
         case MRIM_CS_MPOP_SESSION:
         // case MRIM_CS_FILE_TRANSFER_ACK:
-            kWarning() << "there is no handler for " << msg;
+            kDebug(kdeDebugArea()) << "there is no handler for " << msg;
             break;
 
         default: {
-            kWarning()  << "unknown message " << msg;
+            kDebug(kdeDebugArea())  << "unknown message " << msg;
         }
     }
 }
@@ -744,7 +742,7 @@ void MRAProtocol::slotPing() {
 }
 
 void MRAProtocol::slotOnDataFromServer() {
-    kWarning() << __PRETTY_FUNCTION__;
+    kDebug(kdeDebugArea()) << __PRETTY_FUNCTION__;
     MRAData *data = new MRAData(this);
     mrim_msg_t msg;
     d->connection->readMessage(msg, data);

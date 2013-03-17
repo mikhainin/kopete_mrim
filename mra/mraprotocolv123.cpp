@@ -3,6 +3,7 @@
 #include <QTextCodec>
 #include <QByteArray>
 
+#include "../debug.h"
 #include "mradata.h"
 #include "mraconnection.h"
 #include "mracontactlist.h"
@@ -90,7 +91,7 @@ void MRAProtocolV123::readMessage(MRAData & data) {
             MRAData authMessage( QByteArray::fromBase64(data.getString().toAscii()) );
             // text = codec->toUnicode(  );
             authMessage.getInt32(); // 0x02 // ???
-            kWarning() << authMessage.getUnicodeString();// WTF? sender?
+            kDebug(kdeDebugArea()) << authMessage.getUnicodeString();// WTF? sender?
             text = authMessage.getUnicodeString();
 
         } else {
@@ -143,7 +144,7 @@ void MRAProtocolV123::readMessage(MRAData & data) {
 
             int messageType = data.getInt32(); // 0x3b,0x3d ??
             int chatMessageType = data.getInt32(); // 0x00 ??
-            kWarning() << "messageType =" << messageType << "chatMessageType="<<chatMessageType;
+            kDebug(kdeDebugArea()) << "messageType =" << messageType << "chatMessageType="<<chatMessageType;
 
             if ( chatMessageType == CHAT_MESSAGE_PARTICIPANTS_LIST ) {
 
@@ -156,14 +157,14 @@ void MRAProtocolV123::readMessage(MRAData & data) {
                 receiveChatInvitation(data, from);
 
             } else if ( chatMessageType == CHAT_MESSAGE_TEXT ) {
-                kWarning() << "chatMessageType=" << messageType << "from=" <<from;
+                kDebug(kdeDebugArea()) << "chatMessageType=" << messageType << "from=" <<from;
 
                 QString chatTitle  = data.getUnicodeString(); // subject
                 QString chatMember = data.getString();        // sender
 
                 text = chatTitle + '(' + chatMember + ')' + '\n' + text;
 
-                kWarning() << "chatMessageType=" << messageType << "from=" <<from << "sender=" << chatMember;
+                kDebug(kdeDebugArea()) << "chatMessageType=" << messageType << "from=" <<from << "sender=" << chatMember;
             } else if ( chatMessageType == CHAT_MESSAGE_USER_INVITED ) {
                 // TODO
             } else if ( chatMessageType == CHAT_MESSAGE_USER_DELETED_ITSELF ) {
@@ -171,7 +172,7 @@ void MRAProtocolV123::readMessage(MRAData & data) {
             } else if ( chatMessageType == CHAT_MESSAGE_YOU_HAVE_BEEN_KICKED_OFF ) {
                 // TODO
             } else {
-                kWarning() << "unknown messageType =" << messageType;
+                kDebug(kdeDebugArea()) << "unknown messageType =" << messageType;
             }
         }
 
@@ -357,7 +358,7 @@ void MRAProtocolV123::readUserSataus(MRAData & data) {
 
     QString client      = data.getString(); // client="magent" version="5.10" build="5309"
 
-    kWarning() <<status<< statusTitle << str << int1 << user << int2 << client;
+    kDebug(kdeDebugArea()) <<status<< statusTitle << str << int1 << user << int2 << client;
 
     emit userStatusChanged(user, status);
 }
@@ -369,7 +370,7 @@ void MRAProtocolV123::readAnketaInfo(MRAData & data) {
     MRAContactInfo info;
 
     uint status     = data.getInt32();
-    kWarning() << "status=" << status;
+    kDebug(kdeDebugArea()) << "status=" << status;
     uint fields_num = data.getInt32();
     uint max_rows   = data.getInt32();
     uint server_time= data.getInt32();
@@ -381,7 +382,7 @@ void MRAProtocolV123::readAnketaInfo(MRAData & data) {
 
     for( uint i = 0; i < fields_num; ++i ) {
         QString field = data.getString();
-        kWarning() << field;
+        kDebug(kdeDebugArea()) << field;
         vecInfo.append( field );
     }
 
@@ -403,7 +404,7 @@ void MRAProtocolV123::readAnketaInfo(MRAData & data) {
         }
 
         info.setParam(vecInfo[i], fieldData);
-        kWarning() << vecInfo[i] << fieldData;
+        kDebug(kdeDebugArea()) << vecInfo[i] << fieldData;
 
     }
 
@@ -513,7 +514,7 @@ void MRAProtocolV123::readUserInfo(MRAData & data)
         } else {
             val = data.getString();
         }
-        kWarning() << str << " " << val;
+        kDebug(kdeDebugArea()) << str << " " << val;
     }
 
 }
@@ -565,19 +566,19 @@ QVector<QVariant> MRAProtocolV123::readVectorByMask(MRAData & data, const QStrin
     for (int k = 0; k < localMask.length(); ++k) {
         if (localMask[k] == 'u') {
             _int = data.getInt32();
-            kWarning() << "u=" << _int;
+            kDebug(kdeDebugArea()) << "u=" << _int;
             result.push_back(_int);
         } else if (localMask[k] == 's') {
             _string = data.getString( );
-            kWarning() << "s=" << _string;
+            kDebug(kdeDebugArea()) << "s=" << _string;
             result.push_back(_string);
         } else if (localMask[k] == 'S') {
             _string = data.getUnicodeString( );
-            kWarning() << "S=" << _string;
+            kDebug(kdeDebugArea()) << "S=" << _string;
             result.push_back(_string);
         }
     }
-    kWarning() << "done";
+    kDebug(kdeDebugArea()) << "done";
     return result;
 }
 

@@ -1,7 +1,6 @@
 #ifndef kopetemrim_H
 #define kopetemrim_H
 
-// #include <QtCore/QObject>
 #include <kopete/kopeteprotocol.h>
 #include <kopeteproperty.h>
 

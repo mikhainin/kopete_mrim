@@ -4,6 +4,7 @@
 #include <kpimidentities/identity.h>
 #include <kpimidentities/identitymanager.h>
 
+#include "../debug.h"
 #include "mrimaccount.h"
 #include "mrimprotocol.h"
 #include "mrimeditaccountwidget.h"
@@ -12,7 +13,7 @@ MrimEditAccountWidget::MrimEditAccountWidget( QWidget* parent, Kopete::Account* 
     : QWidget(parent)
     , KopeteEditAccountWidget(account)
 {
-    kWarning() << __PRETTY_FUNCTION__;
+    kDebug(kdeDebugArea()) << __PRETTY_FUNCTION__;
 
 
     QVBoxLayout *layout = new QVBoxLayout( this );
@@ -67,15 +68,15 @@ MrimEditAccountWidget::MrimEditAccountWidget( QWidget* parent, Kopete::Account* 
 
 MrimEditAccountWidget::~MrimEditAccountWidget()
 {
-    kWarning() << __PRETTY_FUNCTION__;
+    kDebug(kdeDebugArea()) << __PRETTY_FUNCTION__;
 }
 
 Kopete::Account* MrimEditAccountWidget::apply() {
-    kWarning() << __PRETTY_FUNCTION__;
+    kDebug(kdeDebugArea()) << __PRETTY_FUNCTION__;
 
     if (! account() ) {
         setAccount( new MrimAccount ( MrimProtocol::protocol(), m_preferencesWidget.kcfg_username->text()));
-        kWarning() << "Write Group!";
+        kDebug(kdeDebugArea()) << "Write Group!";
     }
 
     account()->configGroup()->writeEntry("username", m_preferencesWidget.kcfg_username->text());
@@ -87,6 +88,6 @@ Kopete::Account* MrimEditAccountWidget::apply() {
 }
 
 bool MrimEditAccountWidget::validateData() {
-    kWarning() << __PRETTY_FUNCTION__;
+    kDebug(kdeDebugArea()) << __PRETTY_FUNCTION__;
     return true;
 }
