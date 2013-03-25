@@ -1,16 +1,19 @@
 #include <kdebug.h>
 #include <kopeteaccount.h>
 #include <kopetechatsessionmanager.h>
+#include <kopete/kopetetransfermanager.h>
 #include <QTimer>
 #include <QMessageBox>
 #include <kopeteavatarmanager.h>
 #include <kopeteuiglobal.h>
 #include <kopetemetacontact.h>
 #include <kopetegroup.h>
+#include <kfiledialog.h>
 
 #include "ui/contactinfo.h"
 #include "mra/mraofflinemessage.h"
 #include "mra/mra_proto.h"
+#include "filetransfertask.h"
 #include "debug.h"
 #include "mrimaccount.h"
 #include "mrimprotocol.h"
@@ -50,10 +53,32 @@ MrimContact::MrimContact( Kopete::Account* _account,
     connect( d->requestForAuthorization, SIGNAL(triggered(bool)), this, SLOT(slotPerformRequestForAuthorization()) );
 
     d->flags = flags;
+
+    setFileCapable( true );
+
 }
 
 MrimContact::~MrimContact() {
     delete d;
+}
+
+void MrimContact::sendFile( const KUrl &sourceURL,
+                   const QString &fileName, uint fileSize ) {
+
+    kDebug(kdeDebugArea()) << sourceURL << fileName << fileSize;
+
+    QStringList fileNames;
+    //If the file location is null, then get it from a file open dialog
+    if( !sourceURL.isValid() ) {
+        fileNames = KFileDialog::getOpenFileNames( KUrl() ,"*", 0l  , tr( "Kopete File Transfer" ));
+    } else {
+        fileNames << sourceURL.path(KUrl::RemoveTrailingSlash);
+    }
+
+    kDebug(kdeDebugArea()) << "start transfer";
+
+    FileTransferTask *task = new FileTransferTask( dynamic_cast<MrimAccount*>( account() ), contactId(), fileNames, this);
+
 }
 
 void MrimContact::setFlags(int arg) {

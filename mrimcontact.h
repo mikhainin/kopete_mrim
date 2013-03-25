@@ -52,6 +52,8 @@ public:
     virtual QList<KAction *> *customContextMenuActions(  );
     virtual QList<KAction *> *customContextMenuActions( Kopete::ChatSession* );
 
+    void sendFile( const KUrl &sourceURL = KUrl(),
+                       const QString &fileName = QString(), uint fileSize = 0L );
 signals:
     void userInfoLoaded(const MRAContactInfo &info);
 

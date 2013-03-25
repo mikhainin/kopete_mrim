@@ -316,6 +316,12 @@ enum {
         // UL ??? ( example:     00 00 00 00 )
 
 
+#define MRIM_CS_TRANSFER_REQUEST 0x1026
+
+#define MRIM_CS_TRANSFER_CANCEL 0x1027
+
+#define MRIM_CS_TRANSFER_SUCCEED 0x1034
+
 #define MRIM_CS_LOGIN3       	0x1078  // C -> S
         // LPS login
         // LPS md5(password) (?)

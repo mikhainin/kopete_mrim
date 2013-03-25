@@ -6,6 +6,24 @@
 
 class MRAContactListEntry;
 
+class IFileTransferInfo {
+public:
+    /*FileTransferInfo(
+                  const QString &contact
+                , int sessionId
+                , const QString &filepath
+            );
+            */
+    virtual ~IFileTransferInfo() {}
+    virtual QString getContact() = 0;
+    virtual QString getFilePath() = 0;
+    virtual int getFileSize() = 0;
+    virtual int getSessionId() = 0;
+    virtual QString getHostAndPort() = 0;
+    virtual QString getAccountId() = 0;
+
+};
+
 class MRAProtocolV123 : public MRAProtocol
 {
     Q_OBJECT
@@ -38,6 +56,9 @@ public:
     virtual void loadChatMembersList(const QString &to);
 
     virtual void addGroupToContactList(const QString &groupName, IMRAProtocolGroupReceiver *groupAddedReveiver);
+
+    virtual void startFileTransfer(IFileTransferInfo *transferReceiver);
+    virtual void finishFileTransfer(IFileTransferInfo *transferReceiver);
 
 protected:
     virtual void readMessage(MRAData & data);

@@ -202,8 +202,12 @@ QByteArray MRAData::getUIDL() {
 
 }
 
-QString MRAData::toBase64() {
+QString MRAData::toBase64() const {
     return m_data.toBase64();
+}
+
+const QByteArray &MRAData::toByteArray() const {
+    return m_data;
 }
 
 bool MRAData::eof() const

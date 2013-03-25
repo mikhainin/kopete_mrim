@@ -36,7 +36,8 @@ public:
 
     void clear();
     void dumpData();
-    QString toBase64();
+    QString toBase64() const;
+    const QByteArray &toByteArray() const;
 
 private:
 private:

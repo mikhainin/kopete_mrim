@@ -546,6 +546,46 @@ void MRAProtocolV123::editContact(uint id, const QString &contact, uint groupId,
     connection()->sendMsg( MRIM_CS_MODIFY_CONTACT, &data );
 }
 
+void MRAProtocolV123::startFileTransfer(IFileTransferInfo *transferReceiver
+                                        /*const QString &contact, int sessionId, int size, const QString &files*/) {
+    MRAData data;
+    data.addString(transferReceiver->getContact());
+    data.addInt32(transferReceiver->getSessionId());
+    data.addInt32(transferReceiver->getFileSize());
+    // data.addInt32(121); // WTF?
+
+    MRAData filesInfo;
+
+    QString fileAndSize = transferReceiver->getFilePath()
+            + ';' + QString::number(transferReceiver->getFileSize())
+            + ';';
+
+        filesInfo.addString(fileAndSize);
+
+        // data.addString(fileAndSize);
+
+        MRAData filesDescription;
+            filesDescription.addInt32(1); // files count;
+            filesDescription.addUnicodeString(fileAndSize);
+
+        filesInfo.addBinaryString(filesDescription.toByteArray());
+
+        filesInfo.addString(transferReceiver->getHostAndPort());
+        data.addBinaryString(filesInfo.toByteArray());
+
+    connection()->sendMsg(MRIM_CS_TRANSFER_REQUEST, &data);
+}
+
+void MRAProtocolV123::finishFileTransfer(IFileTransferInfo *transferReceiver) {
+    //
+    MRAData data;
+    data.addInt32(transferReceiver->getSessionId());
+    data.addInt32(0x00009800);
+    data.addString(transferReceiver->getAccountId());
+
+    connection()->sendMsg(MRIM_CS_TRANSFER_SUCCEED, &data);
+}
+
 QVector<QVariant> MRAProtocolV123::readVectorByMask(MRAData & data, const QString &mask)
 {
     QVector<QVariant> result;
