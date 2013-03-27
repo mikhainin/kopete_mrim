@@ -57,7 +57,7 @@ void ContactInfo::slotClose()
 
 void ContactInfo::slotUserInfoLoaded(const MRAContactInfo &info) {
 
-    kDebug(kdeDebugArea()) << __PRETTY_FUNCTION__;
+    mrimDebug() << __PRETTY_FUNCTION__;
 
     typedef QPair<QString, QString> pair_t;
     /*

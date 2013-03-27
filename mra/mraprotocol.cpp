@@ -144,7 +144,7 @@ void MRAProtocol::sendHello()
     d->connection->readMessage(msg, &data);
 
     sec_count = data.getInt32();
-    kDebug(kdeDebugArea()) << "HELLO ACK received, timeout sec:" << sec_count ;
+    mrimDebug() << "HELLO ACK received, timeout sec:" << sec_count ;
 
 }
 
@@ -253,7 +253,7 @@ void MRAProtocol::readContactList(MRAData & data)
     gmask = data.getString(); // "us" - flags and name
     umask = data.getString(); // uussuus (flags, group num, email address, nickname, server flags, current status)
 
-    kDebug(kdeDebugArea()) << "gmask=" << gmask << " umask=" << umask;
+    mrimDebug() << "gmask=" << gmask << " umask=" << umask;
     ulong flags;
     QString gname;
 
@@ -267,7 +267,7 @@ void MRAProtocol::readContactList(MRAData & data)
         g.flags = flags;
         g.name = gname;
 
-        kDebug(kdeDebugArea()) << "added group " << flags << gname;
+        mrimDebug() << "added group " << flags << gname;
 
         list.groups().add(g);
     }
@@ -282,7 +282,7 @@ void MRAProtocol::readContactList(MRAData & data)
 
         list.addEntry(item);
 
-        kDebug(kdeDebugArea()) << "added contact" << item.flags() << item.group() << item.nick() << item.address() << protoData[6].toString();
+        mrimDebug() << "added contact" << item.flags() << item.group() << item.nick() << item.address() << protoData[6].toString();
     }
 
     emit contactListReceived(list);
@@ -308,7 +308,7 @@ void MRAProtocol::readUserInfo(MRAData & data)
     while (!data.eof()) {
         str = data.getString();
         val = data.getString();
-        kDebug(kdeDebugArea()) << str << " " << val;
+        mrimDebug() << str << " " << val;
     }
 
 }
@@ -455,7 +455,7 @@ void MRAProtocol::readOfflineMessage(MRAData & data) {
 
     d->offlineMessages.push_back(message);
 
-    kDebug(kdeDebugArea()) << "offline message pushed" << d->offlineMessages.size();
+    mrimDebug() << "offline message pushed" << d->offlineMessages.size();
 
     if (d->offlineMessagesTimer == 0) {
         d->offlineMessagesTimer = new QTimer(this);
@@ -491,11 +491,11 @@ void MRAProtocol::emitOfflineMessagesReceived() {
 
     // sort the list
 
-    kDebug(kdeDebugArea()) << "offline message emmiting" << d->offlineMessages.size();
+    mrimDebug() << "offline message emmiting" << d->offlineMessages.size();
 
     qSort(d->offlineMessages.begin(), d->offlineMessages.end(), MessageDateLessThan);
 
-    kDebug(kdeDebugArea()) << "offline message emmiting2" << d->offlineMessages.size();
+    mrimDebug() << "offline message emmiting2" << d->offlineMessages.size();
 
     foreach( MRAOfflineMessage *message, d->offlineMessages ) {
 
@@ -521,7 +521,7 @@ void MRAProtocol::emitOfflineMessagesReceived() {
 
 void MRAProtocol::loadAvatar(const QString &contact, bool large, QObject *receiver, const char *member) {
 
-    kDebug(kdeDebugArea()) << contact;
+    mrimDebug() << contact;
     d->avatarLoaders.push_back(
                     new MRAAvatarLoader(contact, this, large, receiver, member)
                 );
@@ -531,7 +531,7 @@ void MRAProtocol::loadAvatar(const QString &contact, bool large, QObject *receiv
 
 void MRAProtocol::loadAvatarLoop() {
 
-    kDebug(kdeDebugArea()) << __PRETTY_FUNCTION__ << "loaders" << d->avatarLoadersCount;
+    mrimDebug() << __PRETTY_FUNCTION__ << "loaders" << d->avatarLoadersCount;
 
     if ( d->avatarLoadersCount > 3 || d->avatarLoaders.empty() ) {
         return;
@@ -543,7 +543,7 @@ void MRAProtocol::loadAvatarLoop() {
     QObject::connect(loader, SIGNAL(done(bool,MRAAvatarLoader*)),
                      this, SLOT(slotAvatarLoaded(bool,MRAAvatarLoader*)) );
 
-    kDebug(kdeDebugArea()) << loader->contact();
+    mrimDebug() << loader->contact();
 
     d->avatarLoadersCount++;
 
@@ -553,7 +553,7 @@ void MRAProtocol::loadAvatarLoop() {
 
 void MRAProtocol::slotAvatarLoaded(bool success, MRAAvatarLoader *loader) {
 
-    kDebug(kdeDebugArea()) << loader->contact() << success;
+    mrimDebug() << loader->contact() << success;
 
     if (success) {
         if ( !loader->receiver() ) {
@@ -590,7 +590,7 @@ void MRAProtocol::readAnketaInfo(MRAData & data) {
     MRAContactInfo info;
 
     uint status     = data.getInt32();
-    kDebug(kdeDebugArea()) << "status=" << status;
+    mrimDebug() << "status=" << status;
     uint fields_num = data.getInt32();
     uint max_rows   = data.getInt32();
     uint server_time= data.getInt32();
@@ -602,7 +602,7 @@ void MRAProtocol::readAnketaInfo(MRAData & data) {
 
     for( uint i = 0; i < fields_num; ++i ) {
         QString field = data.getString();
-        kDebug(kdeDebugArea()) << field;
+        mrimDebug() << field;
         vecInfo.append( field );
     }
 
@@ -671,7 +671,7 @@ void MRAProtocol::setContactReceiver(IMRAProtocolContactReceiver *contactReceive
 
 void MRAProtocol::handleMessage(const ulong &msg, MRAData *data)
 {
-    kDebug(kdeDebugArea()) << "Accepting message " << msg;
+    mrimDebug() << "Accepting message " << msg;
     switch (msg) {
         case MRIM_CS_USER_INFO:
 
@@ -726,23 +726,23 @@ void MRAProtocol::handleMessage(const ulong &msg, MRAData *data)
 
         case MRIM_CS_MPOP_SESSION:
         // case MRIM_CS_FILE_TRANSFER_ACK:
-            kDebug(kdeDebugArea()) << "there is no handler for " << msg;
+            mrimDebug() << "there is no handler for " << msg;
             break;
 
         default: {
-            kDebug(kdeDebugArea())  << "unknown message " << msg;
+            mrimDebug()  << "unknown message " << msg;
         }
     }
 }
 
 void MRAProtocol::slotPing() {
-    kDebug() << "sending ping";
+    mrimDebug() << "sending ping";
     d->connection->sendMsg(MRIM_CS_PING, NULL);
 
 }
 
 void MRAProtocol::slotOnDataFromServer() {
-    kDebug(kdeDebugArea()) << __PRETTY_FUNCTION__;
+    mrimDebug() << __PRETTY_FUNCTION__;
     MRAData *data = new MRAData(this);
     mrim_msg_t msg;
     d->connection->readMessage(msg, data);

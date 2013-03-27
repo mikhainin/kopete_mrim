@@ -42,7 +42,7 @@ MrimContact::MrimContact( Kopete::Account* _account,
     : Kopete::Contact( _account, uniqueName, parent, QString("mrim_protocol") )
     , d(new Private)
 {
-    kDebug(kdeDebugArea())<< " uniqueName: " << uniqueName << ", displayName: " << displayName;
+    mrimDebug()<< " uniqueName: " << uniqueName << ", displayName: " << displayName;
 
     QTimer::singleShot( 10 * 1000, this, SLOT(slotLoadAvatar()) );
 
@@ -94,7 +94,7 @@ Kopete::ChatSession* MrimContact::manager( CanCreateFlags canCreateFlags )
         Kopete::ChatSession::Form form = Kopete::ChatSession::Small;
         if (d->flags & CONTACT_FLAG_CHAT) {
             form = Kopete::ChatSession::Chatroom;
-            kDebug(kdeDebugArea()) << "Chat!";
+            mrimDebug() << "Chat!";
             loadChatMembersList();
         }
 
@@ -126,7 +126,7 @@ void MrimContact::slotChatSessionDestroyed()
 
 void MrimContact::sendMessage( Kopete::Message &message )
 {
-    kDebug(kdeDebugArea());
+    mrimDebug();
 
     MrimAccount *a = dynamic_cast<MrimAccount*>( account() );
 
@@ -218,21 +218,21 @@ void MrimContact::slotUserInfo() {
 
     new ContactInfo( dynamic_cast<MrimAccount*>( account() ), this, Kopete::UI::Global::mainWidget () );
 
-    kDebug(kdeDebugArea()) << __PRETTY_FUNCTION__;
+    mrimDebug() << __PRETTY_FUNCTION__;
 
     loadUserInfo();
 }
 
 void MrimContact::slotUserInfoLoaded(const MRAContactInfo &info) {
 
-    kDebug(kdeDebugArea()) << __PRETTY_FUNCTION__;
+    mrimDebug() << __PRETTY_FUNCTION__;
 
     emit userInfoLoaded(info);
 }
 
 void MrimContact::loadUserInfo() {
 
-    kDebug(kdeDebugArea()) << __PRETTY_FUNCTION__;
+    mrimDebug() << __PRETTY_FUNCTION__;
 
     MrimAccount *a = dynamic_cast<MrimAccount*>( account() );
     a->loadUserInfo( contactId() );
@@ -249,7 +249,7 @@ void MrimContact::slotLoadAvatar() {
         a->loadAvatar( contactId() );
 
     } else {
-        kDebug(kdeDebugArea()) << "empty!" << contactId();
+        mrimDebug() << "empty!" << contactId();
     }
 
 }
@@ -287,7 +287,7 @@ void MrimContact::loadChatMembersList() {
 
 void MrimContact::slotChatMembersListReceived(const QString &title, const QList<QString> &list) {
     foreach(const QString &contact, list) {
-        kDebug(kdeDebugArea()) << contact;
+        mrimDebug() << contact;
         if ( account()->contacts().value(contact) ) {
             manager()->addContact( account()->contacts().value(contact) );
         }
@@ -297,7 +297,7 @@ void MrimContact::slotChatMembersListReceived(const QString &title, const QList<
 
 void MrimContact::sync(unsigned int changed) {
     //
-    kDebug(kdeDebugArea()) << metaContact()->displayName();
+    mrimDebug() << metaContact()->displayName();
     MrimAccount *a = dynamic_cast<MrimAccount*>( account() );
 
     if (changed & MovedBetweenGroup) {
@@ -306,7 +306,7 @@ void MrimContact::sync(unsigned int changed) {
     } else if (changed & DisplayNameChanged) {
         a->renameContact( contactId(), metaContact()->displayName() );
     } else {
-        kDebug(kdeDebugArea()) << "unknown change action:" << changed;
+        mrimDebug() << "unknown change action:" << changed;
     }
 }
 

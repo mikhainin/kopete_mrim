@@ -13,7 +13,7 @@ MrimEditAccountWidget::MrimEditAccountWidget( QWidget* parent, Kopete::Account* 
     : QWidget(parent)
     , KopeteEditAccountWidget(account)
 {
-    kDebug(kdeDebugArea()) << __PRETTY_FUNCTION__;
+    mrimDebug() << __PRETTY_FUNCTION__;
 
 
     QVBoxLayout *layout = new QVBoxLayout( this );
@@ -68,15 +68,15 @@ MrimEditAccountWidget::MrimEditAccountWidget( QWidget* parent, Kopete::Account* 
 
 MrimEditAccountWidget::~MrimEditAccountWidget()
 {
-    kDebug(kdeDebugArea()) << __PRETTY_FUNCTION__;
+    mrimDebug() << __PRETTY_FUNCTION__;
 }
 
 Kopete::Account* MrimEditAccountWidget::apply() {
-    kDebug(kdeDebugArea()) << __PRETTY_FUNCTION__;
+    mrimDebug() << __PRETTY_FUNCTION__;
 
     if (! account() ) {
         setAccount( new MrimAccount ( MrimProtocol::protocol(), m_preferencesWidget.kcfg_username->text()));
-        kDebug(kdeDebugArea()) << "Write Group!";
+        mrimDebug() << "Write Group!";
     }
 
     account()->configGroup()->writeEntry("username", m_preferencesWidget.kcfg_username->text());
@@ -88,6 +88,6 @@ Kopete::Account* MrimEditAccountWidget::apply() {
 }
 
 bool MrimEditAccountWidget::validateData() {
-    kDebug(kdeDebugArea()) << __PRETTY_FUNCTION__;
+    mrimDebug() << __PRETTY_FUNCTION__;
     return true;
 }
