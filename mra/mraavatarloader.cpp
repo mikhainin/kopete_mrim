@@ -62,7 +62,7 @@ void MRAAvatarLoader::run() {
     } else {
         d->address = "http://obraz.foto.mail.ru/%1/%2/_mrimavatarsmall";
     }
-    kDebug(kdeDebugArea()) << d->contact << d->address ;
+    mrimDebug() << d->contact << d->address ;
     d->address = d->address.arg(items[1], items[0]);
 
     connect(&d->http, SIGNAL(done(bool)), this, SLOT(slotHttpHeadDone(bool)));
@@ -111,7 +111,7 @@ void MRAAvatarLoader::slotHttpHeadHeadersReceived(const QHttpResponseHeader & re
     disconnect(&d->http, SIGNAL(responseHeaderReceived(QHttpResponseHeader)),
                this, SLOT(slotHttpHeadHeadersReceived(QHttpResponseHeader)) );
 
-    kDebug(kdeDebugArea()) << resp.statusCode() << d->contact;
+    mrimDebug() << resp.statusCode() << d->contact;
 
     if (resp.statusCode() == 404) {
         emit done(false, this);
@@ -137,7 +137,7 @@ void MRAAvatarLoader::slotHttpGetHeadersReceived(const QHttpResponseHeader & res
         return;
     }
 
-    kDebug(kdeDebugArea()) << resp.statusCode() << d->contact;
+    mrimDebug() << resp.statusCode() << d->contact;
 
 }
 
@@ -152,7 +152,7 @@ void MRAAvatarLoader::slotHttpGetRequestFinished(int id, bool error) {
         return;
     }
 
-    kDebug(kdeDebugArea()) << d->http.bytesAvailable() << d->contact;
+    mrimDebug() << d->http.bytesAvailable() << d->contact;
 
     QByteArray data = d->http.readAll();
 

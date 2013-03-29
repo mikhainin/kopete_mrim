@@ -54,10 +54,10 @@ void AddContactTask::setNickName( const QString &nickName ) {
 
 void AddContactTask::run() {
 
-    kDebug(kdeDebugArea()) << __PRETTY_FUNCTION__;
+    mrimDebug() << __PRETTY_FUNCTION__;
 
     if ( !d->m || d->groupName.isEmpty() ) {
-        kDebug(kdeDebugArea()) << "neither metacontact nor groupName is set";
+        mrimDebug() << "neither metacontact nor groupName is set";
         return;
     }
 

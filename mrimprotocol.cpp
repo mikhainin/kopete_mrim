@@ -74,7 +74,7 @@ Kopete::Contact *MrimProtocol::deserializeContact(
 
     if ( !account )
     {
-        kDebug(kdeDebugArea()) << "Account doesn't exist, skipping";
+        mrimDebug() << "Account doesn't exist, skipping";
         return 0;
     }
 

@@ -60,9 +60,9 @@ bool MRAConnection::connectToHost()
 
     // TODO: error if not connected
     if (m_socket->waitForConnected(-1))
-        kDebug() << "Connected!";
+        mrimDebug() << "Connected!";
     else
-        kWarning(kdeDebugArea()) << m_socket->errorString();
+        mrimWarning() << m_socket->errorString();
 
     m_localPort = m_socket->localPort();
 
@@ -86,7 +86,7 @@ QString MRAConnection::getRecommendedServer() {
     QByteArray ba = socket.readLine();
     QString hostAndPort(ba);
     hostAndPort = hostAndPort.trimmed();
-    kDebug() << "recommended address is " << hostAndPort;
+    mrimDebug() << "recommended address is " << hostAndPort;
 
     return hostAndPort;
 }
@@ -95,7 +95,7 @@ ssize_t MRAConnection::write(const char* buf, ssize_t size)
 {
     LockWrapper locker(m_locked);
     ssize_t temp = m_socket->write(buf, size);
-    kDebug() << "size: " << size << " written:" << temp;
+    mrimDebug() << "size: " << size << " written:" << temp;
     return temp;
 }
 
@@ -113,7 +113,7 @@ ssize_t MRAConnection::read(char* buf, ssize_t size)
         qint64 read = m_socket->read(buf + temp, size - temp);
         if (read == -1) {
             if ( m_socket->isReadable() )
-            kDebug() << "error: " << m_socket->errorString();
+            mrimDebug() << "error: " << m_socket->errorString();
             return temp;/// @todo throw!
         } else if (read == 0) {
             m_socket->waitForReadyRead(-1);
@@ -121,7 +121,7 @@ ssize_t MRAConnection::read(char* buf, ssize_t size)
         temp += read;
 
     } while(temp != size);
-    kDebug() << "buf:" << size << " read:" << temp;
+    mrimDebug() << "buf:" << size << " read:" << temp;
     return temp;
 }
 
@@ -135,7 +135,7 @@ ssize_t MRAConnection::readMessage(mrim_msg_t &msg_, MRAData *data)
     ssize_t sz = 0;
     sz = this->read((char*)&head_, sizeof head_ );
 
-    kDebug() << "message: " << head_.msg << " dlen" << head_.dlen;
+    mrimDebug() << "message: " << head_.msg << " dlen" << head_.dlen;
 
     msg_ = head_.msg;
     if (sz > 0) {
@@ -167,7 +167,7 @@ void MRAConnection::sendMsg(mrim_msg_t msg, MRAData *data)
 
     if (data != NULL) {
         currHeader.dlen = data->getSize();
-        kDebug() << "dlen: " << currHeader.dlen;
+        mrimDebug() << "dlen: " << currHeader.dlen;
     } else {
         currHeader.dlen = 0;
     }
