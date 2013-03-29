@@ -10,6 +10,7 @@
 
 class MRAOfflineMessage;
 class ContactInfo;
+class TransferRequestInfo;
 
 class MrimContact : public Kopete::Contact
 {
@@ -54,6 +55,8 @@ public:
 
     void sendFile( const KUrl &sourceURL = KUrl(),
                        const QString &fileName = QString(), uint fileSize = 0L );
+
+    void receiveFile(const TransferRequestInfo &transferInfo);
 signals:
     void userInfoLoaded(const MRAContactInfo &info);
 

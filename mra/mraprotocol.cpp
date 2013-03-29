@@ -10,6 +10,7 @@
 #include "mracontactinfo.h"
 #include "mraconnection.h"
 #include "mraofflinemessage.h"
+#include "transferrequestinfo.h"
 #include "mra_proto.h"
 
 #include "../version.h"
@@ -668,6 +669,9 @@ void MRAProtocol::setContactReceiver(IMRAProtocolContactReceiver *contactReceive
     d->contactReceiver = contactReceiver;
 }
 
+void MRAProtocol::readTransferRequest(MRAData & data) {
+    Q_UNUSED(data);
+}
 
 void MRAProtocol::handleMessage(const ulong &msg, MRAData *data)
 {
@@ -720,6 +724,10 @@ void MRAProtocol::handleMessage(const ulong &msg, MRAData *data)
 
         case MRIM_CS_ADD_CONTACT_ACK:
             readAddContactAck(*data);
+            break;
+
+        case MRIM_CS_TRANSFER_REQUEST:
+            readTransferRequest(*data);
             break;
 
         case MRIM_CS_MESSAGE_STATUS:

@@ -13,7 +13,7 @@ class MRAOfflineMessage;
 class MRAContactList;
 class MRAConnection;
 class MRAContactListEntry;
-
+class TransferRequestInfo;
 
 
 class IMRAProtocolGroupReceiver {
@@ -32,6 +32,8 @@ public:
     virtual void contactAddFailed(int status) = 0;
 
 };
+
+
 
 class MRAProtocol : public QObject
 {
@@ -107,9 +109,11 @@ protected:
     virtual void emitOfflineMessagesReceived();
 
     virtual void readAnketaInfo(MRAData & data);
-    int statusToInt(STATUS status);
+    static int statusToInt(STATUS status);
 
     virtual void readAddContactAck(MRAData & data);
+
+    virtual void readTransferRequest(MRAData & data);
 
     void setGroupReceiver(IMRAProtocolGroupReceiver *groupReceiver);
     void setContactReceiver(IMRAProtocolContactReceiver *contactReceiver);
@@ -142,6 +146,7 @@ signals:
 
     void chatMembersListReceived(const QString &chat, const QString &title, const QList<QString> &list);
     void chatIvitationReceived(const QString &chat, const QString &title, const QString &from);
+    void transferRequest(const TransferRequestInfo &requestInfo);
 };
 
 #endif

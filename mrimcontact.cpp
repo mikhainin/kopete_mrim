@@ -77,8 +77,26 @@ void MrimContact::sendFile( const KUrl &sourceURL,
 
     kDebug(kdeDebugArea()) << "start transfer";
 
-    FileTransferTask *task = new FileTransferTask( dynamic_cast<MrimAccount*>( account() ), contactId(), fileNames, this);
+    FileTransferTask *task = new FileTransferTask(
+                  dynamic_cast<MrimAccount*>( account() )
+                , this
+                , fileNames
+                , FileTransferTask::Outgoing
+                , 0
+                , this);
 
+}
+
+void MrimContact::receiveFile(const TransferRequestInfo &transferInfo) {
+    /// @todo ask user's confirmation
+    kDebug(kdeDebugArea());
+        FileTransferTask *task = new FileTransferTask(
+                      dynamic_cast<MrimAccount*>( account() )
+                    , this
+                    , QStringList()
+                    , FileTransferTask::Incoming
+                    , &transferInfo
+                    , this);
 }
 
 void MrimContact::setFlags(int arg) {

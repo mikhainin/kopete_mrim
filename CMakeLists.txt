@@ -40,6 +40,7 @@ set(kopete_mrim_SRCS
     mra/mraavatarloader.cpp
     mra/mracontactinfo.cpp
     mra/mraprotocolv123.cpp
+    mra/transferrequestinfo.cpp
 
     ui/contactinfo.cpp
     ui/mrimeditaccountwidget.cpp

@@ -9,6 +9,7 @@
 #include "mracontactlist.h"
 #include "mracontactinfo.h"
 #include "mraprotocolv123.h"
+#include "transferrequestinfo.h"
 #include "../version.h"
 
 MRAProtocolV123::MRAProtocolV123(QObject *parent) :
@@ -584,6 +585,26 @@ void MRAProtocolV123::finishFileTransfer(IFileTransferInfo *transferReceiver) {
     data.addString(transferReceiver->getAccountId());
 
     connection()->sendMsg(MRIM_CS_TRANSFER_SUCCEED, &data);
+}
+
+void MRAProtocolV123::readTransferRequest(MRAData & data) {
+    TransferRequestInfo requestInfo;
+    requestInfo.setRemoteContact(data.getString());
+    requestInfo.setSessionId(data.getInt32());
+    requestInfo.setTotalSize(data.getInt32()); // total size
+
+    MRAData filesInfo(data.getBinaryString());
+        filesInfo.getString(); //cp1251 filename
+        MRAData filesDescription(filesInfo.getBinaryString());
+
+        (void)filesDescription.getInt32(); // files count (?)
+        requestInfo.setFilesString(filesDescription.getUnicodeString());
+
+        requestInfo.setHostsAndPortsString(filesInfo.getString());
+
+    /// @todo: check session
+    emit transferRequest(requestInfo);
+
 }
 
 QVector<QVariant> MRAProtocolV123::readVectorByMask(MRAData & data, const QString &mask)

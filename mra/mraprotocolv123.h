@@ -64,6 +64,7 @@ protected:
     virtual void readMessage(MRAData & data);
     virtual void readUserSataus(MRAData & data);
     virtual void readAnketaInfo(MRAData & data);
+    virtual void readTransferRequest(MRAData & data);
 
     virtual QVector<QVariant> readVectorByMask(MRAData & data, const QString &mask);
 

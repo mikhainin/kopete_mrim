@@ -81,12 +81,31 @@ void MRAData::addBinaryString(const QByteArray &data) {
     addData(data);
 }
 
+QByteArray MRAData::getBinaryString() {
+    int len = getInt32();
+
+    if (m_data.size() >= (m_pointer + len)) {
+
+        if (len == 0) {
+            return QByteArray();
+        }
+
+        QByteArray result = m_data.mid(m_pointer, len);
+
+        m_pointer += len;
+
+        return result;
+    } else {
+        return QByteArray();
+    }
+}
+
 /*!
     \fn MRAData::addInt32(long int value)
  */
 void MRAData::addInt32(quint32 value)
 {
-        addData(&value, sizeof(value));
+      addData(&value, sizeof(value));
 }
 
 

@@ -27,6 +27,7 @@ public:
     int getSize() const;
     void addData(const void *data_, ssize_t size);
     void addBinaryString(const QByteArray &data);
+    QByteArray getBinaryString();
     void addData(const QByteArray &data);
 
     void addUIDL(const QByteArray &str);

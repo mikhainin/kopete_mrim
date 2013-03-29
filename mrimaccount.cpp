@@ -12,6 +12,7 @@
 #include "mra/mra_proto.h"
 #include "mra/mracontactlist.h"
 #include "mra/mraofflinemessage.h"
+#include "mra/transferrequestinfo.h"
 
 #include "debug.h"
 #include "mrimprotocol.h"
@@ -126,6 +127,9 @@ void MrimAccount::connect( const Kopete::OnlineStatus& /*initialStatus*/ )
 
     QObject::connect(d->mraProto, SIGNAL(chatIvitationReceived(QString,QString,QString)),
                      this, SLOT(slotChatInvitationReceived(QString,QString,QString)));
+
+    QObject::connect(d->mraProto, SIGNAL(transferRequest(TransferRequestInfo)),
+                     this, SLOT(slotTransferRequest(TransferRequestInfo)) );
 
     if (d->mraProto->makeConnection(QString(d->username), QString(d->password)) ) {
         mrimDebug() << "connecting...";
@@ -609,5 +613,16 @@ void MrimAccount::slotChatInvitationReceived(const QString &chat, const QString 
     d->mraProto->addToContactList( 0, 0, chat, title, myself()->contactId(), tr("Please, authorize me."), 0 );
     d->addingMetacontact = addContact(chat, title, 0, Kopete::Account::Temporary);
 }
+
+void MrimAccount::slotTransferRequest(const TransferRequestInfo &transferInfo)
+{
+    kDebug(kdeDebugArea()) << transferInfo.remoteContact();
+    MrimContact *c = dynamic_cast<MrimContact *>( contacts().value(transferInfo.remoteContact()) );
+
+    if (c) {
+        c->receiveFile(transferInfo);
+    }
+}
+
 
 #include "mrimaccount.moc"
