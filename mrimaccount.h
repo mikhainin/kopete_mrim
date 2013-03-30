@@ -171,6 +171,7 @@ private slots:
     void slotChatInvitationReceived(const QString &chat, const QString &title, const QString &from);
 
     void slotTransferRequest(const TransferRequestInfo &transferInfo);
+    void slotTransferRequestCancelled(const TransferRequestInfo &transferInfo);
 private:
     class Private;
     Private *d;

@@ -587,6 +587,28 @@ void MRAProtocolV123::finishFileTransfer(IFileTransferInfo *transferReceiver) {
     connection()->sendMsg(MRIM_CS_TRANSFER_SUCCEED, &data);
 }
 
+void MRAProtocolV123::cancelFileTransfer(IFileTransferInfo *transferReceiver) {
+
+    MRAData data;
+    data.addInt32(0); //status (?)
+    data.addString(transferReceiver->getContact());
+    data.addInt32(transferReceiver->getSessionId());
+    data.addInt32(0); // addString("") ?
+
+    connection()->sendMsg(MRIM_CS_TRANSFER_CANCEL, &data);
+
+}
+
+void MRAProtocolV123::readTransferCancel(MRAData &data) {
+    TransferRequestInfo requestInfo;
+    data.getInt32(); // status(?)
+    requestInfo.setRemoteContact(data.getString());
+    requestInfo.setSessionId(data.getInt32());
+    data.getInt32(); // ?
+
+    emit transferRequestCancelled(requestInfo);
+}
+
 void MRAProtocolV123::readTransferRequest(MRAData & data) {
     TransferRequestInfo requestInfo;
     requestInfo.setRemoteContact(data.getString());

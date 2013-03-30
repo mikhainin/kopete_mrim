@@ -672,6 +672,10 @@ void MRAProtocol::setContactReceiver(IMRAProtocolContactReceiver *contactReceive
 void MRAProtocol::readTransferRequest(MRAData & data) {
     Q_UNUSED(data);
 }
+void MRAProtocol::readTransferCancel(MRAData & data) {
+    Q_UNUSED(data);
+}
+
 
 void MRAProtocol::handleMessage(const ulong &msg, MRAData *data)
 {
@@ -729,6 +733,9 @@ void MRAProtocol::handleMessage(const ulong &msg, MRAData *data)
         case MRIM_CS_TRANSFER_REQUEST:
             readTransferRequest(*data);
             break;
+        case MRIM_CS_TRANSFER_CANCEL:
+            readTransferCancel(*data);
+            break;
 
         case MRIM_CS_MESSAGE_STATUS:
 
@@ -736,6 +743,7 @@ void MRAProtocol::handleMessage(const ulong &msg, MRAData *data)
         // case MRIM_CS_FILE_TRANSFER_ACK:
             mrimDebug() << "there is no handler for " << msg;
             break;
+
 
         default: {
             mrimDebug()  << "unknown message " << msg;

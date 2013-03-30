@@ -131,6 +131,9 @@ void MrimAccount::connect( const Kopete::OnlineStatus& /*initialStatus*/ )
     QObject::connect(d->mraProto, SIGNAL(transferRequest(TransferRequestInfo)),
                      this, SLOT(slotTransferRequest(TransferRequestInfo)) );
 
+    QObject::connect(d->mraProto, SIGNAL(transferRequestCancelled(TransferRequestInfo)),
+                     this, SLOT(slotTransferRequestCancelled(TransferRequestInfo)) );
+
     if (d->mraProto->makeConnection(QString(d->username), QString(d->password)) ) {
         mrimDebug() << "connecting...";
     } else {
@@ -616,7 +619,7 @@ void MrimAccount::slotChatInvitationReceived(const QString &chat, const QString 
 
 void MrimAccount::slotTransferRequest(const TransferRequestInfo &transferInfo)
 {
-    kDebug(kdeDebugArea()) << transferInfo.remoteContact();
+    mrimDebug() << transferInfo.remoteContact();
     MrimContact *c = dynamic_cast<MrimContact *>( contacts().value(transferInfo.remoteContact()) );
 
     if (c) {
@@ -624,5 +627,13 @@ void MrimAccount::slotTransferRequest(const TransferRequestInfo &transferInfo)
     }
 }
 
+void MrimAccount::slotTransferRequestCancelled(const TransferRequestInfo &transferInfo) {
+    MrimContact *c = dynamic_cast<MrimContact *>( contacts().value(transferInfo.remoteContact()) );
+
+    if (c) {
+        c->receiveFileCancel(transferInfo);
+    }
+
+}
 
 #include "mrimaccount.moc"

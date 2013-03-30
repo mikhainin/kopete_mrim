@@ -114,6 +114,7 @@ protected:
     virtual void readAddContactAck(MRAData & data);
 
     virtual void readTransferRequest(MRAData & data);
+    virtual void readTransferCancel(MRAData &data);
 
     void setGroupReceiver(IMRAProtocolGroupReceiver *groupReceiver);
     void setContactReceiver(IMRAProtocolContactReceiver *contactReceiver);
@@ -147,6 +148,7 @@ signals:
     void chatMembersListReceived(const QString &chat, const QString &title, const QList<QString> &list);
     void chatIvitationReceived(const QString &chat, const QString &title, const QString &from);
     void transferRequest(const TransferRequestInfo &requestInfo);
+    void transferRequestCancelled(const TransferRequestInfo &requestInfo);
 };
 
 #endif

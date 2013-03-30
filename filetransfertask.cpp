@@ -24,10 +24,10 @@ enum state {
 };
 
 /**
- *TODO:
- * - cancel transfer by remote client
+ * @todo
  * - cancel transfer by user (via tray)
  * - try to open channel to remote client when it asks
+ * - send/receive many files
  */
 
 struct FileTransferTask::Private {
@@ -42,6 +42,7 @@ struct FileTransferTask::Private {
     QFile *file;
     FileTransferTask::Direction dir;
     TransferRequestInfo transferInfo;
+    int sessionId;
 
     QList<QPair<QString, int> > files;
 
@@ -53,7 +54,8 @@ struct FileTransferTask::Private {
         , socket(0)
         , bytesProcessed(0)
         , tranfserTask(0)
-        , file(0) {
+        , file(0)
+        , sessionId(0) {
     }
 };
 
@@ -91,16 +93,26 @@ FileTransferTask::FileTransferTask(MrimAccount *account,
 
         connect(this, SIGNAL(transferComplete()),
                 d->tranfserTask, SLOT(slotComplete()));
+
+        connect(this, SIGNAL(transferFailed()),
+                d->tranfserTask, SLOT(slotCancelled()));
+
+        connect(d->tranfserTask, SIGNAL(transferCanceled()),
+                this, SLOT(slotCancel()) );
+
         openServer();
     } else {
 
-        connect ( Kopete::TransferManager::transferManager (), SIGNAL (accepted(Kopete::Transfer*,QString)),
-                  this, SLOT (slotTransferAccepted(Kopete::Transfer*,QString)) );
+        connect ( Kopete::TransferManager::transferManager(), SIGNAL (accepted(Kopete::Transfer*,QString)),
+                  this, SLOT(slotTransferAccepted(Kopete::Transfer*,QString)) );
 
-        connect ( Kopete::TransferManager::transferManager (), SIGNAL (refused(Kopete::FileTransferInfo)),
-                  this, SLOT (slotTransferRefused(Kopete::FileTransferInfo)) );
+        connect ( Kopete::TransferManager::transferManager(), SIGNAL (refused(Kopete::FileTransferInfo)),
+                  this, SLOT(slotTransferRefused(Kopete::FileTransferInfo)) );
 
         d->transferInfo = *info;
+
+        d->sessionId = d->transferInfo.sessionId();
+
         Kopete::TransferManager::transferManager()
                 ->askIncomingTransfer(contact, d->transferInfo.getFiles()[0].first, d->transferInfo.totalSize());
 
@@ -170,7 +182,10 @@ int FileTransferTask::getFileSize() {
 
 int FileTransferTask::getSessionId() {
     static int i = 0;
-    return getpid() + i++;
+    if (d->sessionId == 0) {
+        d->sessionId = getpid() + i++;
+    }
+    return d->sessionId;
 }
 
 QString FileTransferTask::getHostAndPort() {
@@ -231,8 +246,10 @@ void FileTransferTask::finishTransfer(bool succesful) {
     }
     if (succesful) {
         emit transferComplete();
+        d->proto->finishFileTransfer(this);
     } else {
         emit transferFailed();
+        d->proto->cancelFileTransfer(this);
     }
     deleteLater();
 }
@@ -250,6 +267,12 @@ void FileTransferTask::slotTransferAccepted(Kopete::Transfer*transfer, const QSt
     connect(this, SIGNAL(transferComplete()),
             d->tranfserTask, SLOT(slotComplete()));
 
+    connect(this, SIGNAL(transferFailed()),
+            d->tranfserTask, SLOT(slotCancelled()));
+
+    connect(d->tranfserTask, SIGNAL(transferCanceled()),
+            this, SLOT(slotCancel()) );
+
     openSocket(&d->transferInfo);
 
     d->file = new QFile(fileName, this);
@@ -260,8 +283,8 @@ void FileTransferTask::slotTransferAccepted(Kopete::Transfer*transfer, const QSt
 }
 
 void FileTransferTask::slotTransferRefused(const Kopete::FileTransferInfo &fileTransferInfo) {
-    /// @todo cancel transfer
-    deleteLater();
+    Q_UNUSED(fileTransferInfo);
+    cancel();
 }
 
 void FileTransferTask::slotIncommingData() {
@@ -336,4 +359,12 @@ void FileTransferTask::dataReceived(QByteArray &data) {
         d->file->flush();
         finishTransfer(true);
     }
+}
+
+void FileTransferTask::cancel() {
+    finishTransfer(false);
+}
+
+void FileTransferTask::slotCancel() {
+    cancel();
 }

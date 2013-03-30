@@ -45,6 +45,7 @@ public:
     QString getHostAndPort();
     QString getAccountId();
 
+    void cancel();
 signals:
     void transferComplete();
     void transferFailed();
@@ -63,6 +64,7 @@ public slots:
     void slotTransferAccepted(Kopete::Transfer*transfer, const QString &fileName);
     void slotTransferRefused(const Kopete::FileTransferInfo &fileTransferInfo);
     void slotBytesProcessed(qint64 bytes);
+    void slotCancel();
 private:
     class Private;
     Private *d;

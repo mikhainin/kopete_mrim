@@ -57,6 +57,7 @@ public:
                        const QString &fileName = QString(), uint fileSize = 0L );
 
     void receiveFile(const TransferRequestInfo &transferInfo);
+    void receiveFileCancel(const TransferRequestInfo &transferInfo);
 signals:
     void userInfoLoaded(const MRAContactInfo &info);
 
@@ -73,12 +74,13 @@ public slots:
     void slotLoadAvatar();
     void slotPerformRequestForAuthorization();
 
+    void slotTransferFinished();
+
 
     /**
      * Show "info dialog" for the contact
      */
     virtual void slotUserInfo ();
-    // void slotUserInfoClosed();
 
     virtual void sync(unsigned int changed = 0xFF);
 

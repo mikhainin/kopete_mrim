@@ -59,12 +59,14 @@ public:
 
     virtual void startFileTransfer(IFileTransferInfo *transferReceiver);
     virtual void finishFileTransfer(IFileTransferInfo *transferReceiver);
+    virtual void cancelFileTransfer(IFileTransferInfo *transferReceiver);
 
 protected:
     virtual void readMessage(MRAData & data);
     virtual void readUserSataus(MRAData & data);
     virtual void readAnketaInfo(MRAData & data);
     virtual void readTransferRequest(MRAData & data);
+    virtual void readTransferCancel(MRAData &data);
 
     virtual QVector<QVariant> readVectorByMask(MRAData & data, const QString &mask);
 

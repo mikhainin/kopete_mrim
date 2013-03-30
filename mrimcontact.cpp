@@ -13,6 +13,7 @@
 #include "ui/contactinfo.h"
 #include "mra/mraofflinemessage.h"
 #include "mra/mra_proto.h"
+#include "mra/transferrequestinfo.h"
 #include "filetransfertask.h"
 #include "debug.h"
 #include "mrimaccount.h"
@@ -26,6 +27,7 @@ struct MrimContact::Private {
     ContactInfo *infoDialog;
     KAction *requestForAuthorization;
     int flags;
+    QMap<int, FileTransferTask*> transferTasks;
 
     Private()
         : msgManager(NULL)
@@ -85,18 +87,45 @@ void MrimContact::sendFile( const KUrl &sourceURL,
                 , 0
                 , this);
 
+    connect(task, SIGNAL(transferComplete()),
+            this, SLOT(slotTransferFinished()) );
+
+    connect(task, SIGNAL(transferFailed()),
+            this, SLOT(slotTransferFinished()) );
+
+    d->transferTasks[task->getSessionId()] = task;
+
 }
 
 void MrimContact::receiveFile(const TransferRequestInfo &transferInfo) {
     /// @todo ask user's confirmation
     kDebug(kdeDebugArea());
-        FileTransferTask *task = new FileTransferTask(
-                      dynamic_cast<MrimAccount*>( account() )
-                    , this
-                    , QStringList()
-                    , FileTransferTask::Incoming
-                    , &transferInfo
-                    , this);
+    FileTransferTask *task = new FileTransferTask(
+                  dynamic_cast<MrimAccount*>( account() )
+                , this
+                , QStringList()
+                , FileTransferTask::Incoming
+                , &transferInfo
+                , this);
+
+    connect(task, SIGNAL(transferComplete()),
+            this, SLOT(slotTransferFinished()) );
+
+    connect(task, SIGNAL(transferFailed()),
+            this, SLOT(slotTransferFinished()) );
+
+    d->transferTasks[task->getSessionId()] = task;
+}
+
+void MrimContact::receiveFileCancel(const TransferRequestInfo &transferInfo) {
+    if (d->transferTasks.contains(transferInfo.sessionId())) {
+        d->transferTasks[transferInfo.sessionId()]->cancel();
+    }
+}
+
+void MrimContact::slotTransferFinished() {
+    FileTransferTask *task = (FileTransferTask *)sender();
+    d->transferTasks.remove(task->getSessionId());
 }
 
 void MrimContact::setFlags(int arg) {
