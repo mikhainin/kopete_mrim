@@ -11,6 +11,12 @@ namespace Kopete {
     class FileTransferInfo;
 }
 
+QT_BEGIN_NAMESPACE
+class QTcpSocket;
+class QByteArray;
+class QString;
+QT_END_NAMESPACE
+
 class FileTransferTask : public QObject, public IFileTransferInfo
 {
     Q_OBJECT
@@ -47,9 +53,8 @@ signals:
 
 
 public slots:
-    void slotReadOutgoingDataClient();
 
-    void slotReadIncommingDataClient();
+    void slotIncommingData();
 
     void discardClient();
 
@@ -57,6 +62,7 @@ public slots:
 
     void slotTransferAccepted(Kopete::Transfer*transfer, const QString &fileName);
     void slotTransferRefused(const Kopete::FileTransferInfo &fileTransferInfo);
+    void slotBytesProcessed(qint64 bytes);
 private:
     class Private;
     Private *d;
@@ -65,6 +71,11 @@ private:
     void finishTransfer(bool succesful);
     void openServer();
     void openSocket(const TransferRequestInfo *info);
+    void sendHello();
+
+    void commandHello();
+    void commandGetFile(const QString &filename);
+    void dataReceived(QByteArray &data);
 };
 
 #endif // FILETRANSFERTASK_H

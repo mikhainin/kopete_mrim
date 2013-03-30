@@ -18,9 +18,8 @@
 #include "filetransfertask.h"
 
 enum state {
-    NOT_CONNECTED,
-    CONNECTED,
-    HELLO_RECEIVED
+    COMMANDS,
+    DATA
 
 };
 
@@ -37,7 +36,7 @@ struct FileTransferTask::Private {
     MrimContact *contact;
     QTcpServer *server;
     QTcpSocket *socket;
-    int bytesSent;
+    int bytesProcessed;
     QStringList fileNames;
     Kopete::Transfer *tranfserTask;
     QFile *file;
@@ -52,7 +51,7 @@ struct FileTransferTask::Private {
         , contact(0)
         , server(0)
         , socket(0)
-        , bytesSent(0)
+        , bytesProcessed(0)
         , tranfserTask(0)
         , file(0) {
     }
@@ -122,7 +121,7 @@ void FileTransferTask::openServer() {
             this, SLOT(slotIncomingConnection()) );
 
 
-    d->server->listen(QHostAddress("192.168.1.43"), 2041);
+    d->server->listen(QHostAddress::Any, 2041);
 
     d->proto->startFileTransfer(this);
 }
@@ -133,59 +132,23 @@ void FileTransferTask::openSocket(const TransferRequestInfo *info) {
     d->files = info->getFiles();
 
     d->socket->connectToHost(connectData.first, connectData.second);
-    d->socket->waitForConnected(5000);
-    QObject::connect(d->socket, SIGNAL(readyRead()), this, SLOT(slotReadIncommingDataClient()));
+    if ( not d->socket->waitForConnected(5000) ) {
+        /// @todo report error
+    }
+    QObject::connect(d->socket, SIGNAL(readyRead()), this, SLOT(slotIncommingData()));
+    QObject::connect(d->socket, SIGNAL(disconnected()), this, SLOT(discardClient()));
+
+    sendHello();
+}
+
+void FileTransferTask::sendHello() {
     QByteArray hello;
     hello.append("MRA_FT_HELLO ");
     hello.append(d->account->accountId());
     hello.append('\0');
-    d->socket->write(hello);
-}
 
-void FileTransferTask::slotReadIncommingDataClient() {
-    const QString hello = "MRA_FT_HELLO " + getContact() + QChar('\0');
-    QTcpSocket* socket = (QTcpSocket*)sender();
-    QByteArray data = socket->readAll();
-    if (data.startsWith("MRA_FT_HELLO ")) {
-        QByteArray getFile;
-        getFile.append("MRA_FT_GET_FILE ");
-        getFile.append(d->files[0].first);
-        getFile.append('\0');
-
-        socket->write(getFile);
-    } else {
-        // file data
-        QString filename;
-        if (d->tranfserTask->info().saveToDirectory()) {
-            mrimDebug() << "save to directory";
-
-        }
-        filename = d->fileNames[0];
-        mrimDebug() << "filename" << filename;
-        QFile file(filename);
-        file.open(QIODevice::WriteOnly); // TODO: check and report error
-
-        file.write(data);
-        int bytesReceived = data.size();
-        kDebug(kdeDebugArea()) << "bytes" << bytesReceived;
-
-        const int bytsTotal = d->files[0].second;
-        while(bytesReceived < bytsTotal) {
-            QApplication::processEvents();
-
-            if ( socket->waitForReadyRead(100) ) {
-                QByteArray chunk = socket->readAll(); /// @todo errors check
-                file.write(chunk);
-                bytesReceived += chunk.size();
-
-                kDebug(kdeDebugArea()) << "chunk.size" << chunk.size();
-                d->tranfserTask->slotProcessed(bytesReceived);
-            } else {
-                kDebug(kdeDebugArea()) << "no data";
-            }
-
-        }
-        finishTransfer(true);
+    if (d->socket->write(hello) == -1) {
+        /// @todo report error
     }
 }
 
@@ -232,90 +195,35 @@ QString FileTransferTask::getHostAndPort() {
 
 void FileTransferTask::slotIncomingConnection() {
     kDebug(kdeDebugArea()) << "new connection" ;
-    QTcpSocket* s = d->server->nextPendingConnection();
-    QObject::connect(s, SIGNAL(readyRead()), this, SLOT(slotReadOutgoingDataClient()));
-    QObject::connect(s, SIGNAL(disconnected()), this, SLOT(discardClient()));
+
+    d->socket = d->server->nextPendingConnection();
+    QObject::connect(d->socket, SIGNAL(readyRead()), this, SLOT(slotIncommingData()));
+    QObject::connect(d->socket, SIGNAL(disconnected()), this, SLOT(discardClient()));
 }
 
 void FileTransferTask::discardClient() {
 
     QTcpSocket* socket = (QTcpSocket*)sender();
-    socket->deleteLater();
+    if (d->socket->bytesAvailable() > 0) {
+        slotIncommingData();
+        mrimDebug() << "bytes available" << d->socket->bytesAvailable();
+    }
+    d->socket->deleteLater();
+    d->socket = 0;
 }
 
-void FileTransferTask::slotReadOutgoingDataClient()
-{
-    // MRA_FT_HELLO mikhail.galanin@bk.ru.
-    const QString hello = "MRA_FT_HELLO " + getContact() + QChar('\0');
-
+void FileTransferTask::slotBytesProcessed(qint64 bytes) {
     QTcpSocket* socket = (QTcpSocket*)sender();
 
-    // TODO: wait for full line
-    /*
-    while( not socket->canReadLine() && socket->isValid() ) {
-        socket->waitForReadyRead(100);
-        QApplication::processEvents();
-    }
-    */
-
-    QByteArray data = socket->readAll();
-
-    kDebug(kdeDebugArea()) << "awaited" << hello;
-    kDebug(kdeDebugArea()) << "size" << hello.length();
-    kDebug(kdeDebugArea()) << "got" << QString(data) << data.length();
-
-    if (data.startsWith("MRA_FT_HELLO ")) {
-
-        QByteArray recvData;
-
-        recvData.append("MRA_FT_HELLO " + d->account->accountId() + '\0');
-
-        kDebug(kdeDebugArea()) << "written" << socket->write(recvData);
-
-    } else {
-
-        socket->readAll();
-
-        // "MRA_FT_GET_FILE file_name\0"
-
-        if ( !d->file->open(QIODevice::ReadOnly) ) {
-            kDebug(kdeDebugArea()) << "shit";
-            return;
-        }
-
-        QByteArray fileData = d->file->readAll();
-
-        if (socket->write(fileData) == -1) {
-            // TODO: report error
-        }
-
-        while( socket->bytesToWrite() > 0 ) {
-
-            QApplication::processEvents();
-
-            if ( socket->waitForBytesWritten(100) ) {
-                uint bytesWritten = (fileData.size() - d->bytesSent) - socket->bytesToWrite();
-                d->bytesSent += bytesWritten;
-                kDebug(kdeDebugArea()) << "bytes sent: " << bytesWritten;
-
-                emit bytesSent(d->bytesSent);
-            } else if (not socket->isOpen() ) {
-                kDebug(kdeDebugArea()) << "error: ";
-                // emit error
-                break; // error occured
-            }
-            // kDebug(kdeDebugArea()) << "keep calm: " << bytesWritten;
-
-        }
-
-        socket->close();
-
+    d->bytesProcessed += bytes;
+    emit bytesSent(d->bytesProcessed);
+    if (socket->bytesToWrite() == 0) {
         finishTransfer(true);
     }
-
 }
 
 void FileTransferTask::finishTransfer(bool succesful) {
+    mrimDebug() << "done";
     if (d->server) {
         d->server->close();
     } else if (d->socket) {
@@ -332,7 +240,7 @@ void FileTransferTask::finishTransfer(bool succesful) {
 void FileTransferTask::slotTransferAccepted(Kopete::Transfer*transfer, const QString &fileName) {
 
     mrimDebug() << fileName;
-    d->tranfserTask = transfer; //->info().saveToDirectory();
+    d->tranfserTask = transfer;
 
     d->fileNames.append(fileName);
 
@@ -343,9 +251,89 @@ void FileTransferTask::slotTransferAccepted(Kopete::Transfer*transfer, const QSt
             d->tranfserTask, SLOT(slotComplete()));
 
     openSocket(&d->transferInfo);
+
+    d->file = new QFile(fileName, this);
+    if (not d->file->open(QFile::WriteOnly)) {
+        /// @todo report error
+    }
+
 }
 
 void FileTransferTask::slotTransferRefused(const Kopete::FileTransferInfo &fileTransferInfo) {
     /// @todo cancel transfer
     deleteLater();
+}
+
+void FileTransferTask::slotIncommingData() {
+    QTcpSocket* socket = (QTcpSocket*)sender();
+    QByteArray data = socket->readAll();
+
+    /// @todo wait for zero-terminator
+    const QByteArray hello = "MRA_FT_HELLO ";
+    const QByteArray getFile = "MRA_FT_GET_FILE ";
+
+    if (data.startsWith(hello)) {
+        commandHello();
+    } else if (data.startsWith(getFile)) {
+
+        QString filename = data.mid(getFile.length(), data.size() - getFile.length() - 1); // 1 - zerro-terminator
+
+        commandGetFile(filename);
+
+    } else {
+        dataReceived(data);
+    }
+}
+
+void FileTransferTask::commandHello() {
+    if (d->dir == Incoming) {
+        QByteArray getFile;
+        getFile.append("MRA_FT_GET_FILE ");
+        getFile.append(d->files[0].first);
+        getFile.append('\0');
+
+        d->socket->write(getFile);
+    } else {
+        sendHello();
+    }
+}
+
+void FileTransferTask::commandGetFile(const QString &filename) {
+
+    mrimDebug() << "filename = " << filename;
+    d->file = new QFile(d->fileNames[0], this);
+
+    if ( !d->file->open(QIODevice::ReadOnly) ) {
+        /// @todo report error
+        mrimDebug() << "shit";
+        return;
+    }
+
+    QByteArray fileData = d->file->readAll();
+
+    connect(d->socket, SIGNAL(bytesWritten(qint64)),
+            this, SLOT(slotBytesProcessed(qint64)) );
+
+    if (d->socket->write(fileData) == -1) {
+        /// @todo report error
+    }
+
+}
+
+void FileTransferTask::dataReceived(QByteArray &data) {
+    d->file->write(data);
+    d->file->flush();
+    d->bytesProcessed += data.size();
+    d->tranfserTask->slotProcessed(d->bytesProcessed);
+
+    if (d->bytesProcessed == d->files[0].second) {
+        mrimDebug() << "downloaded";
+        while(d->file->bytesToWrite() > 0) {
+            mrimDebug() << "bytesToWrite" << d->file->bytesToWrite();
+            d->file->waitForBytesWritten(100);
+            QApplication::processEvents();
+        }
+        d->file->flush();
+        finishTransfer(true);
+    }
 }
