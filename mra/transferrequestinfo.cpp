@@ -37,6 +37,20 @@ void TransferRequestInfo::setFilesString(const QString &arg) {
     m_files = arg;
 }
 
+QStringList TransferRequestInfo::getFilesAsStringList() const {
+
+    QStringList result;
+
+    typedef QPair<QString, int> list_item;
+    foreach(const list_item &item, getFiles()) {
+        result.append(item.first);
+    }
+
+    return result;
+
+}
+
+
 QList<QPair<QString, int> > TransferRequestInfo::getFiles() const {
     QStringList chunks = m_files.split(';');
     QStringList::const_iterator p = chunks.constBegin();

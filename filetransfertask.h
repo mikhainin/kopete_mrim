@@ -40,7 +40,7 @@ public:
 
     QString getContact();
     QString getFilePath();
-    int getFileSize();
+    int getFilesSize();
     int getSessionId();
     QString getHostAndPort();
     QString getAccountId();
@@ -61,7 +61,7 @@ public slots:
 
     void slotIncomingConnection();
 
-    void slotTransferAccepted(Kopete::Transfer*transfer, const QString &fileName);
+    void slotTransferAccepted(Kopete::Transfer*transfer, const QString &filePath);
     void slotTransferRefused(const Kopete::FileTransferInfo &fileTransferInfo);
     void slotBytesProcessed(qint64 bytes);
     void slotCancel();
@@ -78,6 +78,10 @@ private:
     void commandHello();
     void commandGetFile(const QString &filename);
     void dataReceived(QByteArray &data);
+    QString getFirstFilename();
+    QString getNextFileName();
+    QString filePathByFilename(const QString &filename);
+    void nextFile(const QString &filename);
 };
 
 #endif // FILETRANSFERTASK_H

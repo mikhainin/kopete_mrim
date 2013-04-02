@@ -36,9 +36,10 @@ struct FileTransferTask::Private {
     MrimContact *contact;
     QTcpServer *server;
     QTcpSocket *socket;
+    int currentFileBytesProcessed;
     int bytesProcessed;
     QStringList fileNames;
-    Kopete::Transfer *tranfserTask;
+    Kopete::Transfer *transferTask;
     QFile *file;
     FileTransferTask::Direction dir;
     TransferRequestInfo transferInfo;
@@ -46,16 +47,20 @@ struct FileTransferTask::Private {
 
     QList<QPair<QString, int> > files;
 
+    int currentFile;
+
     Private()
         : account(0)
         , proto(0)
         , contact(0)
         , server(0)
         , socket(0)
+        , currentFileBytesProcessed(0)
         , bytesProcessed(0)
-        , tranfserTask(0)
+        , transferTask(0)
         , file(0)
-        , sessionId(0) {
+        , sessionId(0)
+        , currentFile(-1) {
     }
 };
 
@@ -84,20 +89,20 @@ FileTransferTask::FileTransferTask(MrimAccount *account,
     if (d->dir == Outgoing) {
         d->file = new QFile(fileNames[0], this);
 
-        d->tranfserTask = Kopete::TransferManager::transferManager()
-                ->addTransfer(contact, fileNames[0], d->file->size(), contact->contactId(), Kopete::FileTransferInfo::Outgoing);
+        d->transferTask = Kopete::TransferManager::transferManager()
+                ->addTransfer(contact, fileNames, getFilesSize(), contact->contactId(), Kopete::FileTransferInfo::Outgoing);
 
 
         connect(this, SIGNAL(bytesSent(uint)),
-                d->tranfserTask, SLOT(slotProcessed(uint)));
+                d->transferTask, SLOT(slotProcessed(uint)));
 
         connect(this, SIGNAL(transferComplete()),
-                d->tranfserTask, SLOT(slotComplete()));
+                d->transferTask, SLOT(slotComplete()));
 
         connect(this, SIGNAL(transferFailed()),
-                d->tranfserTask, SLOT(slotCancelled()));
+                d->transferTask, SLOT(slotCancelled()));
 
-        connect(d->tranfserTask, SIGNAL(transferCanceled()),
+        connect(d->transferTask, SIGNAL(transferCanceled()),
                 this, SLOT(slotCancel()) );
 
         openServer();
@@ -114,7 +119,7 @@ FileTransferTask::FileTransferTask(MrimAccount *account,
         d->sessionId = d->transferInfo.sessionId();
 
         Kopete::TransferManager::transferManager()
-                ->askIncomingTransfer(contact, d->transferInfo.getFiles()[0].first, d->transferInfo.totalSize());
+                ->askIncomingTransfer(contact, d->transferInfo.getFilesAsStringList(), d->transferInfo.totalSize());
 
 
     }
@@ -173,11 +178,16 @@ QString FileTransferTask::getAccountId() {
 }
 
 QString FileTransferTask::getFilePath() {
-    return QFileInfo(d->file->fileName()).fileName(); // "tar.gz"; // 69925;";
+    return QFileInfo(d->file->fileName()).fileName();
 }
 
-int FileTransferTask::getFileSize() {
-    return d->file->size();
+int FileTransferTask::getFilesSize() {
+    int sumSizes = 0;
+    foreach(const QString &fileName, d->fileNames) {
+        sumSizes += QFileInfo(fileName).size();
+    }
+
+    return sumSizes;
 }
 
 int FileTransferTask::getSessionId() {
@@ -218,23 +228,12 @@ void FileTransferTask::slotIncomingConnection() {
 
 void FileTransferTask::discardClient() {
 
-    QTcpSocket* socket = (QTcpSocket*)sender();
     if (d->socket->bytesAvailable() > 0) {
         slotIncommingData();
         mrimDebug() << "bytes available" << d->socket->bytesAvailable();
     }
     d->socket->deleteLater();
     d->socket = 0;
-}
-
-void FileTransferTask::slotBytesProcessed(qint64 bytes) {
-    QTcpSocket* socket = (QTcpSocket*)sender();
-
-    d->bytesProcessed += bytes;
-    emit bytesSent(d->bytesProcessed);
-    if (socket->bytesToWrite() == 0) {
-        finishTransfer(true);
-    }
 }
 
 void FileTransferTask::finishTransfer(bool succesful) {
@@ -254,28 +253,39 @@ void FileTransferTask::finishTransfer(bool succesful) {
     deleteLater();
 }
 
-void FileTransferTask::slotTransferAccepted(Kopete::Transfer*transfer, const QString &fileName) {
+void FileTransferTask::slotTransferAccepted(Kopete::Transfer*transfer, const QString &filePath) {
 
-    mrimDebug() << fileName;
-    d->tranfserTask = transfer;
+    if (transfer->info().saveToDirectory()) {
+        mrimDebug() << "dir";
 
-    d->fileNames.append(fileName);
+        foreach (const QString &filename, d->transferInfo.getFilesAsStringList()) {
+            d->fileNames.append(filePath + '/' + filename);
+            mrimDebug() << "append" << filePath + '/' + filename;
+        }
+    } else {
+        mrimDebug() << "one file" << filePath;
+        // only one file
+        /// @todo user can change the name of the file
+        d->fileNames.append(filePath);
+    }
+    d->transferTask = transfer;
+
 
     connect(this, SIGNAL(bytesSent(uint)),
-            d->tranfserTask, SLOT(slotProcessed(uint)));
+            d->transferTask, SLOT(slotProcessed(uint)));
 
     connect(this, SIGNAL(transferComplete()),
-            d->tranfserTask, SLOT(slotComplete()));
+            d->transferTask, SLOT(slotComplete()));
 
     connect(this, SIGNAL(transferFailed()),
-            d->tranfserTask, SLOT(slotCancelled()));
+            d->transferTask, SLOT(slotCancelled()));
 
-    connect(d->tranfserTask, SIGNAL(transferCanceled()),
+    connect(d->transferTask, SIGNAL(transferCanceled()),
             this, SLOT(slotCancel()) );
 
     openSocket(&d->transferInfo);
 
-    d->file = new QFile(fileName, this);
+    d->file = new QFile(filePath, this);
     if (not d->file->open(QFile::WriteOnly)) {
         /// @todo report error
     }
@@ -296,7 +306,9 @@ void FileTransferTask::slotIncommingData() {
     const QByteArray getFile = "MRA_FT_GET_FILE ";
 
     if (data.startsWith(hello)) {
+
         commandHello();
+
     } else if (data.startsWith(getFile)) {
 
         QString filename = data.mid(getFile.length(), data.size() - getFile.length() - 1); // 1 - zerro-terminator
@@ -308,14 +320,72 @@ void FileTransferTask::slotIncommingData() {
     }
 }
 
-void FileTransferTask::commandHello() {
+
+QString FileTransferTask::getFirstFilename() {
+    d->currentFile = 0;
+    return d->files[d->currentFile].first;
+}
+
+QString FileTransferTask::getNextFileName() {
+    d->currentFileBytesProcessed = 0;
+    d->currentFile++;
+    if (d->currentFile >= d->files.length()) {
+        return QString();
+    }
+    return d->files[d->currentFile].first;
+}
+
+void FileTransferTask::nextFile(const QString &filename) {
+
+    delete d->file; // it's okay to delete null-pointer
+    d->file = 0;
+
+    if (filename.isEmpty()) {
+        mrimDebug() << "empty filename";
+        finishTransfer(true);
+        return;
+    }
+
     if (d->dir == Incoming) {
         QByteArray getFile;
         getFile.append("MRA_FT_GET_FILE ");
-        getFile.append(d->files[0].first);
+        getFile.append(filename);
         getFile.append('\0');
 
         d->socket->write(getFile);
+
+        d->file = new QFile( filePathByFilename(filename) );
+        d->file->open(QFile::WriteOnly);
+        d->transferTask->slotNextFile(filename, filePathByFilename(filename));
+    } else {
+
+        d->file = new QFile(filePathByFilename(filename), this);
+        if ( !d->file->open(QIODevice::ReadOnly) ) {
+            /// @todo report error
+            mrimDebug() << "shit";
+            return;
+        }
+    }
+
+}
+
+QString FileTransferTask::filePathByFilename(const QString &filename) {
+    foreach(const QString &filepath, d->fileNames) {
+        mrimWarning() << QFileInfo(filepath).fileName() << filename;
+        if (QFileInfo(filepath).fileName() == filename) {
+            return filepath;
+        }
+    }
+    mrimWarning() << "file not found" << filename;
+    return QString();
+    /// @todo throw
+}
+
+void FileTransferTask::commandHello() {
+    if (d->dir == Incoming) {
+
+        nextFile(getFirstFilename());
+
     } else {
         sendHello();
     }
@@ -323,33 +393,43 @@ void FileTransferTask::commandHello() {
 
 void FileTransferTask::commandGetFile(const QString &filename) {
 
-    mrimDebug() << "filename = " << filename;
-    d->file = new QFile(d->fileNames[0], this);
-
-    if ( !d->file->open(QIODevice::ReadOnly) ) {
-        /// @todo report error
-        mrimDebug() << "shit";
-        return;
-    }
-
-    QByteArray fileData = d->file->readAll();
+    nextFile(filename);
 
     connect(d->socket, SIGNAL(bytesWritten(qint64)),
             this, SLOT(slotBytesProcessed(qint64)) );
 
-    if (d->socket->write(fileData) == -1) {
+    if (d->socket->write(d->file->readAll()) == -1) {
         /// @todo report error
     }
 
 }
 
+
+void FileTransferTask::slotBytesProcessed(qint64 bytes) {
+    QTcpSocket* socket = (QTcpSocket*)sender();
+
+    d->bytesProcessed += bytes;
+    emit bytesSent(d->bytesProcessed);
+    if (socket->bytesToWrite() == 0) {
+
+        QObject::disconnect(d->socket, SIGNAL(bytesWritten(qint64)),
+                            this, SLOT(slotBytesProcessed(qint64)) );
+
+        if (d->bytesProcessed == getFilesSize()) {
+            finishTransfer(true);
+        }
+    }
+}
+
+
 void FileTransferTask::dataReceived(QByteArray &data) {
     d->file->write(data);
     d->file->flush();
     d->bytesProcessed += data.size();
-    d->tranfserTask->slotProcessed(d->bytesProcessed);
+    d->currentFileBytesProcessed += data.size();
+    d->transferTask->slotProcessed(d->bytesProcessed);
 
-    if (d->bytesProcessed == d->files[0].second) {
+    if (d->currentFileBytesProcessed == d->files[d->currentFile].second) {
         mrimDebug() << "downloaded";
         while(d->file->bytesToWrite() > 0) {
             mrimDebug() << "bytesToWrite" << d->file->bytesToWrite();
@@ -357,7 +437,9 @@ void FileTransferTask::dataReceived(QByteArray &data) {
             QApplication::processEvents();
         }
         d->file->flush();
-        finishTransfer(true);
+
+        nextFile(getNextFileName());
+        // finishTransfer(true);
     }
 }
 

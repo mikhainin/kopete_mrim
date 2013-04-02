@@ -2,6 +2,7 @@
 #define TRANSFERREQUESTINFO_H
 
 #include <QString>
+#include <QStringList>
 #include <QPair>
 #include <QList>
 
@@ -21,6 +22,7 @@ public:
     int totalSize() const;
 
     void setFilesString(const QString &arg);
+    QStringList getFilesAsStringList() const;
     QList<QPair<QString, int> > getFiles() const;
 
     void setHostsAndPortsString(const QString &arg) ;

@@ -552,13 +552,13 @@ void MRAProtocolV123::startFileTransfer(IFileTransferInfo *transferReceiver
     MRAData data;
     data.addString(transferReceiver->getContact());
     data.addInt32(transferReceiver->getSessionId());
-    data.addInt32(transferReceiver->getFileSize());
+    data.addInt32(transferReceiver->getFilesSize());
     // data.addInt32(121); // WTF?
 
     MRAData filesInfo;
 
     QString fileAndSize = transferReceiver->getFilePath()
-            + ';' + QString::number(transferReceiver->getFileSize())
+            + ';' + QString::number(transferReceiver->getFilesSize())
             + ';';
 
         filesInfo.addString(fileAndSize);
