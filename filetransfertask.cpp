@@ -27,7 +27,8 @@ enum state {
  * @todo
  * - cancel transfer by user (via tray)
  * - try to open channel to remote client when it asks
- * - send/receive many files
+ * - delete partly downloaded files
+ * - file transfer between different networks
  */
 
 struct FileTransferTask::Private {
@@ -177,8 +178,20 @@ QString FileTransferTask::getAccountId() {
     return d->account->accountId();
 }
 
-QString FileTransferTask::getFilePath() {
-    return QFileInfo(d->file->fileName()).fileName();
+QList<QPair<QString, int> > FileTransferTask::getFiles() {
+
+    QList<QPair<QString, int> > result;
+
+    foreach (const QString &filename, d->fileNames) {
+        QFileInfo finfo(filename);
+        QPair<QString, int> item;
+        item.first = finfo.fileName();
+        item.second = finfo.size();
+
+        result.append(item);
+    }
+
+    return result;
 }
 
 int FileTransferTask::getFilesSize() {
@@ -365,13 +378,13 @@ void FileTransferTask::nextFile(const QString &filename) {
             mrimDebug() << "shit";
             return;
         }
+        d->transferTask->slotNextFile(filename, filePathByFilename(filename));
     }
 
 }
 
 QString FileTransferTask::filePathByFilename(const QString &filename) {
     foreach(const QString &filepath, d->fileNames) {
-        mrimWarning() << QFileInfo(filepath).fileName() << filename;
         if (QFileInfo(filepath).fileName() == filename) {
             return filepath;
         }

@@ -39,7 +39,7 @@ public:
     void run();
 
     QString getContact();
-    QString getFilePath();
+    QList<QPair<QString, int> > getFiles();
     int getFilesSize();
     int getSessionId();
     QString getHostAndPort();

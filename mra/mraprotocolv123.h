@@ -3,6 +3,7 @@
 
 #include "mraprotocol.h"
 #include <QVector>
+#include <QPair>
 
 class MRAContactListEntry;
 
@@ -16,7 +17,7 @@ public:
             */
     virtual ~IFileTransferInfo() {}
     virtual QString getContact() = 0;
-    virtual QString getFilePath() = 0;
+    virtual QList<QPair<QString, int> > getFiles() = 0;
     virtual int getFilesSize() = 0;
     virtual int getSessionId() = 0;
     virtual QString getHostAndPort() = 0;

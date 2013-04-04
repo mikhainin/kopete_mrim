@@ -557,9 +557,17 @@ void MRAProtocolV123::startFileTransfer(IFileTransferInfo *transferReceiver
 
     MRAData filesInfo;
 
-    QString fileAndSize = transferReceiver->getFilePath()
-            + ';' + QString::number(transferReceiver->getFilesSize())
-            + ';';
+    typedef QPair<QString, int> list_item;
+    QList<list_item> filesList = transferReceiver->getFiles();
+    QString fileAndSize;
+    foreach (const list_item &item, filesList) {
+
+        fileAndSize +=
+                      item.first + ';'
+                    + QString::number(item.second) + ';'
+                ;
+
+    }
 
         filesInfo.addString(fileAndSize);
 
