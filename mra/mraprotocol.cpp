@@ -12,10 +12,9 @@
 #include "mraofflinemessage.h"
 #include "transferrequestinfo.h"
 #include "mra_proto.h"
-
+#include "filetransferinfo.h"
+#include "transfermanager.h"
 #include "../version.h"
-
-unsigned long int sec_count;
 
 struct MRAProtocol::MRAProtocolPrivate {
     MRAConnection *connection;
@@ -28,6 +27,8 @@ struct MRAProtocol::MRAProtocolPrivate {
     int avatarLoadersCount;
     IMRAProtocolGroupReceiver *grouReceiver;
     IMRAProtocolContactReceiver *contactReceiver;
+    qtmra::TransferManager transferManager;
+
 
     MRAProtocolPrivate()
       : connection(0)
@@ -81,7 +82,7 @@ bool MRAProtocol::makeConnection(const QString &login, const QString &password)
 
     d->keepAliveTimer = new QTimer(this);
     connect(d->keepAliveTimer, SIGNAL(timeout()) , this , SLOT(slotPing()));
-    d->keepAliveTimer->start(sec_count*1000);
+    d->keepAliveTimer->start(d->secCount*1000);
 
     return true;
 }
@@ -144,21 +145,21 @@ void MRAProtocol::sendHello()
 
     d->connection->readMessage(msg, &data);
 
-    sec_count = data.getInt32();
-    mrimDebug() << "HELLO ACK received, timeout sec:" << sec_count ;
+    d->secCount = data.getInt32();
+    mrimDebug() << "HELLO ACK received, timeout sec:" << d->secCount ;
 
 }
 
 void MRAProtocol::readConnectionParams(MRAData & data) {
 
-    sec_count = data.getInt32();
+    d->secCount = data.getInt32();
 
     d->keepAliveTimer->deleteLater();
     d->keepAliveTimer = 0;
 
     d->keepAliveTimer = new QTimer(this);
     connect(d->keepAliveTimer, SIGNAL(timeout()) , this , SLOT(slotPing()));
-    d->keepAliveTimer->start(sec_count*1000);
+    d->keepAliveTimer->start(d->secCount*1000);
 
 }
 
@@ -675,11 +676,22 @@ void MRAProtocol::readTransferRequest(MRAData & data) {
 void MRAProtocol::readTransferCancel(MRAData & data) {
     Q_UNUSED(data);
 }
+void MRAProtocol::readTransferUseThisProxy(MRAData &data) {
+    Q_UNUSED(data);
+}
+
+void MRAProtocol::readTransferCantLocal(MRAData &data) {
+    Q_UNUSED(data);
+}
+
+qtmra::TransferManager &MRAProtocol::transferManager() {
+    return d->transferManager;
+}
 
 
 void MRAProtocol::handleMessage(const ulong &msg, MRAData *data)
 {
-    mrimDebug() << "Accepting message " << msg;
+    mrimDebug() << "Accepting message " << hex << msg;
     switch (msg) {
         case MRIM_CS_USER_INFO:
 
@@ -735,6 +747,14 @@ void MRAProtocol::handleMessage(const ulong &msg, MRAData *data)
             break;
         case MRIM_CS_TRANSFER_CANCEL:
             readTransferCancel(*data);
+            break;
+
+        case MRIM_CS_TRANSFER_USE_THIS_PROXY:
+            readTransferUseThisProxy(*data);
+            break;
+
+        case MRIM_CS_TRANSFER_CANT_LOCAL:
+            readTransferCantLocal(*data);
             break;
 
         case MRIM_CS_MESSAGE_STATUS:

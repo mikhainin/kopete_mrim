@@ -80,10 +80,13 @@ void TransferRequestInfo::setHostsAndPortsString(const QString &arg) {
 }
 
 QList<QPair<QString, int> > TransferRequestInfo::getHostsAndPorts() const {
-    QStringList chunks = m_hostsAndPorts.split(';');
+    return parseHostsAndPorts(m_hostsAndPorts);
+}
+
+QList<QPair<QString, int> > TransferRequestInfo::parseHostsAndPorts(const QString &str) {
+    QStringList chunks = str.split(';');
     QStringList::const_iterator p = chunks.constBegin();
 
-    mrimDebug() << m_hostsAndPorts;
     QList<QPair<QString, int> > res;
 
     for(; p != chunks.constEnd(); ++p) {
@@ -95,7 +98,6 @@ QList<QPair<QString, int> > TransferRequestInfo::getHostsAndPorts() const {
 
         /// @todo check if toInt() was successful
         int port = hostAndPort[1].toInt();
-        mrimDebug() << hostAddress << port;
         res.append( QPair<QString, int>(hostAddress, port) );
     }
 

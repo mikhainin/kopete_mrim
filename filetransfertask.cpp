@@ -11,13 +11,16 @@
 #include <kopete/kopetetransfermanager.h>
 
 #include "debug.h"
+#include "mra/mra_proto.h"
 #include "mra/mraprotocolv123.h"
 #include "mra/transferrequestinfo.h"
 #include "mrimcontact.h"
 #include "mrimaccount.h"
 #include "filetransfertask.h"
 
-enum state {
+enum State {
+    INITIAL,
+    HELLO_SENT,
     COMMANDS,
     DATA
 
@@ -49,6 +52,7 @@ struct FileTransferTask::Private {
     QList<QPair<QString, int> > files;
 
     int currentFile;
+    State state;
 
     Private()
         : account(0)
@@ -61,7 +65,8 @@ struct FileTransferTask::Private {
         , transferTask(0)
         , file(0)
         , sessionId(0)
-        , currentFile(-1) {
+        , currentFile(-1)
+        , state(INITIAL) {
     }
 };
 
@@ -107,6 +112,9 @@ FileTransferTask::FileTransferTask(MrimAccount *account,
                 this, SLOT(slotCancel()) );
 
         openServer();
+
+        d->proto->startFileTransfer(this);
+
     } else {
 
         connect ( Kopete::TransferManager::transferManager(), SIGNAL (accepted(Kopete::Transfer*,QString)),
@@ -141,22 +149,130 @@ void FileTransferTask::openServer() {
 
     d->server->listen(QHostAddress::Any, 2041);
 
-    d->proto->startFileTransfer(this);
 }
 
 void FileTransferTask::openSocket(const TransferRequestInfo *info) {
+
     d->socket = new QTcpSocket(this);
-    QPair<QString, int> connectData = info->getHostsAndPorts()[0];
+
+    typedef QPair<QString, int> connect_t;
+    connect_t connectData;
+
+    foreach (const connect_t &i, info->getHostsAndPorts()) {
+        if (i.second != 443) { // SSL is not supported yet
+            connectData = i;
+            break;
+        }
+    }
+
     d->files = info->getFiles();
 
     d->socket->connectToHost(connectData.first, connectData.second);
     if ( not d->socket->waitForConnected(5000) ) {
-        /// @todo report error
+
+        delete d->socket;
+        d->socket = 0;
+        if (d->dir == Incoming) {
+            openServer();
+            d->proto->sendTryThisHost(this);
+        } else {
+            d->proto->sendTransferCantLocal(this);
+        }
+        return;
     }
     QObject::connect(d->socket, SIGNAL(readyRead()), this, SLOT(slotIncommingData()));
     QObject::connect(d->socket, SIGNAL(disconnected()), this, SLOT(discardClient()));
 
     sendHello();
+}
+
+void FileTransferTask::tryThisHost(const QString &hosts) {
+
+    QList<QPair<QString, int> > list =
+                TransferRequestInfo::parseHostsAndPorts(hosts);
+
+
+    typedef QPair<QString, int> connect_t;
+    connect_t connectData;
+
+    foreach (const connect_t &i, list) {
+        if (i.second != 443) { // SSL is not supported yet
+            connectData = i;
+            break;
+        }
+    }
+
+    d->socket = new QTcpSocket(this);
+    d->socket->connectToHost(connectData.first, connectData.second);
+    if ( not d->socket->waitForConnected(5000) ) {
+        delete d->socket;
+        d->proto->sendTransferCantLocal(this);
+        return;
+    }
+    QObject::connect(d->socket, SIGNAL(readyRead()), this, SLOT(slotIncommingData()));
+    QObject::connect(d->socket, SIGNAL(disconnected()), this, SLOT(discardClient()));
+
+    sendHello();
+
+}
+
+void FileTransferTask::useThisProxy(const QString &hosts, const QByteArray &proxyKey) {
+    QList<QPair<QString, int> > list =
+                TransferRequestInfo::parseHostsAndPorts(hosts);
+
+
+    typedef QPair<QString, int> connect_t;
+    connect_t connectData;
+
+    foreach (const connect_t &i, list) {
+        if (i.second != 443) { // SSL is not supported yet
+            connectData = i;
+            break;
+        }
+    }
+
+    d->socket = new QTcpSocket(this);
+    d->socket->connectToHost(connectData.first, connectData.second);
+    if ( not d->socket->waitForConnected(1000) ) {
+        cancel();
+        return;
+
+    }
+
+    proxyNegotiate(proxyKey);
+
+    QObject::connect(d->socket, SIGNAL(readyRead()), this, SLOT(slotIncommingData()));
+    QObject::connect(d->socket, SIGNAL(disconnected()), this, SLOT(discardClient()));
+
+    if (d->dir == Incoming) {
+        sendHello();
+    }
+}
+
+void FileTransferTask::proxyNegotiate(const QByteArray &proxyKey) {
+
+    mrim_packet_header_t header;
+    memset(&header, '\0', sizeof header);
+
+    header.dlen = 16;
+    header.from = 0;
+    header.fromport = 0;
+    header.magic = CS_MAGIC;
+    header.msg = MRIM_CS_TRANSFER_PROXY_START_SESSION;
+    header.proto = PROTO_VERSION;
+    header.seq = 0;
+
+    d->socket->write((const char*)&header, sizeof header);
+    d->socket->write(proxyKey);
+    d->socket->waitForBytesWritten(-1);
+
+    QApplication::processEvents();
+
+    d->socket->waitForReadyRead(-1);
+
+    d->socket->read((char*)&header, sizeof header);
+
+    Q_ASSERT(header.msg == MRIM_CS_TRANSFER_PROXY_START_SESSION_ACK);
 }
 
 void FileTransferTask::sendHello() {
@@ -232,7 +348,7 @@ QString FileTransferTask::getHostAndPort() {
 }
 
 void FileTransferTask::slotIncomingConnection() {
-    kDebug(kdeDebugArea()) << "new connection" ;
+    mrimDebug() << "new connection" ;
 
     d->socket = d->server->nextPendingConnection();
     QObject::connect(d->socket, SIGNAL(readyRead()), this, SLOT(slotIncommingData()));
@@ -267,6 +383,8 @@ void FileTransferTask::finishTransfer(bool succesful) {
 }
 
 void FileTransferTask::slotTransferAccepted(Kopete::Transfer*transfer, const QString &filePath) {
+
+    d->proto->addTransferSession(this);
 
     if (transfer->info().saveToDirectory()) {
         mrimDebug() << "dir";
@@ -319,16 +437,18 @@ void FileTransferTask::slotIncommingData() {
     const QByteArray getFile = "MRA_FT_GET_FILE ";
 
     if (data.startsWith(hello)) {
-
+        mrimDebug() << "hello";
         commandHello();
 
     } else if (data.startsWith(getFile)) {
 
         QString filename = data.mid(getFile.length(), data.size() - getFile.length() - 1); // 1 - zerro-terminator
+        mrimDebug() << "get file" << filename;
 
         commandGetFile(filename);
 
     } else {
+        mrimDebug() << "data" << data.size();
         dataReceived(data);
     }
 }

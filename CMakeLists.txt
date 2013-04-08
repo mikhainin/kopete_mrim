@@ -41,6 +41,7 @@ set(kopete_mrim_SRCS
     mra/mracontactinfo.cpp
     mra/mraprotocolv123.cpp
     mra/transferrequestinfo.cpp
+    mra/transfermanager.cpp
 
     ui/contactinfo.cpp
     ui/mrimeditaccountwidget.cpp

@@ -7,23 +7,9 @@
 
 class MRAContactListEntry;
 
-class IFileTransferInfo {
-public:
-    /*FileTransferInfo(
-                  const QString &contact
-                , int sessionId
-                , const QString &filepath
-            );
-            */
-    virtual ~IFileTransferInfo() {}
-    virtual QString getContact() = 0;
-    virtual QList<QPair<QString, int> > getFiles() = 0;
-    virtual int getFilesSize() = 0;
-    virtual int getSessionId() = 0;
-    virtual QString getHostAndPort() = 0;
-    virtual QString getAccountId() = 0;
-
-};
+namespace qtmra {
+    class IFileTransferInfo;
+}
 
 class MRAProtocolV123 : public MRAProtocol
 {
@@ -58,9 +44,14 @@ public:
 
     virtual void addGroupToContactList(const QString &groupName, IMRAProtocolGroupReceiver *groupAddedReveiver);
 
-    virtual void startFileTransfer(IFileTransferInfo *transferReceiver);
-    virtual void finishFileTransfer(IFileTransferInfo *transferReceiver);
-    virtual void cancelFileTransfer(IFileTransferInfo *transferReceiver);
+    virtual void startFileTransfer(qtmra::IFileTransferInfo *transferReceiver);
+    virtual void finishFileTransfer(qtmra::IFileTransferInfo *transferReceiver);
+    virtual void cancelFileTransfer(qtmra::IFileTransferInfo *transferReceiver);
+    virtual void sendTransferCantLocal(qtmra::IFileTransferInfo *transferReceiver);
+    virtual void sendTryThisHost(qtmra::IFileTransferInfo *transferReceiver);
+    virtual void addTransferSession(qtmra::IFileTransferInfo *transferReceiver);
+
+    static QString buildFilesListString(qtmra::IFileTransferInfo *transferReceiver);
 
 protected:
     virtual void readMessage(MRAData & data);
@@ -68,6 +59,8 @@ protected:
     virtual void readAnketaInfo(MRAData & data);
     virtual void readTransferRequest(MRAData & data);
     virtual void readTransferCancel(MRAData &data);
+    virtual void readTransferUseThisProxy(MRAData &data);
+    virtual void readTransferCantLocal(MRAData &data);
 
     virtual QVector<QVariant> readVectorByMask(MRAData & data, const QString &mask);
 

@@ -318,9 +318,23 @@ enum {
 
 #define MRIM_CS_TRANSFER_REQUEST 0x1026
 
+//cancel transfer or request to connect to me
 #define MRIM_CS_TRANSFER_CANCEL 0x1027
 
 #define MRIM_CS_TRANSFER_SUCCEED 0x1034
+
+// clients are unable to extablish p2p connection
+const int MRIM_CS_TRANSFER_CANT_LOCAL = 0x1044;
+
+// server has opened proxy to transfer through
+const int MRIM_CS_TRANSFER_USE_THIS_PROXY = 0x1045;
+
+const int MRIM_CS_TRANSFER_PROXY_START_SESSION = 0x1046;
+// args = data(16) - ssl key, the same as in MRIM_CS_TRANSFER_CANT_LOCAL/MRIM_CS_TRANSFER_USE_THIS_PROXY
+
+const int MRIM_CS_TRANSFER_PROXY_START_SESSION_ACK = 0x1047;
+// no data
+
 
 #define MRIM_CS_LOGIN3       	0x1078  // C -> S
         // LPS login

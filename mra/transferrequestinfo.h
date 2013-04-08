@@ -25,9 +25,10 @@ public:
     QStringList getFilesAsStringList() const;
     QList<QPair<QString, int> > getFiles() const;
 
+
     void setHostsAndPortsString(const QString &arg) ;
     QList<QPair<QString, int> > getHostsAndPorts() const;
-
+    static QList<QPair<QString, int> > parseHostsAndPorts(const QString &str);
 private:
     QString m_remoteContact;
     int m_sessionId;

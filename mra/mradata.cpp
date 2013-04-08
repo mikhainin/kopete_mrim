@@ -206,19 +206,27 @@ QString MRAData::getUnicodeString() {
 
 QByteArray MRAData::getUIDL() {
 
-    int len = 8;
+    return getNBytes(8);
 
-    if (m_data.size() >= (m_pointer + len)) {
+}
 
-        QByteArray result = m_data.mid(m_pointer, len);
+QByteArray MRAData::getNBytes(int n) {
 
-        m_pointer += len;
+    if (m_data.size() >= (m_pointer + n)) {
+
+        QByteArray result = m_data.mid(m_pointer, n);
+
+        m_pointer += n;
 
         return result;
     } else {
         return QByteArray();
     }
 
+}
+
+void MRAData::addNBytes(int n, const QByteArray &data) {
+    addData(data.constData(), n);
 }
 
 QString MRAData::toBase64() const {

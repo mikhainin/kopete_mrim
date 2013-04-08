@@ -40,6 +40,9 @@ public:
     QString toBase64() const;
     const QByteArray &toByteArray() const;
 
+    QByteArray getNBytes(int n);
+    void addNBytes(int n, const QByteArray &data);
+
 private:
 private:
     QByteArray m_data;

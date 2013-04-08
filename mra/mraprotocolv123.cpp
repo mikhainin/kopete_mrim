@@ -2,6 +2,7 @@
 #include <QCryptographicHash>
 #include <QTextCodec>
 #include <QByteArray>
+#include <QApplication>
 
 #include "../debug.h"
 #include "mradata.h"
@@ -10,6 +11,8 @@
 #include "mracontactinfo.h"
 #include "mraprotocolv123.h"
 #include "transferrequestinfo.h"
+#include "filetransferinfo.h"
+#include "transfermanager.h"
 #include "../version.h"
 
 MRAProtocolV123::MRAProtocolV123(QObject *parent) :
@@ -547,8 +550,15 @@ void MRAProtocolV123::editContact(uint id, const QString &contact, uint groupId,
     connection()->sendMsg( MRIM_CS_MODIFY_CONTACT, &data );
 }
 
-void MRAProtocolV123::startFileTransfer(IFileTransferInfo *transferReceiver
-                                        /*const QString &contact, int sessionId, int size, const QString &files*/) {
+void MRAProtocolV123::addTransferSession(qtmra::IFileTransferInfo *transferReceiver) {
+    transferManager()
+            .addSession(transferReceiver);
+}
+
+void MRAProtocolV123::startFileTransfer(qtmra::IFileTransferInfo *transferReceiver) {
+
+    transferManager().addSession(transferReceiver);
+
     MRAData data;
     data.addString(transferReceiver->getContact());
     data.addInt32(transferReceiver->getSessionId());
@@ -557,17 +567,7 @@ void MRAProtocolV123::startFileTransfer(IFileTransferInfo *transferReceiver
 
     MRAData filesInfo;
 
-    typedef QPair<QString, int> list_item;
-    QList<list_item> filesList = transferReceiver->getFiles();
-    QString fileAndSize;
-    foreach (const list_item &item, filesList) {
-
-        fileAndSize +=
-                      item.first + ';'
-                    + QString::number(item.second) + ';'
-                ;
-
-    }
+    QString fileAndSize = buildFilesListString(transferReceiver);
 
         filesInfo.addString(fileAndSize);
 
@@ -585,7 +585,23 @@ void MRAProtocolV123::startFileTransfer(IFileTransferInfo *transferReceiver
     connection()->sendMsg(MRIM_CS_TRANSFER_REQUEST, &data);
 }
 
-void MRAProtocolV123::finishFileTransfer(IFileTransferInfo *transferReceiver) {
+QString MRAProtocolV123::buildFilesListString(qtmra::IFileTransferInfo *transferReceiver) {
+    QString fileAndSize;
+    typedef QPair<QString, int> list_item;
+    QList<list_item> filesList = transferReceiver->getFiles();
+    foreach (const list_item &item, filesList) {
+
+        fileAndSize +=
+                      item.first + ';'
+                    + QString::number(item.second) + ';'
+                ;
+
+    }
+
+    return fileAndSize;
+}
+
+void MRAProtocolV123::finishFileTransfer(qtmra::IFileTransferInfo *transferReceiver) {
     //
     MRAData data;
     data.addInt32(transferReceiver->getSessionId());
@@ -593,9 +609,12 @@ void MRAProtocolV123::finishFileTransfer(IFileTransferInfo *transferReceiver) {
     data.addString(transferReceiver->getAccountId());
 
     connection()->sendMsg(MRIM_CS_TRANSFER_SUCCEED, &data);
+
+    transferManager()
+            .removeSession(transferReceiver->getContact(), transferReceiver->getSessionId());
 }
 
-void MRAProtocolV123::cancelFileTransfer(IFileTransferInfo *transferReceiver) {
+void MRAProtocolV123::cancelFileTransfer(qtmra::IFileTransferInfo *transferReceiver) {
 
     MRAData data;
     data.addInt32(0); //status (?)
@@ -605,16 +624,41 @@ void MRAProtocolV123::cancelFileTransfer(IFileTransferInfo *transferReceiver) {
 
     connection()->sendMsg(MRIM_CS_TRANSFER_CANCEL, &data);
 
+    transferManager()
+            .removeSession(transferReceiver->getContact(), transferReceiver->getSessionId());
+
 }
 
 void MRAProtocolV123::readTransferCancel(MRAData &data) {
     TransferRequestInfo requestInfo;
-    data.getInt32(); // status(?)
+
+    int status = data.getInt32(); // status(?)
+
     requestInfo.setRemoteContact(data.getString());
     requestInfo.setSessionId(data.getInt32());
-    data.getInt32(); // ?
+    QString proxy = data.getString(); // ?
 
-    emit transferRequestCancelled(requestInfo);
+    if (not transferManager().hasSession(requestInfo.remoteContact(), requestInfo.sessionId())) {
+        return;
+    }
+
+    if (status == 0) { // cancel
+        transferManager()
+                .session(requestInfo.remoteContact(), requestInfo.sessionId())
+                ->cancel();
+    } else if (status == 4) { // try to connect to me
+        transferManager()
+                .session(requestInfo.remoteContact(), requestInfo.sessionId())
+                ->tryThisHost(proxy);
+        return; // don't remove session
+    } else {
+        mrimWarning() << "unknown status" << status;
+    }
+
+    transferManager()
+            .removeSession(requestInfo.remoteContact(), requestInfo.sessionId());
+
+    // emit transferRequestCancelled(requestInfo);
 }
 
 void MRAProtocolV123::readTransferRequest(MRAData & data) {
@@ -635,6 +679,110 @@ void MRAProtocolV123::readTransferRequest(MRAData & data) {
     /// @todo: check session
     emit transferRequest(requestInfo);
 
+}
+
+void MRAProtocolV123::sendTransferCantLocal(qtmra::IFileTransferInfo *transferReceiver) {
+    MRAData data;
+
+    data.addString(transferReceiver->getContact());
+    data.addInt32(transferReceiver->getSessionId());
+    data.addInt32(2); // ???
+    data.addString(buildFilesListString(transferReceiver));
+    data.addString(""); // proxy
+    data.addData(QByteArray(16, '\0')); // ssl key
+        MRAData filesInfo;
+        filesInfo.addInt32(2); // ???
+        filesInfo.addUnicodeString(buildFilesListString(transferReceiver));
+        filesInfo.addInt32(4); // LPS containing MRAData with files' number?
+        filesInfo.addInt32(1);
+
+    data.addBinaryString(filesInfo.toByteArray());
+
+    connection()->sendMsg(MRIM_CS_TRANSFER_CANT_LOCAL, &data);
+
+}
+
+void MRAProtocolV123::readTransferCantLocal(MRAData &data) {
+    QString remoteUser = data.getString();
+    int sessionId = data.getInt32();
+    int status = data.getInt32();// 2 // ???
+    QByteArray files = data.getBinaryString(); // files list
+    QString proxies = data.getString();
+
+    // proxies = proxies.mid(proxies.indexOf(';')+1);
+
+    if (not transferManager().hasSession(remoteUser, sessionId)) {
+        mrimWarning() << "cant find session" << sessionId << "to user " << remoteUser;
+        return;
+    }
+
+    MRAData sendProxy;
+
+    sendProxy.addInt32(1); // ??? files number?
+    sendProxy.addString(remoteUser);
+    sendProxy.addInt32(sessionId);
+    sendProxy.addInt32(status);
+    sendProxy.addBinaryString(files);
+    sendProxy.addString(proxies);
+
+    // SSL key
+    QByteArray proxyKey = data.getNBytes(16);
+    //sendProxy.addInt32(data.getInt32());
+    //sendProxy.addInt32(data.getInt32());
+    //sendProxy.addInt32(data.getInt32());
+    //sendProxy.addInt32(data.getInt32());
+
+    sendProxy.addNBytes(16, proxyKey);
+    // unicode files description
+    sendProxy.addBinaryString(data.getBinaryString());
+
+    connection()->sendMsg(MRIM_CS_TRANSFER_USE_THIS_PROXY, &sendProxy);
+
+    QApplication::processEvents();
+
+    transferManager()
+            .session(remoteUser, sessionId)
+            ->useThisProxy(proxies, proxyKey);
+
+
+
+}
+
+void MRAProtocolV123::sendTryThisHost(qtmra::IFileTransferInfo *transferReceiver) {
+    MRAData data;
+    data.addInt32(4); // "try this host"
+    data.addString(transferReceiver->getContact());
+    data.addInt32(transferReceiver->getSessionId());
+    data.addString(transferReceiver->getHostAndPort());
+
+    connection()->sendMsg(MRIM_CS_TRANSFER_CANCEL, &data);
+}
+
+void MRAProtocolV123::readTransferUseThisProxy(MRAData &data) {
+    data.getInt32(); // 1 // ??? files number?
+
+    QString remoteUser = data.getString(); // remote user
+    int sessionId = data.getInt32(); // session id
+
+    data.getInt32(); // 2 // ???
+
+    data.getString(); // cp1251 filenames
+
+    QString proxy =
+            data.getString(); // proxy
+    // ssl key - 16 bytes
+    QByteArray proxyKey = data.getNBytes(16);
+    // data.getInt32(); data.getInt32(); data.getInt32(); data.getInt32();
+
+    MRAData filesInfo(data.getBinaryString());
+        filesInfo.getInt32(); // files num
+        filesInfo.getUnicodeString(); // filenames
+        filesInfo.getInt32(); // 4 // ???
+        filesInfo.getInt32(); // 1 // ???
+
+        transferManager()
+                .session(remoteUser, sessionId)
+                ->useThisProxy(proxy, proxyKey);
 }
 
 QVector<QVariant> MRAProtocolV123::readVectorByMask(MRAData & data, const QString &mask)

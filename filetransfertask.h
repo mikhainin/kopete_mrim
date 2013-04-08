@@ -2,7 +2,9 @@
 #define FILETRANSFERTASK_H
 
 #include <QObject>
+#include "mra/filetransferinfo.h"
 #include "mra/mraprotocolv123.h"
+
 class MrimAccount;
 class MrimContact;
 
@@ -17,7 +19,7 @@ class QByteArray;
 class QString;
 QT_END_NAMESPACE
 
-class FileTransferTask : public QObject, public IFileTransferInfo
+class FileTransferTask : public QObject, public qtmra::IFileTransferInfo
 {
     Q_OBJECT
 public:
@@ -46,6 +48,8 @@ public:
     QString getAccountId();
 
     void cancel();
+    void tryThisHost(const QString &hosts);
+    void useThisProxy(const QString &hosts, const QByteArray &proxyKey);
 signals:
     void transferComplete();
     void transferFailed();
@@ -82,6 +86,7 @@ private:
     QString getNextFileName();
     QString filePathByFilename(const QString &filename);
     void nextFile(const QString &filename);
+    void proxyNegotiate(const QByteArray &proxyKey);
 };
 
 #endif // FILETRANSFERTASK_H
