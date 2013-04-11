@@ -114,7 +114,7 @@ void MRAProtocol::addGroupToContactList(const QString &groupName, IMRAProtocolGr
 void MRAProtocol::closeConnection() {
 
     // d->contactListReceived = false;
-
+    d->transferManager.removeAllSessions();
     if (d->connection) {
         d->connection->disconnect();
         d->connection->deleteLater();

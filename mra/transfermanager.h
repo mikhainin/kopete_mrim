@@ -17,6 +17,8 @@ public:
     void addSession(IFileTransferInfo *info);
     void removeSession(const QString &remoteUser, int sessionId);
 
+    void removeAllSessions();
+
     IFileTransferInfo *session(const QString &remoteUser, int sessionId);
 private:
     class Private;

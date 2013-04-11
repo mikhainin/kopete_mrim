@@ -9,6 +9,7 @@
 #include <QtCore/QFileInfo>
 #include <kdebug.h>
 #include <kopete/kopetetransfermanager.h>
+#include <kopete/kopeteuiglobal.h>
 
 #include "debug.h"
 #include "mra/mra_proto.h"
@@ -23,15 +24,11 @@ enum State {
     HELLO_SENT,
     COMMANDS,
     DATA
-
 };
 
 /**
  * @todo
- * - cancel transfer by user (via tray)
- * - try to open channel to remote client when it asks
  * - delete partly downloaded files
- * - file transfer between different networks
  */
 
 struct FileTransferTask::Private {
@@ -168,7 +165,7 @@ void FileTransferTask::openSocket(const TransferRequestInfo *info) {
     d->files = info->getFiles();
 
     d->socket->connectToHost(connectData.first, connectData.second);
-    if ( not d->socket->waitForConnected(5000) ) {
+    if ( not d->socket->waitForConnected(1000) ) {
 
         delete d->socket;
         d->socket = 0;
@@ -204,7 +201,7 @@ void FileTransferTask::tryThisHost(const QString &hosts) {
 
     d->socket = new QTcpSocket(this);
     d->socket->connectToHost(connectData.first, connectData.second);
-    if ( not d->socket->waitForConnected(5000) ) {
+    if ( not d->socket->waitForConnected(1000) ) {
         delete d->socket;
         d->proto->sendTransferCantLocal(this);
         return;

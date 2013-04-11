@@ -56,4 +56,13 @@ IFileTransferInfo *TransferManager::session(const QString &remoteUser, int sessi
     return d->sessions[TransferSessionKey(remoteUser, sessionId)];
 }
 
+void TransferManager::removeAllSessions() {
+
+    foreach(const TransferSessionKey &key, d->sessions.uniqueKeys()) {
+        d->sessions[key]->cancel();
+    }
+    d->sessions.clear();
+
+}
+
 } // namespace qtmra
