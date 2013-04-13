@@ -44,8 +44,6 @@ MrimProtocol::MrimProtocol(QObject *parent, const QStringList &)
     , propPhoto( Kopete::Global::Properties::self()->photo() )
 {
 
-    KDebug::registerArea("");
-
     setCapabilities( Kopete::Protocol::CanSendOffline );
 
     s_protocol = this;

@@ -275,6 +275,12 @@ void MrimContact::avatarLoaded(const QImage &avatar) {
 void MrimContact::deleteContact() {
 
     MrimAccount *a = dynamic_cast<MrimAccount*>( account() );
+
+    if ( this == a->myself() ) {
+        mrimDebug() << "can't delete myself";
+        return;
+    }
+
     a->deleteContact( contactId() );
 
     Kopete::Contact::deleteContact();
