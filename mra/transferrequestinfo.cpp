@@ -25,11 +25,11 @@ int TransferRequestInfo::sessionId() const {
     return m_sessionId;
 }
 
-void TransferRequestInfo::setTotalSize(int arg) {
+void TransferRequestInfo::setTotalSize(quint64 arg) {
     m_totalSize = arg;
 }
 
-int TransferRequestInfo::totalSize() const {
+quint64 TransferRequestInfo::totalSize() const {
     return m_totalSize;
 }
 
@@ -41,7 +41,7 @@ QStringList TransferRequestInfo::getFilesAsStringList() const {
 
     QStringList result;
 
-    typedef QPair<QString, int> list_item;
+    typedef QPair<QString, quint64> list_item;
     foreach(const list_item &item, getFiles()) {
         result.append(item.first);
     }
@@ -51,11 +51,11 @@ QStringList TransferRequestInfo::getFilesAsStringList() const {
 }
 
 
-QList<QPair<QString, int> > TransferRequestInfo::getFiles() const {
+QList<QPair<QString, quint64> > TransferRequestInfo::getFiles() const {
     QStringList chunks = m_files.split(';');
     QStringList::const_iterator p = chunks.constBegin();
 
-    QList<QPair<QString, int> > res;
+    QList<QPair<QString, quint64> > res;
 
     mrimDebug() << m_files;
     for(; p != chunks.constEnd(); ++p) {
@@ -66,9 +66,9 @@ QList<QPair<QString, int> > TransferRequestInfo::getFiles() const {
         ++p;
 
         /// @todo check if toInt() was successful
-        int fileSize = p->toInt();
+        quint64 fileSize = p->toInt();
         mrimDebug() << fileName << fileSize;
-        res.append( QPair<QString, int>(fileName, fileSize) );
+        res.append( QPair<QString, quint64>(fileName, fileSize) );
     }
 
     return res;

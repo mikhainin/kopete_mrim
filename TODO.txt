@@ -1,6 +1,7 @@
 v0.2.1
 <done>
-
+v0.2.2
+[proto]  file transfer
 
 v0.3
 [proto]  status message
@@ -11,7 +12,6 @@ v0.3
 [ui]     edit contacts
 
 v0.4
-[proto]  file transfer
 
 
 further

@@ -7,8 +7,8 @@ class IFileTransferInfo {
 public:
     virtual ~IFileTransferInfo() {}
     virtual QString getContact() = 0;
-    virtual QList<QPair<QString, int> > getFiles() = 0;
-    virtual int getFilesSize() = 0;
+    virtual QList<QPair<QString, quint64> > getFiles() = 0;
+    virtual quint64 getFilesSize() = 0;
     virtual int getSessionId() = 0;
     virtual QString getHostAndPort() = 0;
     virtual QString getAccountId() = 0;

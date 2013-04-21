@@ -20,8 +20,8 @@ public:
     void addUnicodeString(const QString &str);
     QString getUnicodeString();
 
-    void addInt32(quint32 value);
-    quint32 getInt32();
+    void addUint32(quint32 value);
+    quint32 getUint32();
 
     const char *getData();
     int getSize() const;

@@ -41,8 +41,8 @@ public:
     void run();
 
     QString getContact();
-    QList<QPair<QString, int> > getFiles();
-    int getFilesSize();
+    QList<QPair<QString, quint64> > getFiles();
+    quint64 getFilesSize();
     int getSessionId();
     QString getHostAndPort();
     QString getAccountId();

@@ -18,12 +18,12 @@ public:
     void setSessionId(int arg);
     int sessionId() const;
 
-    void setTotalSize(int arg);
-    int totalSize() const;
+    void setTotalSize(quint64 arg);
+    quint64 totalSize() const;
 
     void setFilesString(const QString &arg);
     QStringList getFilesAsStringList() const;
-    QList<QPair<QString, int> > getFiles() const;
+    QList<QPair<QString, quint64> > getFiles() const;
 
 
     void setHostsAndPortsString(const QString &arg) ;
@@ -32,7 +32,7 @@ public:
 private:
     QString m_remoteContact;
     int m_sessionId;
-    int m_totalSize;
+    quint64 m_totalSize;
     QString m_files;
     QString m_hostsAndPorts;
 };

@@ -37,8 +37,8 @@ struct FileTransferTask::Private {
     MrimContact *contact;
     QTcpServer *server;
     QTcpSocket *socket;
-    int currentFileBytesProcessed;
-    int bytesProcessed;
+    quint64 currentFileBytesProcessed;
+    quint64 bytesProcessed;
     QStringList fileNames;
     Kopete::Transfer *transferTask;
     QFile *file;
@@ -46,7 +46,7 @@ struct FileTransferTask::Private {
     TransferRequestInfo transferInfo;
     int sessionId;
 
-    QList<QPair<QString, int> > files;
+    QList<QPair<QString, quint64> > files;
 
     int currentFile;
     State state;
@@ -90,6 +90,17 @@ FileTransferTask::FileTransferTask(MrimAccount *account,
     QApplication::processEvents();
 
     if (d->dir == Outgoing) {
+
+        foreach (const QString &filename, fileNames) {
+            QFileInfo finfo(filename);
+            QPair<QString, quint64> item;
+            item.first = finfo.fileName();
+            item.second = finfo.size();
+
+            d->files.append( item );
+        }
+
+
         d->file = new QFile(fileNames[0], this);
 
         d->transferTask = Kopete::TransferManager::transferManager()
@@ -124,6 +135,7 @@ FileTransferTask::FileTransferTask(MrimAccount *account,
 
         d->sessionId = d->transferInfo.sessionId();
 
+        mrimDebug() << "total size: " << d->transferInfo.totalSize();
         Kopete::TransferManager::transferManager()
                 ->askIncomingTransfer(contact, d->transferInfo.getFilesAsStringList(), d->transferInfo.totalSize());
 
@@ -280,6 +292,7 @@ void FileTransferTask::sendHello() {
 
     if (d->socket->write(hello) == -1) {
         /// @todo report error
+        mrimWarning() << "error" << d->socket->errorString();
     }
 }
 
@@ -291,24 +304,12 @@ QString FileTransferTask::getAccountId() {
     return d->account->accountId();
 }
 
-QList<QPair<QString, int> > FileTransferTask::getFiles() {
-
-    QList<QPair<QString, int> > result;
-
-    foreach (const QString &filename, d->fileNames) {
-        QFileInfo finfo(filename);
-        QPair<QString, int> item;
-        item.first = finfo.fileName();
-        item.second = finfo.size();
-
-        result.append(item);
-    }
-
-    return result;
+QList<QPair<QString, quint64> > FileTransferTask::getFiles() {
+    return d->files;
 }
 
-int FileTransferTask::getFilesSize() {
-    int sumSizes = 0;
+quint64 FileTransferTask::getFilesSize() {
+    quint64 sumSizes = 0;
     foreach(const QString &fileName, d->fileNames) {
         sumSizes += QFileInfo(fileName).size();
     }
@@ -416,6 +417,7 @@ void FileTransferTask::slotTransferAccepted(Kopete::Transfer*transfer, const QSt
     d->file = new QFile(filePath, this);
     if (not d->file->open(QFile::WriteOnly)) {
         /// @todo report error
+        mrimWarning() << "error" << d->file->errorString();
     }
 
 }
@@ -482,7 +484,9 @@ void FileTransferTask::nextFile(const QString &filename) {
         getFile.append(filename);
         getFile.append('\0');
 
-        d->socket->write(getFile);
+        if (d->socket->write(getFile) == -1) {
+            mrimWarning() << "error" << d->socket->errorString();
+        }
 
         d->file = new QFile( filePathByFilename(filename) );
         d->file->open(QFile::WriteOnly);
@@ -523,15 +527,27 @@ void FileTransferTask::commandHello() {
 
 void FileTransferTask::commandGetFile(const QString &filename) {
 
+    mrimWarning() << "Get file";
+
     nextFile(filename);
 
     connect(d->socket, SIGNAL(bytesWritten(qint64)),
             this, SLOT(slotBytesProcessed(qint64)) );
 
-    if (d->socket->write(d->file->readAll()) == -1) {
-        /// @todo report error
+    d->currentFileBytesProcessed = 0;
+    for(int i = 0; i < d->fileNames.size(); ++i) {
+        if (QFileInfo(d->fileNames[i]).fileName() == filename) {
+            d->currentFile = i;
+            break;
+        }
     }
 
+    qint64 written = d->socket->write( d->file->read( 5 * 1024 * 1024 ) );
+    if ( written == -1 ) {
+        /// @todo report error
+        mrimWarning() << "error" << d->socket->errorString();
+    }
+    // slotBytesProcessed(written);
 }
 
 
@@ -539,8 +555,18 @@ void FileTransferTask::slotBytesProcessed(qint64 bytes) {
     QTcpSocket* socket = (QTcpSocket*)sender();
 
     d->bytesProcessed += bytes;
-    emit bytesSent(d->bytesProcessed);
-    if (socket->bytesToWrite() == 0) {
+    d->currentFileBytesProcessed += bytes;
+
+    if (socket->bytesToWrite() == 0 && d->currentFileBytesProcessed < d->files[d->currentFile].second) {
+        if (socket->bytesToWrite() == 0) {
+            qint64 written = d->socket->write( d->file->read( 5 * 1024 * 1024 ) );
+            if (written == -1) {
+                 /// @todo report error
+                 mrimWarning() << "error" << d->socket->errorString();
+            }
+            // slotBytesProcessed(written);
+        }
+    } else if (socket->bytesToWrite() == 0) {
 
         QObject::disconnect(d->socket, SIGNAL(bytesWritten(qint64)),
                             this, SLOT(slotBytesProcessed(qint64)) );
@@ -549,6 +575,9 @@ void FileTransferTask::slotBytesProcessed(qint64 bytes) {
             finishTransfer(true);
         }
     }
+    mrimDebug() << "written" << d->bytesProcessed;
+    emit bytesSent(d->bytesProcessed);
+
 }
 
 

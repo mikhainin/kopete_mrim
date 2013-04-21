@@ -51,7 +51,7 @@ void MRAData::addString(const QString &str)
 
     QByteArray ba = str.toAscii();
 
-     addInt32(ba.size());
+     addUint32(ba.size());
      addData(ba.constData(), ba.size());
 }
 
@@ -77,12 +77,12 @@ void MRAData::addData(const QByteArray &data) {
 }
 
 void MRAData::addBinaryString(const QByteArray &data) {
-    addInt32(data.size());
+    addUint32(data.size());
     addData(data);
 }
 
 QByteArray MRAData::getBinaryString() {
-    int len = getInt32();
+    int len = getUint32();
 
     if (m_data.size() >= (m_pointer + len)) {
 
@@ -103,7 +103,7 @@ QByteArray MRAData::getBinaryString() {
 /*!
     \fn MRAData::addInt32(long int value)
  */
-void MRAData::addInt32(quint32 value)
+void MRAData::addUint32(quint32 value)
 {
       addData(&value, sizeof(value));
 }
@@ -130,7 +130,7 @@ int MRAData::getSize() const
 /*!
     \fn MRAData::getInt32()
  */
-quint32 MRAData::getInt32()
+quint32 MRAData::getUint32()
 {
     quint32 result = 0;
 
@@ -150,7 +150,7 @@ quint32 MRAData::getInt32()
 
 QString MRAData::getString()
 {
-    int len = getInt32();
+    int len = getUint32();
 
     if (m_data.size() >= (m_pointer + len)) {
 
@@ -178,13 +178,13 @@ void MRAData::addUnicodeString(const QString &str) {
 
     ba = ba.remove(0, 2); // remove BOM (Byte Order Mark)
 
-    addInt32(ba.size());
+    addUint32(ba.size());
     addData(ba.constData(), ba.size());
 
 }
 
 QString MRAData::getUnicodeString() {
-    int len = getInt32();
+    int len = getUint32();
 
     if (m_data.size() >= (m_pointer + len)) {
 
