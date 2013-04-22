@@ -96,8 +96,8 @@ QList<QPair<QString, int> > TransferRequestInfo::parseHostsAndPorts(const QStrin
             break;
         }
 
-        /// @todo check if toInt() was successful
-        int port = hostAndPort[1].toInt();
+        /// @todo check if toULongLong() was successful
+        int port = hostAndPort[1].toULongLong();
         res.append( QPair<QString, int>(hostAddress, port) );
     }
 
