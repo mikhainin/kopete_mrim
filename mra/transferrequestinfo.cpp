@@ -65,8 +65,8 @@ QList<QPair<QString, quint64> > TransferRequestInfo::getFiles() const {
         }
         ++p;
 
-        /// @todo check if toInt() was successful
-        quint64 fileSize = p->toInt();
+        /// @todo check if toULongLong() was successful
+        quint64 fileSize = p->toULongLong();
         mrimDebug() << fileName << fileSize;
         res.append( QPair<QString, quint64>(fileName, fileSize) );
     }
@@ -96,8 +96,8 @@ QList<QPair<QString, int> > TransferRequestInfo::parseHostsAndPorts(const QStrin
             break;
         }
 
-        /// @todo check if toULongLong() was successful
-        int port = hostAndPort[1].toULongLong();
+        /// @todo check if toULongLtoIntong() was successful
+        int port = hostAndPort[1].toInt();
         res.append( QPair<QString, int>(hostAddress, port) );
     }
 
