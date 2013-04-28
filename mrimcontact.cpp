@@ -56,7 +56,9 @@ MrimContact::MrimContact( Kopete::Account* _account,
 
     d->flags = flags;
 
-    setFileCapable( true );
+    if ( (d->flags & CONTACT_FLAG_CHAT) == 0 ) {
+        setFileCapable( true );
+    }
 
 }
 
@@ -130,6 +132,11 @@ void MrimContact::slotTransferFinished() {
 
 void MrimContact::setFlags(int arg) {
     d->flags = arg;
+    if ( (d->flags & CONTACT_FLAG_CHAT) == 0 ) {
+        setFileCapable( true );
+    } else {
+        setFileCapable( false );
+    }
 }
 
 void MrimContact::slotPerformRequestForAuthorization() {
