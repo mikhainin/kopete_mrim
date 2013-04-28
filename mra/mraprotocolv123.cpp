@@ -2,6 +2,7 @@
 #include <QCryptographicHash>
 #include <QTextCodec>
 #include <QByteArray>
+#include <QApplication>
 
 #include "../debug.h"
 #include "mradata.h"
@@ -9,6 +10,9 @@
 #include "mracontactlist.h"
 #include "mracontactinfo.h"
 #include "mraprotocolv123.h"
+#include "transferrequestinfo.h"
+#include "filetransferinfo.h"
+#include "transfermanager.h"
 #include "../version.h"
 
 MRAProtocolV123::MRAProtocolV123(QObject *parent) :
@@ -38,11 +42,11 @@ void MRAProtocolV123::sendLogin(const QString &login, const QString &password)
     // proto v1.23
     data.addString(login);
     data.addBinaryString(QCryptographicHash::hash(password.toAscii(), QCryptographicHash::Md5) );
-    data.addInt32(0x00000bff);
+    data.addUint32(0x00000bff);
     data.addString("client=\"kopete mrim plugin\" version=\"0.2\" build=\"5282\"");
     data.addString("ru");
-    data.addInt32(0x10);
-    data.addInt32(0x01);
+    data.addUint32(0x10);
+    data.addUint32(0x01);
     data.addString("geo-list");
     // data.addString("MRA 5.10 (build 5282);");
     data.addString("Kopete MRIM plugin (v" + kopeteMrimVersion() + ");");
@@ -58,13 +62,13 @@ void MRAProtocolV123::readLoginAck(MRAData & data) {
 
 void MRAProtocolV123::sendUnknownBeforeLogin() {
     MRAData data;
-    data.addInt32(0x03);
-    data.addInt32(0x00);
-    data.addInt32(0x00);
-    data.addInt32(0x01);
-    data.addInt32(0x00);
-    data.addInt32(0x02);
-    data.addInt32(0x00);
+    data.addUint32(0x03);
+    data.addUint32(0x00);
+    data.addUint32(0x00);
+    data.addUint32(0x01);
+    data.addUint32(0x00);
+    data.addUint32(0x02);
+    data.addUint32(0x00);
 
     connection()->sendMsg(MRIM_CS_UNKNOWN2, &data);
 
@@ -77,8 +81,8 @@ void MRAProtocolV123::readMessage(MRAData & data) {
     // LPS message
     // LPS rtf-formatted message (>=1.1)
 
-    int msg_id = data.getInt32();
-    int flags  = data.getInt32();
+    int msg_id = data.getUint32();
+    int flags  = data.getUint32();
     QString from = data.getString();
     QString text;
 
@@ -90,7 +94,7 @@ void MRAProtocolV123::readMessage(MRAData & data) {
 
             MRAData authMessage( QByteArray::fromBase64(data.getString().toAscii()) );
             // text = codec->toUnicode(  );
-            authMessage.getInt32(); // 0x02 // ???
+            authMessage.getUint32(); // 0x02 // ???
             mrimDebug() << authMessage.getUnicodeString();// WTF? sender?
             text = authMessage.getUnicodeString();
 
@@ -142,8 +146,8 @@ void MRAProtocolV123::readMessage(MRAData & data) {
             // 0x12c 0b100101100 -- chat list members, chat created by mac agent
             // 0x142 0b101000010 -- chat list members, chat created by mac agent (again!)
 
-            int messageType = data.getInt32(); // 0x3b,0x3d ??
-            int chatMessageType = data.getInt32(); // 0x00 ??
+            int messageType = data.getUint32(); // 0x3b,0x3d ??
+            int chatMessageType = data.getUint32(); // 0x00 ??
             mrimDebug() << "messageType =" << messageType << "chatMessageType="<<chatMessageType;
 
             if ( chatMessageType == CHAT_MESSAGE_PARTICIPANTS_LIST ) {
@@ -186,7 +190,7 @@ void MRAProtocolV123::readMessage(MRAData & data) {
         MRAData ackData;
 
         ackData.addString(from); // LPS ## from ##
-        ackData.addInt32(msg_id); // UL ## msg_id ##
+        ackData.addUint32(msg_id); // UL ## msg_id ##
 
         connection()->sendMsg(MRIM_CS_MESSAGE_RECV, &ackData);
     }
@@ -241,9 +245,9 @@ bool MRAProtocolV123::isChatTextMessage(int chatMessageType) {
 void MRAProtocolV123::receiveChatMembersList(MRAData & data, const QString &from) {
 
     QString chatTitle  = data.getUnicodeString(); // subject
-    int i3 = data.getInt32();
+    int i3 = data.getUint32();
 
-    int numMembers = data.getInt32();
+    int numMembers = data.getUint32();
 
     QList<QString> membersList;
 
@@ -278,7 +282,7 @@ void MRAProtocolV123::sendText(const QString &to, const QString &text)
 
     unsigned long int flags = MESSAGE_FLAG_NORECV;
 
-    data.addInt32(flags);
+    data.addUint32(flags);
     data.addString(to);
     data.addUnicodeString(text);
     data.addString(" ");// RTF is not supported yet
@@ -289,12 +293,12 @@ void MRAProtocolV123::sendText(const QString &to, const QString &text)
 void MRAProtocolV123::loadChatMembersList(const QString &to) {
     MRAData data;
     unsigned long int flags = MESSAGE_FLAG_RTF;
-    data.addInt32(flags);
+    data.addUint32(flags);
     data.addString(to);
     data.addString("");
     data.addString("");
-    data.addInt32(0x04); // whatis 4?
-    data.addInt32(0x01); // whatis 1?
+    data.addUint32(0x04); // whatis 4?
+    data.addUint32(0x01); // whatis 1?
 
     connection()->sendMsg(MRIM_CS_MESSAGE, &data);
 
@@ -317,7 +321,7 @@ void MRAProtocolV123::loadChatMembersList(const QString &to) {
 void MRAProtocolV123::setStatus(STATUS status) {
     MRAData data;
 
-    data.addInt32( statusToInt(status) );
+    data.addUint32( statusToInt(status) );
     if (status == ONLINE) {
         data.addString("STATUS_ONLINE");
         data.addUnicodeString(tr("Online")); /// @todo make phrases configurable
@@ -336,8 +340,8 @@ void MRAProtocolV123::setStatus(STATUS status) {
         data.addUnicodeString(tr("Online"));
     }
 
-    data.addInt32(0x00); // user's client?
-    data.addInt32(0x00000BFF);
+    data.addUint32(0x00); // user's client?
+    data.addUint32(0x00000BFF);
 
     connection()->sendMsg(MRIM_CS_CHANGE_STATUS, &data);
 }
@@ -346,15 +350,15 @@ void MRAProtocolV123::readUserSataus(MRAData & data) {
 
     // data.dumpData();
 
-    int status  = data.getInt32();
+    int status  = data.getUint32();
 
     QString statusTitle = data.getString(); // STATUS_ONLINE
     QString str         = data.getUnicodeString(); // tr("Online")
-    int int1            = data.getInt32(); // ???
+    int int1            = data.getUint32(); // ???
 
     QString user        = data.getString();
 
-    int int2            = data.getInt32(); // 0x00000BFF
+    int int2            = data.getUint32(); // 0x00000BFF
 
     QString client      = data.getString(); // client="magent" version="5.10" build="5309"
 
@@ -369,11 +373,11 @@ void MRAProtocolV123::readAnketaInfo(MRAData & data) {
 
     MRAContactInfo info;
 
-    uint status     = data.getInt32();
+    uint status     = data.getUint32();
     mrimDebug() << "status=" << status;
-    uint fields_num = data.getInt32();
-    uint max_rows   = data.getInt32();
-    uint server_time= data.getInt32();
+    uint fields_num = data.getUint32();
+    uint max_rows   = data.getUint32();
+    uint server_time= data.getUint32();
     Q_UNUSED(max_rows); /// @fixme: use this fields
     Q_UNUSED(server_time); /// @fixme: use this fields
 
@@ -430,22 +434,22 @@ void MRAProtocolV123::addToContactList(int flags, int groupId, const QString &ad
 */
     MRAData addData;
 
-    addData.addInt32(flags);
-    addData.addInt32(groupId);
+    addData.addUint32(flags);
+    addData.addUint32(groupId);
     addData.addString(address);
     addData.addUnicodeString(nick);
     addData.addString(""); // unused
 
     MRAData authMessageData;
 
-    authMessageData.addInt32(0x02); // ???
+    authMessageData.addUint32(0x02); // ???
     authMessageData.addUnicodeString(myAddress);
     authMessageData.addUnicodeString(authMessage);
 
 
     addData.addString( authMessageData.toBase64() );
 
-    addData.addInt32( 1 );
+    addData.addUint32( 1 );
 
     connection()->sendMsg(MRIM_CS_ADD_CONTACT, &addData);
 
@@ -463,21 +467,21 @@ void MRAProtocolV123::addGroupToContactList(const QString &groupName, IMRAProtoc
     // UL ??? (0x00000001)
     int CONTACT_FLAG_UNICODE_GROUP = 0x05000000;
     MRAData addData;
-    addData.addInt32( CONTACT_FLAG_GROUP | CONTACT_FLAG_UNICODE_GROUP );
-    addData.addInt32(0);
+    addData.addUint32( CONTACT_FLAG_GROUP | CONTACT_FLAG_UNICODE_GROUP );
+    addData.addUint32(0);
     addData.addString(""); // ??? unicode?
     addData.addUnicodeString(groupName);
     addData.addString(""); // unused
 
     MRAData authMessageData;
 
-    authMessageData.addInt32(0x02); // ???
+    authMessageData.addUint32(0x02); // ???
     authMessageData.addUnicodeString("");
     authMessageData.addUnicodeString("");
 
     addData.addString( authMessageData.toBase64() );
 
-    addData.addInt32( 0 );
+    addData.addUint32( 0 );
 
     connection()->sendMsg(MRIM_CS_ADD_CONTACT, &addData);
 
@@ -488,12 +492,12 @@ void MRAProtocolV123::addGroupToContactList(const QString &groupName, IMRAProtoc
 void MRAProtocolV123::sendAuthorizationRequest(const QString &contact, const QString &myAddress, const QString &message) {
     MRAData authData;
     unsigned long int authFlags = MESSAGE_FLAG_NORECV | MESSAGE_FLAG_AUTHORIZE | MESSAGE_FLAG_UNICODE;
-    authData.addInt32(authFlags);
+    authData.addUint32(authFlags);
     authData.addString(contact);
 
     MRAData authMessage;
 
-    authMessage.addInt32(0x02); // ???
+    authMessage.addUint32(0x02); // ???
     authMessage.addUnicodeString(myAddress);
     authMessage.addUnicodeString(message);
 
@@ -523,9 +527,9 @@ void MRAProtocolV123::readUserInfo(MRAData & data)
 void MRAProtocolV123::deleteContact(uint id, const QString &contact, const QString &contactName) {
     MRAData data;
 
-    data.addInt32( id );
-    data.addInt32( CONTACT_FLAG_REMOVED | CONTACT_FLAG_UNKNOWN );
-    data.addInt32( 0 ); // don't care about group
+    data.addUint32( id );
+    data.addUint32( CONTACT_FLAG_REMOVED | CONTACT_FLAG_UNKNOWN );
+    data.addUint32( 0 ); // don't care about group
     data.addString( contact );
     data.addUnicodeString( contactName );
     data.addString( QString() );
@@ -536,14 +540,249 @@ void MRAProtocolV123::deleteContact(uint id, const QString &contact, const QStri
 void MRAProtocolV123::editContact(uint id, const QString &contact, uint groupId, const QString &newContactName) {
     MRAData data;
 
-    data.addInt32( id );
-    data.addInt32( CONTACT_FLAG_UNKNOWN );
-    data.addInt32( groupId );
+    data.addUint32( id );
+    data.addUint32( CONTACT_FLAG_UNKNOWN );
+    data.addUint32( groupId );
     data.addString( contact );
     data.addUnicodeString( newContactName );
     data.addString( QString() );
 
     connection()->sendMsg( MRIM_CS_MODIFY_CONTACT, &data );
+}
+
+void MRAProtocolV123::addTransferSession(qtmra::IFileTransferInfo *transferReceiver) {
+    transferManager()
+            .addSession(transferReceiver);
+}
+
+void MRAProtocolV123::startFileTransfer(qtmra::IFileTransferInfo *transferReceiver) {
+
+    transferManager().addSession(transferReceiver);
+
+    MRAData data;
+    data.addString(transferReceiver->getContact());
+    data.addUint32(transferReceiver->getSessionId());
+    data.addUint32(transferReceiver->getFilesSize());
+    // data.addInt32(121); // WTF?
+
+    MRAData filesInfo;
+
+    QString fileAndSize = buildFilesListString(transferReceiver);
+
+        filesInfo.addString(fileAndSize);
+
+        // data.addString(fileAndSize);
+
+        MRAData filesDescription;
+            filesDescription.addUint32(1); // files count;
+            filesDescription.addUnicodeString(fileAndSize);
+
+        filesInfo.addBinaryString(filesDescription.toByteArray());
+
+        filesInfo.addString(transferReceiver->getHostAndPort());
+        data.addBinaryString(filesInfo.toByteArray());
+
+    connection()->sendMsg(MRIM_CS_TRANSFER_REQUEST, &data);
+}
+
+QString MRAProtocolV123::buildFilesListString(qtmra::IFileTransferInfo *transferReceiver) {
+    QString fileAndSize;
+    typedef QPair<QString, quint64> list_item;
+    QList<list_item> filesList = transferReceiver->getFiles();
+    foreach (const list_item &item, filesList) {
+
+        fileAndSize +=
+                      item.first + ';'
+                    + QString::number(item.second) + ';'
+                ;
+
+    }
+
+    return fileAndSize;
+}
+
+void MRAProtocolV123::finishFileTransfer(qtmra::IFileTransferInfo *transferReceiver) {
+    //
+    MRAData data;
+    data.addUint32(transferReceiver->getSessionId());
+    data.addUint32(0x00009800);
+    data.addString(transferReceiver->getAccountId());
+
+    connection()->sendMsg(MRIM_CS_TRANSFER_SUCCEED, &data);
+
+    transferManager()
+            .removeSession(transferReceiver->getContact(), transferReceiver->getSessionId());
+}
+
+void MRAProtocolV123::cancelFileTransfer(qtmra::IFileTransferInfo *transferReceiver) {
+
+    MRAData data;
+    data.addUint32(0); //status (?)
+    data.addString(transferReceiver->getContact());
+    data.addUint32(transferReceiver->getSessionId());
+    data.addUint32(0); // addString("") ?
+
+    connection()->sendMsg(MRIM_CS_TRANSFER_CANCEL, &data);
+
+    transferManager()
+            .removeSession(transferReceiver->getContact(), transferReceiver->getSessionId());
+
+}
+
+void MRAProtocolV123::readTransferCancel(MRAData &data) {
+    TransferRequestInfo requestInfo;
+
+    int status = data.getUint32(); // status(?)
+
+    requestInfo.setRemoteContact(data.getString());
+    requestInfo.setSessionId(data.getUint32());
+    QString proxy = data.getString(); // ?
+
+    if (not transferManager().hasSession(requestInfo.remoteContact(), requestInfo.sessionId())) {
+        return;
+    }
+
+    if (status == 0) { // cancel
+        transferManager()
+                .session(requestInfo.remoteContact(), requestInfo.sessionId())
+                ->cancel();
+    } else if (status == 4) { // try to connect to me
+        transferManager()
+                .session(requestInfo.remoteContact(), requestInfo.sessionId())
+                ->tryThisHost(proxy);
+        return; // don't remove session
+    } else {
+        mrimWarning() << "unknown status" << status;
+    }
+
+    transferManager()
+            .removeSession(requestInfo.remoteContact(), requestInfo.sessionId());
+
+    // emit transferRequestCancelled(requestInfo);
+}
+
+void MRAProtocolV123::readTransferRequest(MRAData & data) {
+    TransferRequestInfo requestInfo;
+    requestInfo.setRemoteContact(data.getString());
+    requestInfo.setSessionId(data.getUint32());
+    requestInfo.setTotalSize(data.getUint32()); // total size
+
+    MRAData filesInfo(data.getBinaryString());
+        filesInfo.getString(); //cp1251 filename
+        MRAData filesDescription(filesInfo.getBinaryString());
+
+        (void)filesDescription.getUint32(); // files count (?)
+        requestInfo.setFilesString(filesDescription.getUnicodeString());
+
+        requestInfo.setHostsAndPortsString(filesInfo.getString());
+
+    /// @todo: check session
+    emit transferRequest(requestInfo);
+
+}
+
+void MRAProtocolV123::sendTransferCantLocal(qtmra::IFileTransferInfo *transferReceiver) {
+    MRAData data;
+
+    data.addString(transferReceiver->getContact());
+    data.addUint32(transferReceiver->getSessionId());
+    data.addUint32(2); // ???
+    data.addString(buildFilesListString(transferReceiver));
+    data.addString(""); // proxy
+    data.addData(QByteArray(16, '\0')); // ssl key
+        MRAData filesInfo;
+        filesInfo.addUint32(2); // ???
+        filesInfo.addUnicodeString(buildFilesListString(transferReceiver));
+        filesInfo.addUint32(4); // LPS containing MRAData with files' number?
+        filesInfo.addUint32(1);
+
+    data.addBinaryString(filesInfo.toByteArray());
+
+    connection()->sendMsg(MRIM_CS_TRANSFER_CANT_LOCAL, &data);
+
+}
+
+void MRAProtocolV123::readTransferCantLocal(MRAData &data) {
+    QString remoteUser = data.getString();
+    int sessionId = data.getUint32();
+    int status = data.getUint32();// 2 // ???
+    QByteArray files = data.getBinaryString(); // files list
+    QString proxies = data.getString();
+
+    // proxies = proxies.mid(proxies.indexOf(';')+1);
+
+    if (not transferManager().hasSession(remoteUser, sessionId)) {
+        mrimWarning() << "cant find session" << sessionId << "to user " << remoteUser;
+        return;
+    }
+
+    MRAData sendProxy;
+
+    sendProxy.addUint32(1); // ??? files number?
+    sendProxy.addString(remoteUser);
+    sendProxy.addUint32(sessionId);
+    sendProxy.addUint32(status);
+    sendProxy.addBinaryString(files);
+    sendProxy.addString(proxies);
+
+    // SSL key
+    QByteArray proxyKey = data.getNBytes(16);
+    //sendProxy.addInt32(data.getInt32());
+    //sendProxy.addInt32(data.getInt32());
+    //sendProxy.addInt32(data.getInt32());
+    //sendProxy.addInt32(data.getInt32());
+
+    sendProxy.addNBytes(16, proxyKey);
+    // unicode files description
+    sendProxy.addBinaryString(data.getBinaryString());
+
+    connection()->sendMsg(MRIM_CS_TRANSFER_USE_THIS_PROXY, &sendProxy);
+
+    QApplication::processEvents();
+
+    transferManager()
+            .session(remoteUser, sessionId)
+            ->useThisProxy(proxies, proxyKey);
+
+
+
+}
+
+void MRAProtocolV123::sendTryThisHost(qtmra::IFileTransferInfo *transferReceiver) {
+    MRAData data;
+    data.addUint32(4); // "try this host"
+    data.addString(transferReceiver->getContact());
+    data.addUint32(transferReceiver->getSessionId());
+    data.addString(transferReceiver->getHostAndPort());
+
+    connection()->sendMsg(MRIM_CS_TRANSFER_CANCEL, &data);
+}
+
+void MRAProtocolV123::readTransferUseThisProxy(MRAData &data) {
+    data.getUint32(); // 1 // ??? files number?
+
+    QString remoteUser = data.getString(); // remote user
+    int sessionId = data.getUint32(); // session id
+
+    data.getUint32(); // 2 // ???
+
+    data.getString(); // cp1251 filenames
+
+    QString proxy =
+            data.getString(); // proxy
+    // ssl key - 16 bytes
+    QByteArray proxyKey = data.getNBytes(16);
+    // data.getInt32(); data.getInt32(); data.getInt32(); data.getInt32();
+
+    MRAData filesInfo(data.getBinaryString());
+        filesInfo.getUint32(); // files num
+        filesInfo.getUnicodeString(); // filenames
+        filesInfo.getUint32(); // 4 // ???
+        filesInfo.getUint32(); // 1 // ???
+
+        transferManager()
+                .session(remoteUser, sessionId)
+                ->useThisProxy(proxy, proxyKey);
 }
 
 QVector<QVariant> MRAProtocolV123::readVectorByMask(MRAData & data, const QString &mask)
@@ -565,7 +804,7 @@ QVector<QVariant> MRAProtocolV123::readVectorByMask(MRAData & data, const QStrin
 
     for (int k = 0; k < localMask.length(); ++k) {
         if (localMask[k] == 'u') {
-            _int = data.getInt32();
+            _int = data.getUint32();
             mrimDebug() << "u=" << _int;
             result.push_back(_int);
         } else if (localMask[k] == 's') {

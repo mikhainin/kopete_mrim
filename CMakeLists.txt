@@ -29,6 +29,7 @@ set(kopete_mrim_SRCS
     mrimaccount.cpp
     debug.cpp
     version.cpp
+    filetransfertask.cpp
 
     mra/mraconnection.cpp
     mra/mradata.cpp
@@ -39,6 +40,8 @@ set(kopete_mrim_SRCS
     mra/mraavatarloader.cpp
     mra/mracontactinfo.cpp
     mra/mraprotocolv123.cpp
+    mra/transferrequestinfo.cpp
+    mra/transfermanager.cpp
 
     ui/contactinfo.cpp
     ui/mrimeditaccountwidget.cpp

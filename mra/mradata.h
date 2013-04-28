@@ -20,13 +20,14 @@ public:
     void addUnicodeString(const QString &str);
     QString getUnicodeString();
 
-    void addInt32(quint32 value);
-    quint32 getInt32();
+    void addUint32(quint32 value);
+    quint32 getUint32();
 
     const char *getData();
     int getSize() const;
     void addData(const void *data_, ssize_t size);
     void addBinaryString(const QByteArray &data);
+    QByteArray getBinaryString();
     void addData(const QByteArray &data);
 
     void addUIDL(const QByteArray &str);
@@ -36,7 +37,11 @@ public:
 
     void clear();
     void dumpData();
-    QString toBase64();
+    QString toBase64() const;
+    const QByteArray &toByteArray() const;
+
+    QByteArray getNBytes(int n);
+    void addNBytes(int n, const QByteArray &data);
 
 private:
 private:

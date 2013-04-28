@@ -3,8 +3,13 @@
 
 #include "mraprotocol.h"
 #include <QVector>
+#include <QPair>
 
 class MRAContactListEntry;
+
+namespace qtmra {
+    class IFileTransferInfo;
+}
 
 class MRAProtocolV123 : public MRAProtocol
 {
@@ -39,10 +44,23 @@ public:
 
     virtual void addGroupToContactList(const QString &groupName, IMRAProtocolGroupReceiver *groupAddedReveiver);
 
+    virtual void startFileTransfer(qtmra::IFileTransferInfo *transferReceiver);
+    virtual void finishFileTransfer(qtmra::IFileTransferInfo *transferReceiver);
+    virtual void cancelFileTransfer(qtmra::IFileTransferInfo *transferReceiver);
+    virtual void sendTransferCantLocal(qtmra::IFileTransferInfo *transferReceiver);
+    virtual void sendTryThisHost(qtmra::IFileTransferInfo *transferReceiver);
+    virtual void addTransferSession(qtmra::IFileTransferInfo *transferReceiver);
+
+    static QString buildFilesListString(qtmra::IFileTransferInfo *transferReceiver);
+
 protected:
     virtual void readMessage(MRAData & data);
     virtual void readUserSataus(MRAData & data);
     virtual void readAnketaInfo(MRAData & data);
+    virtual void readTransferRequest(MRAData & data);
+    virtual void readTransferCancel(MRAData &data);
+    virtual void readTransferUseThisProxy(MRAData &data);
+    virtual void readTransferCantLocal(MRAData &data);
 
     virtual QVector<QVariant> readVectorByMask(MRAData & data, const QString &mask);
 

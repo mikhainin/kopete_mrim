@@ -10,11 +10,11 @@
 #include "mracontactinfo.h"
 #include "mraconnection.h"
 #include "mraofflinemessage.h"
+#include "transferrequestinfo.h"
 #include "mra_proto.h"
-
+#include "filetransferinfo.h"
+#include "transfermanager.h"
 #include "../version.h"
-
-unsigned long int sec_count;
 
 struct MRAProtocol::MRAProtocolPrivate {
     MRAConnection *connection;
@@ -27,6 +27,8 @@ struct MRAProtocol::MRAProtocolPrivate {
     int avatarLoadersCount;
     IMRAProtocolGroupReceiver *grouReceiver;
     IMRAProtocolContactReceiver *contactReceiver;
+    qtmra::TransferManager transferManager;
+
 
     MRAProtocolPrivate()
       : connection(0)
@@ -80,7 +82,7 @@ bool MRAProtocol::makeConnection(const QString &login, const QString &password)
 
     d->keepAliveTimer = new QTimer(this);
     connect(d->keepAliveTimer, SIGNAL(timeout()) , this , SLOT(slotPing()));
-    d->keepAliveTimer->start(sec_count*1000);
+    d->keepAliveTimer->start(d->secCount*1000);
 
     return true;
 }
@@ -96,8 +98,8 @@ void MRAProtocol::addGroupToContactList(const QString &groupName, IMRAProtocolGr
 
     MRAData addData;
 
-    addData.addInt32(CONTACT_FLAG_GROUP);
-    addData.addInt32(0);
+    addData.addUint32(CONTACT_FLAG_GROUP);
+    addData.addUint32(0);
     addData.addString("");
     addData.addString(groupName);
     addData.addString(""); // unused LPS
@@ -112,7 +114,7 @@ void MRAProtocol::addGroupToContactList(const QString &groupName, IMRAProtocolGr
 void MRAProtocol::closeConnection() {
 
     // d->contactListReceived = false;
-
+    d->transferManager.removeAllSessions();
     if (d->connection) {
         d->connection->disconnect();
         d->connection->deleteLater();
@@ -143,21 +145,21 @@ void MRAProtocol::sendHello()
 
     d->connection->readMessage(msg, &data);
 
-    sec_count = data.getInt32();
-    mrimDebug() << "HELLO ACK received, timeout sec:" << sec_count ;
+    d->secCount = data.getUint32();
+    mrimDebug() << "HELLO ACK received, timeout sec:" << d->secCount ;
 
 }
 
 void MRAProtocol::readConnectionParams(MRAData & data) {
 
-    sec_count = data.getInt32();
+    d->secCount = data.getUint32();
 
     d->keepAliveTimer->deleteLater();
     d->keepAliveTimer = 0;
 
     d->keepAliveTimer = new QTimer(this);
     connect(d->keepAliveTimer, SIGNAL(timeout()) , this , SLOT(slotPing()));
-    d->keepAliveTimer->start(sec_count*1000);
+    d->keepAliveTimer->start(d->secCount*1000);
 
 }
 
@@ -171,7 +173,7 @@ void MRAProtocol::sendLogin(const QString &login, const QString &password)
     // proto v1.07/1.08
     data.addString(login);
     data.addString(password);
-    data.addInt32(STATUS_ONLINE);
+    data.addUint32(STATUS_ONLINE);
     data.addString("Kopete MRIM plugin v" + kopeteMrimVersion() );
 
     d->connection->sendMsg(MRIM_CS_LOGIN2, &data);
@@ -191,7 +193,7 @@ void MRAProtocol::sendText(const QString &to, const QString &text)
 
     unsigned long int flags = MESSAGE_FLAG_NORECV;
 
-    data.addInt32(flags);
+    data.addUint32(flags);
     data.addString(to);
     data.addString(text);
     data.addString(" ");// RTF is not supported yet
@@ -226,7 +228,7 @@ QVector<QVariant> MRAProtocol::readVectorByMask(MRAData & data, const QString &m
 
     for (int k = 0; k < mask.length(); ++k) {
         if (mask[k] == 'u') {
-            _int = data.getInt32();
+            _int = data.getUint32();
             result.push_back(_int);
         } else if (mask[k] == 's') {
             _string = data.getString();
@@ -240,8 +242,8 @@ void MRAProtocol::readContactList(MRAData & data)
 {
     MRAContactList list;
 
-    int status = data.getInt32();
-    int group_num = data.getInt32();
+    int status = data.getUint32();
+    int group_num = data.getUint32();
 
     list.setStatus(status);
 
@@ -320,8 +322,8 @@ void MRAProtocol::readMessage(MRAData & data) {
     // LPS message
     // LPS rtf-formatted message (>=1.1)
 
-    int msg_id = data.getInt32();
-    int flags  = data.getInt32();
+    int msg_id = data.getUint32();
+    int flags  = data.getUint32();
     QString from = data.getString();
     QString text = data.getString();
     // QString rtf  = data.getString(); // ignore
@@ -339,7 +341,7 @@ void MRAProtocol::readMessage(MRAData & data) {
         MRAData ackData;
 
         ackData.addString(from); // LPS ## from ##
-        ackData.addInt32(msg_id); // UL ## msg_id ##
+        ackData.addUint32(msg_id); // UL ## msg_id ##
 
         d->connection->sendMsg(MRIM_CS_MESSAGE_RECV, &ackData);
     }
@@ -348,7 +350,7 @@ void MRAProtocol::readMessage(MRAData & data) {
 void MRAProtocol::sendTypingMessage(const QString &contact) {
     MRAData data;
 
-    data.addInt32( MESSAGE_FLAG_NORECV | MESSAGE_FLAG_NOTIFY ); // flags
+    data.addUint32( MESSAGE_FLAG_NORECV | MESSAGE_FLAG_NOTIFY ); // flags
     data.addString(contact); // to
     data.addString(" "); // message
     data.addString(" "); // rtf
@@ -389,7 +391,7 @@ void MRAProtocol::sendAuthorizationRequest(const QString &contact, const QString
 
     MRAData authData;
     unsigned long int authFlags = MESSAGE_FLAG_NORECV | MESSAGE_FLAG_AUTHORIZE | MESSAGE_FLAG_UNICODE;
-    authData.addInt32(authFlags);
+    authData.addUint32(authFlags);
     authData.addString(contact);
     authData.addString(message);
     authData.addString("");// RTF is not supported yet
@@ -405,8 +407,8 @@ void MRAProtocol::addToContactList(int flags, int groupId, const QString &addres
 
     MRAData addData;
 
-    addData.addInt32(flags);
-    addData.addInt32(groupId);
+    addData.addUint32(flags);
+    addData.addUint32(groupId);
     addData.addString(address);
     addData.addString(nick);
     addData.addString(" "); // unused LPS
@@ -422,7 +424,7 @@ void MRAProtocol::removeContact(const QString &contact) {
 
 
 void MRAProtocol::readUserSataus(MRAData & data) {
-    int status   = data.getInt32();
+    int status   = data.getUint32();
     QString user = data.getString();
 
     emit userStatusChanged(user, status);
@@ -430,7 +432,7 @@ void MRAProtocol::readUserSataus(MRAData & data) {
 
 void MRAProtocol::setStatus(STATUS status) {
     MRAData data;
-    data.addInt32(statusToInt(status));
+    data.addUint32(statusToInt(status));
 
     d->connection->sendMsg(MRIM_CS_CHANGE_STATUS, &data);
 }
@@ -576,10 +578,10 @@ void MRAProtocol::loadUserInfo(const QString &contact) {
     }
 
     MRAData anketaData;
-    anketaData.addInt32(MRIM_CS_WP_REQUEST_PARAM_USER);
+    anketaData.addUint32(MRIM_CS_WP_REQUEST_PARAM_USER);
     anketaData.addString(items[0]);
 
-    anketaData.addInt32(MRIM_CS_WP_REQUEST_PARAM_DOMAIN);
+    anketaData.addUint32(MRIM_CS_WP_REQUEST_PARAM_DOMAIN);
     anketaData.addString(items[1]);
 
     d->connection->sendMsg( MRIM_CS_WP_REQUEST, &anketaData );
@@ -589,11 +591,11 @@ void MRAProtocol::readAnketaInfo(MRAData & data) {
 
     MRAContactInfo info;
 
-    uint status     = data.getInt32();
+    uint status     = data.getUint32();
     mrimDebug() << "status=" << status;
-    uint fields_num = data.getInt32();
-    uint max_rows   = data.getInt32();
-    uint server_time= data.getInt32();
+    uint fields_num = data.getUint32();
+    uint max_rows   = data.getUint32();
+    uint server_time= data.getUint32();
     Q_UNUSED(max_rows); /// @fixme: use this fields
     Q_UNUSED(server_time); /// @fixme: use this fields
 
@@ -620,9 +622,9 @@ void MRAProtocol::readAnketaInfo(MRAData & data) {
 void MRAProtocol::deleteContact(uint id, const QString &contact, const QString &contactName) {
     MRAData data;
 
-    data.addInt32( id );
-    data.addInt32( CONTACT_FLAG_REMOVED );
-    data.addInt32( 0 ); // don't care about group
+    data.addUint32( id );
+    data.addUint32( CONTACT_FLAG_REMOVED );
+    data.addUint32( 0 ); // don't care about group
     data.addString( contact );
     data.addString( contactName );
     data.addString( QString() );
@@ -633,9 +635,9 @@ void MRAProtocol::deleteContact(uint id, const QString &contact, const QString &
 void MRAProtocol::editContact(uint id, const QString &contact, uint groupId, const QString &newContactName) {
     MRAData data;
 
-    data.addInt32( id );
-    data.addInt32( 0 );
-    data.addInt32( groupId ); // don't care about group
+    data.addUint32( id );
+    data.addUint32( 0 );
+    data.addUint32( groupId ); // don't care about group
     data.addString( contact );
     data.addString( newContactName );
     data.addString( QString() );
@@ -644,8 +646,8 @@ void MRAProtocol::editContact(uint id, const QString &contact, uint groupId, con
 }
 
 void MRAProtocol::readAddContactAck(MRAData & data) {
-    int status    = data.getInt32();
-    int contactId = data.getInt32();
+    int status    = data.getUint32();
+    int contactId = data.getUint32();
 
     if (d->grouReceiver) {
         // TODO: it may be not only successfully
@@ -668,10 +670,28 @@ void MRAProtocol::setContactReceiver(IMRAProtocolContactReceiver *contactReceive
     d->contactReceiver = contactReceiver;
 }
 
+void MRAProtocol::readTransferRequest(MRAData & data) {
+    Q_UNUSED(data);
+}
+void MRAProtocol::readTransferCancel(MRAData & data) {
+    Q_UNUSED(data);
+}
+void MRAProtocol::readTransferUseThisProxy(MRAData &data) {
+    Q_UNUSED(data);
+}
+
+void MRAProtocol::readTransferCantLocal(MRAData &data) {
+    Q_UNUSED(data);
+}
+
+qtmra::TransferManager &MRAProtocol::transferManager() {
+    return d->transferManager;
+}
+
 
 void MRAProtocol::handleMessage(const ulong &msg, MRAData *data)
 {
-    mrimDebug() << "Accepting message " << msg;
+    mrimDebug() << "Accepting message " << hex << msg;
     switch (msg) {
         case MRIM_CS_USER_INFO:
 
@@ -722,12 +742,28 @@ void MRAProtocol::handleMessage(const ulong &msg, MRAData *data)
             readAddContactAck(*data);
             break;
 
+        case MRIM_CS_TRANSFER_REQUEST:
+            readTransferRequest(*data);
+            break;
+        case MRIM_CS_TRANSFER_CANCEL:
+            readTransferCancel(*data);
+            break;
+
+        case MRIM_CS_TRANSFER_USE_THIS_PROXY:
+            readTransferUseThisProxy(*data);
+            break;
+
+        case MRIM_CS_TRANSFER_CANT_LOCAL:
+            readTransferCantLocal(*data);
+            break;
+
         case MRIM_CS_MESSAGE_STATUS:
 
         case MRIM_CS_MPOP_SESSION:
         // case MRIM_CS_FILE_TRANSFER_ACK:
             mrimDebug() << "there is no handler for " << msg;
             break;
+
 
         default: {
             mrimDebug()  << "unknown message " << msg;

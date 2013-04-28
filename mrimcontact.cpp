@@ -1,16 +1,20 @@
 #include <kdebug.h>
 #include <kopeteaccount.h>
 #include <kopetechatsessionmanager.h>
+#include <kopete/kopetetransfermanager.h>
 #include <QTimer>
 #include <QMessageBox>
 #include <kopeteavatarmanager.h>
 #include <kopeteuiglobal.h>
 #include <kopetemetacontact.h>
 #include <kopetegroup.h>
+#include <kfiledialog.h>
 
 #include "ui/contactinfo.h"
 #include "mra/mraofflinemessage.h"
 #include "mra/mra_proto.h"
+#include "mra/transferrequestinfo.h"
+#include "filetransfertask.h"
 #include "debug.h"
 #include "mrimaccount.h"
 #include "mrimprotocol.h"
@@ -23,6 +27,7 @@ struct MrimContact::Private {
     ContactInfo *infoDialog;
     KAction *requestForAuthorization;
     int flags;
+    QMap<int, FileTransferTask*> transferTasks;
 
     Private()
         : msgManager(NULL)
@@ -50,14 +55,88 @@ MrimContact::MrimContact( Kopete::Account* _account,
     connect( d->requestForAuthorization, SIGNAL(triggered(bool)), this, SLOT(slotPerformRequestForAuthorization()) );
 
     d->flags = flags;
+
+    if ( (d->flags & CONTACT_FLAG_CHAT) == 0 ) {
+        setFileCapable( true );
+    }
+
 }
 
 MrimContact::~MrimContact() {
     delete d;
 }
 
+void MrimContact::sendFile( const KUrl &sourceURL,
+                   const QString &fileName, uint fileSize ) {
+
+    kDebug(kdeDebugArea()) << sourceURL << fileName << fileSize;
+
+    QStringList fileNames;
+    //If the file location is null, then get it from a file open dialog
+    if( !sourceURL.isValid() ) {
+        fileNames = KFileDialog::getOpenFileNames( KUrl() ,"*", 0l  , tr( "Kopete File Transfer" ));
+    } else {
+        fileNames << sourceURL.path(KUrl::RemoveTrailingSlash);
+    }
+
+    kDebug(kdeDebugArea()) << "start transfer";
+
+    FileTransferTask *task = new FileTransferTask(
+                  dynamic_cast<MrimAccount*>( account() )
+                , this
+                , fileNames
+                , FileTransferTask::Outgoing
+                , 0
+                , this);
+
+    connect(task, SIGNAL(transferComplete()),
+            this, SLOT(slotTransferFinished()) );
+
+    connect(task, SIGNAL(transferFailed()),
+            this, SLOT(slotTransferFinished()) );
+
+    d->transferTasks[task->getSessionId()] = task;
+
+}
+
+void MrimContact::receiveFile(const TransferRequestInfo &transferInfo) {
+    /// @todo ask user's confirmation
+    kDebug(kdeDebugArea());
+    FileTransferTask *task = new FileTransferTask(
+                  dynamic_cast<MrimAccount*>( account() )
+                , this
+                , QStringList()
+                , FileTransferTask::Incoming
+                , &transferInfo
+                , this);
+
+    connect(task, SIGNAL(transferComplete()),
+            this, SLOT(slotTransferFinished()) );
+
+    connect(task, SIGNAL(transferFailed()),
+            this, SLOT(slotTransferFinished()) );
+
+    d->transferTasks[task->getSessionId()] = task;
+}
+
+void MrimContact::receiveFileCancel(const TransferRequestInfo &transferInfo) {
+    if (d->transferTasks.contains(transferInfo.sessionId())) {
+        d->transferTasks[transferInfo.sessionId()]->cancel();
+    }
+}
+
+void MrimContact::slotTransferFinished() {
+    FileTransferTask *task = (FileTransferTask *)sender();
+    d->transferTasks.remove(task->getSessionId());
+}
+
 void MrimContact::setFlags(int arg) {
     d->flags = arg;
+    if ( (d->flags & CONTACT_FLAG_CHAT) == 0 ) {
+        setFileCapable( true );
+    } else {
+        setFileCapable( false );
+    }
 }
 
 void MrimContact::slotPerformRequestForAuthorization() {

@@ -8,6 +8,7 @@ class MrimProtocol;
 class MRAProtocol;
 class MRAContactList;
 class MRAOfflineMessage;
+class TransferRequestInfo;
 
 namespace Kopete {
     class Message;
@@ -169,7 +170,8 @@ private slots:
     void slotChatMembersListReceived(const QString &chat, const QString &title, const QList<QString> &list);
     void slotChatInvitationReceived(const QString &chat, const QString &title, const QString &from);
 
-
+    void slotTransferRequest(const TransferRequestInfo &transferInfo);
+    void slotTransferRequestCancelled(const TransferRequestInfo &transferInfo);
 private:
     class Private;
     Private *d;
