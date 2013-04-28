@@ -1,5 +1,5 @@
 #include <QString>
 
 QString kopeteMrimVersion() {
-    return "0.2.0b2";
+    return "0.2.2b1";
 }

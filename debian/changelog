@@ -1,3 +1,20 @@
+kopete-mrim (0.2.2-beta1) unstable; urgency=low
+
+  * 0.2.2 beta 1
+
+    File transfer.
+    Dynamic debug area for debug messages, that can be configured via kdebugdialog.
+
+ -- Galanin Mikhail <bespoleznyak@narod.ru>  Sun, 28 Apr 2013 22:00:00 +0400
+
+kopete-mrim (0.2.1) stable; urgency=low
+
+  * 0.2.1
+
+    Fixed adding contacts to unexisted group.
+
+ -- Galanin Mikhail <bespoleznyak@narod.ru>  Sat,  16 Mar 23:05:51 2013 +0400
+
 kopete-mrim (0.2.0) stable; urgency=low
 
   * 0.2.0

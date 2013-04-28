@@ -1,6 +1,6 @@
 %define name    kopete-mrim
-%define version 0.2.0
-%define release 00beta2
+%define version 0.2.2
+%define release 00beta1
 
 # Macros for in the menu-file.
 %define section Networking
@@ -23,7 +23,7 @@ Group:          Chat
 URL:            https://github.com/negram/kopete_mrim
 
 # https://github.com/downloads/negram/kopete_mrim/kopete-mrim-0.2.0-beta2.tar.gz
-%define source kopete-mrim-0.2.0-beta2
+%define source kopete-mrim-0.2.2-beta2
 
 # https://github.com/downloads/negram/kopete_mrim/kopete-mrim-0.2.0-beta2.tar.gz
 
@@ -84,5 +84,9 @@ rm -rf %buildroot
 
 
 %changelog
+* Sun Apr 28 2013 Mikhail Galanin <bespoleznyak@narod.ru> 0.2.2-00beta2
+- File transfer
+- Fixed many errors
+
 * Tue Oct  2 2012 Mikhail Galanin <bespoleznyak@narod.ru> 0.2.0-00beta2
 - first RPM for Mandriva

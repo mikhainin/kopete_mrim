@@ -56,10 +56,6 @@ kde4_add_ui_files(kopete_mrim_SRCS
 )
 
 
-add_definitions(-DKDE_DEFAULT_DEBUG_AREA=89326)
-add_definitions(-DKOPETE_MRIM_VERSION=0.2.0)
-
-
 kde4_add_plugin(kopete_mrim ${kopete_mrim_SRCS} ${libmra_files} )
 
 add_subdirectory (icons)
