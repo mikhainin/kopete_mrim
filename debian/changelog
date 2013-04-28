@@ -1,3 +1,11 @@
+kopete-mrim (0.2.0) stable; urgency=low
+
+  * 0.2.0
+
+    Fixed problems with chat messages and stability issues.
+
+ -- Galanin Mikhail <bespoleznyak@narod.ru>  Tue,  2 Mar 2013 20:10:00 +0400
+
 kopete-mrim (0.2.0-beta2) unstable; urgency=low
 
   * 0.2.0 beta 2
