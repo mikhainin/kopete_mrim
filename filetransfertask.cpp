@@ -85,7 +85,7 @@ FileTransferTask::FileTransferTask(MrimAccount *account,
 
     d->proto = dynamic_cast<MRAProtocolV123 *>(account->getMraProtocol());
 
-    kDebug(kdeDebugArea()) << "starting";
+    mrimDebug() << "starting";
 
     QApplication::processEvents();
 
