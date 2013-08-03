@@ -43,7 +43,7 @@ void MRAProtocolV123::sendLogin(const QString &login, const QString &password)
     data.addString(login);
     data.addBinaryString(QCryptographicHash::hash(password.toAscii(), QCryptographicHash::Md5) );
     data.addUint32(0x00000bff);
-    data.addString("client=\"kopete mrim plugin\" version=\"0.2.2b1\" build=\"5282\"");
+    data.addString("client=\"kopete mrim plugin\" version=\"0.2.2\" build=\"5282\"");
     data.addString("ru");
     data.addUint32(0x10);
     data.addUint32(0x01);

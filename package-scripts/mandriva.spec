@@ -1,6 +1,6 @@
 %define name    kopete-mrim
 %define version 0.2.2
-%define release 00beta1
+%define release 1
 
 # Macros for in the menu-file.
 %define section Networking
@@ -23,7 +23,7 @@ Group:          Chat
 URL:            https://github.com/negram/kopete_mrim
 
 # https://github.com/downloads/negram/kopete_mrim/kopete-mrim-0.2.0-beta2.tar.gz
-%define source kopete-mrim-0.2.2-beta2
+%define source kopete-mrim-0.2.2
 
 # https://github.com/downloads/negram/kopete_mrim/kopete-mrim-0.2.0-beta2.tar.gz
 
@@ -84,6 +84,9 @@ rm -rf %buildroot
 
 
 %changelog
+* Tue Jul 23 2013 Mikhail Galanin <bespoleznyak@narod.ru> 0.2.2-1
+- 2.2.0 stable
+
 * Sun Apr 28 2013 Mikhail Galanin <bespoleznyak@narod.ru> 0.2.2-00beta2
 - File transfer
 - Fixed many errors
