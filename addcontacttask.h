@@ -25,6 +25,7 @@ public:
     void setNickName( const QString &nickName );
     void setMetaContact( Kopete::MetaContact* m );
     void run();
+    void runAddGroupWithoutContact();
 
 private:
     void groupAddedSuccessfully();
@@ -38,7 +39,6 @@ signals:
 public slots:
 
 private slots:
-    void slotGroupRegistred();
 
 private:
     class Private;

@@ -1,11 +1,17 @@
 #include <QMessageBox>
+#include <QInputDialog>
 
 #include <kdebug.h>
+#include <kinputdialog.h>
+#include <klocalizedstring.h>
+#include <kactionmenu.h>
+
 #include <kopetecontactlist.h>
 #include <kopetemetacontact.h>
 #include <kopetemessage.h>
 #include <kopeteaccount.h>
 #include <kopeteutils.h>
+
 
 #include "mra/mraprotocol.h"
 #include "mra/mraprotocolv123.h"
@@ -18,6 +24,7 @@
 #include "mrimprotocol.h"
 #include "mrimcontact.h"
 #include "mrimaccount.h"
+#include "addcontacttask.h"
 
 struct MrimAccount::Private {
     QByteArray username;
@@ -56,6 +63,38 @@ MrimAccount::~MrimAccount()
 
 MRAProtocol *MrimAccount::getMraProtocol() {
     return d->mraProto;
+}
+
+
+void MrimAccount::fillActionMenu( KActionMenu *actionMenu )
+{
+    mrimDebug() << __PRETTY_FUNCTION__;
+    Kopete::Account::fillActionMenu(actionMenu);
+
+    if (!isConnected()) {
+        return;
+    }
+
+    actionMenu->addSeparator();
+
+    KAction *addGroupAction = new KAction( i18n("Add group"), actionMenu );
+
+    QObject::connect( addGroupAction, SIGNAL(triggered(bool)), this, SLOT(addGroup()) );
+
+    actionMenu->addAction( addGroupAction );
+}
+
+void MrimAccount::addGroup() {
+    bool ok = false;
+    QString newGroupName = KInputDialog::getText( i18n("New group"), "New group name", QString(), &ok);
+    if (not ok) {
+        return;
+    }
+    /// @todo check if the group is already exists
+    AddContactTask *task = new AddContactTask(this);
+    task->setGroupName(newGroupName);
+    task->runAddGroupWithoutContact();
+    // (void)addGroupAndReturnId(newGroupName);
 }
 
 bool MrimAccount::createContact(const QString& contactId, Kopete::MetaContact* parentContact)
@@ -369,6 +408,13 @@ void MrimAccount::slotReceivedContactList(const MRAContactList &list) {
     mrimDebug() << __PRETTY_FUNCTION__;
 
     d->contactList = list;
+
+    // add empty groups if any
+    for( int i = 0; i < list.groups().count(); ++i ) {
+        QString groupName = list.groups()[i].name;
+        Kopete::Group *g=Kopete::ContactList::self()->findGroup(groupName);
+        Kopete::ContactList::self()->addGroup(g);
+    }
 
     for( int i = 0; i < list.count(); ++i ) {
         const MRAContactListEntry &item = list[i];
