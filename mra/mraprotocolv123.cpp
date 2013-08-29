@@ -51,7 +51,7 @@ void MRAProtocolV123::sendLogin(const QString &login, const QString &password)
     // data.addString("MRA 5.10 (build 5282);");
     data.addString("Kopete MRIM plugin (v" + kopeteMrimVersion() + ");");
 
-    connection()->sendMsg(MRIM_CS_LOGIN3, &data);
+    sendMsg(MRIM_CS_LOGIN3, &data);
 }
 
 void MRAProtocolV123::readLoginAck(MRAData & data) {
@@ -70,7 +70,7 @@ void MRAProtocolV123::sendUnknownBeforeLogin() {
     data.addUint32(0x02);
     data.addUint32(0x00);
 
-    connection()->sendMsg(MRIM_CS_UNKNOWN2, &data);
+    sendMsg(MRIM_CS_UNKNOWN2, &data);
 
 }
 
@@ -192,7 +192,7 @@ void MRAProtocolV123::readMessage(MRAData & data) {
         ackData.addString(from); // LPS ## from ##
         ackData.addUint32(msg_id); // UL ## msg_id ##
 
-        connection()->sendMsg(MRIM_CS_MESSAGE_RECV, &ackData);
+        sendMsg(MRIM_CS_MESSAGE_RECV, &ackData);
     }
 }
 
@@ -287,7 +287,7 @@ void MRAProtocolV123::sendText(const QString &to, const QString &text)
     data.addUnicodeString(text);
     data.addString(" ");// RTF is not supported yet
 
-    connection()->sendMsg(MRIM_CS_MESSAGE, &data);
+    sendMsg(MRIM_CS_MESSAGE, &data);
 }
 
 void MRAProtocolV123::loadChatMembersList(const QString &to) {
@@ -300,7 +300,7 @@ void MRAProtocolV123::loadChatMembersList(const QString &to) {
     data.addUint32(0x04); // whatis 4?
     data.addUint32(0x01); // whatis 1?
 
-    connection()->sendMsg(MRIM_CS_MESSAGE, &data);
+    sendMsg(MRIM_CS_MESSAGE, &data);
 
     /*
       ack: flags: 0x00400084 = MESSAGE_FLAG_NORECV | MESSAGE_FLAG_RTF | MESSAGE_FLAG_CHAT
@@ -343,7 +343,7 @@ void MRAProtocolV123::setStatus(STATUS status) {
     data.addUint32(0x00); // user's client?
     data.addUint32(0x00000BFF);
 
-    connection()->sendMsg(MRIM_CS_CHANGE_STATUS, &data);
+    sendMsg(MRIM_CS_CHANGE_STATUS, &data);
 }
 
 void MRAProtocolV123::readUserSataus(MRAData & data) {
@@ -451,7 +451,7 @@ void MRAProtocolV123::addToContactList(int flags, int groupId, const QString &ad
 
     addData.addUint32( 1 );
 
-    connection()->sendMsg(MRIM_CS_ADD_CONTACT, &addData);
+    sendMsg(MRIM_CS_ADD_CONTACT, &addData);
 
     setContactReceiver(contactAddReceiver);
 
@@ -483,7 +483,7 @@ void MRAProtocolV123::addGroupToContactList(const QString &groupName, IMRAProtoc
 
     addData.addUint32( 0 );
 
-    connection()->sendMsg(MRIM_CS_ADD_CONTACT, &addData);
+    sendMsg(MRIM_CS_ADD_CONTACT, &addData);
 
     setGroupReceiver(groupAddedReveiver);
 
@@ -504,7 +504,7 @@ void MRAProtocolV123::sendAuthorizationRequest(const QString &contact, const QSt
     authData.addString(authMessage.toBase64());
     authData.addString("");// RTF is not supported yet
 
-    connection()->sendMsg(MRIM_CS_MESSAGE, &authData);
+    sendMsg(MRIM_CS_MESSAGE, &authData);
 
 }
 
@@ -534,7 +534,7 @@ void MRAProtocolV123::deleteContact(uint id, const QString &contact, const QStri
     data.addUnicodeString( contactName );
     data.addString( QString() );
 
-    connection()->sendMsg( MRIM_CS_MODIFY_CONTACT, &data );
+    sendMsg( MRIM_CS_MODIFY_CONTACT, &data );
 }
 
 void MRAProtocolV123::editContact(uint id, const QString &contact, uint groupId, const QString &newContactName) {
@@ -547,7 +547,7 @@ void MRAProtocolV123::editContact(uint id, const QString &contact, uint groupId,
     data.addUnicodeString( newContactName );
     data.addString( QString() );
 
-    connection()->sendMsg( MRIM_CS_MODIFY_CONTACT, &data );
+    sendMsg( MRIM_CS_MODIFY_CONTACT, &data );
 }
 
 void MRAProtocolV123::addTransferSession(qtmra::IFileTransferInfo *transferReceiver) {
@@ -582,7 +582,7 @@ void MRAProtocolV123::startFileTransfer(qtmra::IFileTransferInfo *transferReceiv
         filesInfo.addString(transferReceiver->getHostAndPort());
         data.addBinaryString(filesInfo.toByteArray());
 
-    connection()->sendMsg(MRIM_CS_TRANSFER_REQUEST, &data);
+    sendMsg(MRIM_CS_TRANSFER_REQUEST, &data);
 }
 
 QString MRAProtocolV123::buildFilesListString(qtmra::IFileTransferInfo *transferReceiver) {
@@ -608,7 +608,7 @@ void MRAProtocolV123::finishFileTransfer(qtmra::IFileTransferInfo *transferRecei
     data.addUint32(0x00009800);
     data.addString(transferReceiver->getAccountId());
 
-    connection()->sendMsg(MRIM_CS_TRANSFER_SUCCEED, &data);
+    sendMsg(MRIM_CS_TRANSFER_SUCCEED, &data);
 
     transferManager()
             .removeSession(transferReceiver->getContact(), transferReceiver->getSessionId());
@@ -622,7 +622,7 @@ void MRAProtocolV123::cancelFileTransfer(qtmra::IFileTransferInfo *transferRecei
     data.addUint32(transferReceiver->getSessionId());
     data.addUint32(0); // addString("") ?
 
-    connection()->sendMsg(MRIM_CS_TRANSFER_CANCEL, &data);
+    sendMsg(MRIM_CS_TRANSFER_CANCEL, &data);
 
     transferManager()
             .removeSession(transferReceiver->getContact(), transferReceiver->getSessionId());
@@ -698,7 +698,7 @@ void MRAProtocolV123::sendTransferCantLocal(qtmra::IFileTransferInfo *transferRe
 
     data.addBinaryString(filesInfo.toByteArray());
 
-    connection()->sendMsg(MRIM_CS_TRANSFER_CANT_LOCAL, &data);
+    sendMsg(MRIM_CS_TRANSFER_CANT_LOCAL, &data);
 
 }
 
@@ -736,7 +736,7 @@ void MRAProtocolV123::readTransferCantLocal(MRAData &data) {
     // unicode files description
     sendProxy.addBinaryString(data.getBinaryString());
 
-    connection()->sendMsg(MRIM_CS_TRANSFER_USE_THIS_PROXY, &sendProxy);
+    sendMsg(MRIM_CS_TRANSFER_USE_THIS_PROXY, &sendProxy);
 
     QApplication::processEvents();
 
@@ -755,7 +755,7 @@ void MRAProtocolV123::sendTryThisHost(qtmra::IFileTransferInfo *transferReceiver
     data.addUint32(transferReceiver->getSessionId());
     data.addString(transferReceiver->getHostAndPort());
 
-    connection()->sendMsg(MRIM_CS_TRANSFER_CANCEL, &data);
+    sendMsg(MRIM_CS_TRANSFER_CANCEL, &data);
 }
 
 void MRAProtocolV123::readTransferUseThisProxy(MRAData &data) {

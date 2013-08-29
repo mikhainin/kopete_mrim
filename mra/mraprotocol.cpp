@@ -66,6 +66,14 @@ MRAConnection *MRAProtocol::connection() {
     return d->connection;
 }
 
+void MRAProtocol::sendMsg(const mrim_msg_t &msg, MRAData *data) {
+    if (d->connection) {
+        d->connection->sendMsg(msg, data);
+    } else {
+        mrimWarning() << "sending message to a closed connection" << msg;
+    }
+}
+
 bool MRAProtocol::makeConnection(const QString &login, const QString &password)
 {
     d->connection = new MRAConnection(this);
@@ -104,7 +112,7 @@ void MRAProtocol::addGroupToContactList(const QString &groupName, IMRAProtocolGr
     addData.addString(groupName);
     addData.addString(""); // unused LPS
 
-    d->connection->sendMsg(MRIM_CS_ADD_CONTACT, &addData);
+    sendMsg(MRIM_CS_ADD_CONTACT, &addData);
 
     setGroupReceiver(groupAddedReveiver);
 
@@ -139,7 +147,7 @@ void MRAProtocol::slotDisconnected(const QString &reason) {
  */
 void MRAProtocol::sendHello()
 {
-    d->connection->sendMsg(MRIM_CS_HELLO, NULL);
+    sendMsg(MRIM_CS_HELLO, NULL);
     MRAData data;
     mrim_msg_t msg;
 
@@ -176,7 +184,7 @@ void MRAProtocol::sendLogin(const QString &login, const QString &password)
     data.addUint32(STATUS_ONLINE);
     data.addString("Kopete MRIM plugin v" + kopeteMrimVersion() );
 
-    d->connection->sendMsg(MRIM_CS_LOGIN2, &data);
+    sendMsg(MRIM_CS_LOGIN2, &data);
 }
 
 void MRAProtocol::readLoginAck(MRAData & data) {
@@ -198,7 +206,7 @@ void MRAProtocol::sendText(const QString &to, const QString &text)
     data.addString(text);
     data.addString(" ");// RTF is not supported yet
 
-    d->connection->sendMsg(MRIM_CS_MESSAGE, &data);
+    sendMsg(MRIM_CS_MESSAGE, &data);
 }
 
 
@@ -343,7 +351,7 @@ void MRAProtocol::readMessage(MRAData & data) {
         ackData.addString(from); // LPS ## from ##
         ackData.addUint32(msg_id); // UL ## msg_id ##
 
-        d->connection->sendMsg(MRIM_CS_MESSAGE_RECV, &ackData);
+        sendMsg(MRIM_CS_MESSAGE_RECV, &ackData);
     }
 }
 
@@ -355,7 +363,7 @@ void MRAProtocol::sendTypingMessage(const QString &contact) {
     data.addString(" "); // message
     data.addString(" "); // rtf
 
-    d->connection->sendMsg(MRIM_CS_MESSAGE, &data);
+    sendMsg(MRIM_CS_MESSAGE, &data);
 }
 
 void MRAProtocol::readConnectionRejected(MRAData & data) {
@@ -382,7 +390,7 @@ void MRAProtocol::authorizeContact(const QString &contact) {
     MRAData authData;
     authData.addString(contact);
 
-    d->connection->sendMsg( MRIM_CS_AUTHORIZE, &authData );
+    sendMsg( MRIM_CS_AUTHORIZE, &authData );
 }
 
 void MRAProtocol::sendAuthorizationRequest(const QString &contact, const QString &myAddress, const QString &message) {
@@ -413,7 +421,7 @@ void MRAProtocol::addToContactList(int flags, int groupId, const QString &addres
     addData.addString(nick);
     addData.addString(" "); // unused LPS
 
-    d->connection->sendMsg(MRIM_CS_ADD_CONTACT, &addData);
+    sendMsg(MRIM_CS_ADD_CONTACT, &addData);
 
     setContactReceiver(contactAddReceiver);
 }
@@ -434,7 +442,7 @@ void MRAProtocol::setStatus(STATUS status) {
     MRAData data;
     data.addUint32(statusToInt(status));
 
-    d->connection->sendMsg(MRIM_CS_CHANGE_STATUS, &data);
+    sendMsg(MRIM_CS_CHANGE_STATUS, &data);
 }
 
 int MRAProtocol::statusToInt(STATUS status) {
@@ -512,7 +520,7 @@ void MRAProtocol::emitOfflineMessagesReceived() {
         MRAData ackData;
         ackData.addUIDL(message->id());
 
-        d->connection->sendMsg(MRIM_CS_DELETE_OFFLINE_MESSAGE, &ackData);
+        sendMsg(MRIM_CS_DELETE_OFFLINE_MESSAGE, &ackData);
 
         message->deleteLater();
     }
@@ -584,7 +592,7 @@ void MRAProtocol::loadUserInfo(const QString &contact) {
     anketaData.addUint32(MRIM_CS_WP_REQUEST_PARAM_DOMAIN);
     anketaData.addString(items[1]);
 
-    d->connection->sendMsg( MRIM_CS_WP_REQUEST, &anketaData );
+    sendMsg( MRIM_CS_WP_REQUEST, &anketaData );
 }
 
 void MRAProtocol::readAnketaInfo(MRAData & data) {
@@ -773,7 +781,7 @@ void MRAProtocol::handleMessage(const ulong &msg, MRAData *data)
 
 void MRAProtocol::slotPing() {
     mrimDebug() << "sending ping";
-    d->connection->sendMsg(MRIM_CS_PING, NULL);
+    sendMsg(MRIM_CS_PING, NULL);
 
 }
 

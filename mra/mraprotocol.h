@@ -2,6 +2,7 @@
 #define MRAPROTOCOL_H
 
 #include <QObject>
+#include <stdint.h>
 
 class QImage;
 class QString;
@@ -17,7 +18,7 @@ class MRAContactList;
 class MRAConnection;
 class MRAContactListEntry;
 class TransferRequestInfo;
-
+typedef uint32_t mrim_msg_t;
 
 class IMRAProtocolGroupReceiver {
 public:
@@ -123,6 +124,7 @@ protected:
     void setGroupReceiver(IMRAProtocolGroupReceiver *groupReceiver);
     void setContactReceiver(IMRAProtocolContactReceiver *contactReceiver);
     qtmra::TransferManager &transferManager();
+    void sendMsg(const mrim_msg_t &msg, MRAData *data);
 private slots:
     void slotPing();
     void slotOnDataFromServer();
