@@ -5,12 +5,27 @@ This plugin adds support of the MRIM (Mail.Ru Instant Messenger
 aka Mail.Ru Agent) for Kopete (kopete.kde.org).
 
 
+Checking out sources
+--------------------
+
+$ git clone git@github.com:negram/kopete_mrim.git
+$ cd kopete_mrim
+
+
 Installation
 ------------
 
 To build this project, you need to install header files for Kopete and PIM.
 In Debian you can install packages `kdepimlibs5-dev' and `libkopete-dev'. 
 In Mandriva, `kdenetwork4-devel'
+
+
+Prepare
+-------
+
+Debian/Ubuntu: $ sudo apt-get install kdepimlibs5-dev libkopete-dev g++ cmake
+Mandriva: $ sudo urpmi kdenetwork4-devel
+
 
 Building
 --------
@@ -20,7 +35,5 @@ $ cd build
 $ cmake -RCMAKE_INSTALL_PREFIX=/ -DEXEC_INSTALL_PREFIX=/usr -DSHARE_INSTALL_PREFIX=/usr/share/ -DDATA_INSTALL_DIR=/usr/share/kde4/apps/ ..
 $ make
 $ make install
-
-# only first time
 $ kbuildsycoca4 
 
