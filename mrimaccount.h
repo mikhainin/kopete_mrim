@@ -9,6 +9,7 @@ class MRAProtocol;
 class MRAContactList;
 class MRAOfflineMessage;
 class TransferRequestInfo;
+class KActionMenu;
 
 namespace Kopete {
     class Message;
@@ -55,6 +56,11 @@ public:
     virtual void setOnlineStatus(const Kopete::OnlineStatus& status , const Kopete::StatusMessage &reason = Kopete::StatusMessage(),
                                  const OnlineStatusOptions& options = None);
     virtual void setStatusMessage(const Kopete::StatusMessage& statusMessage);
+
+    /**
+     * @brief Custom action menu
+     */
+    void fillActionMenu( KActionMenu *actionMenu );
 
     /**
      * @brief 'Connect' to the MRIM service.
@@ -148,6 +154,11 @@ public slots:
     void slotTypingAMessage( const QString &from );
 
     void requestForAuthorization( const QString &contact );
+
+    /**
+     * @brief Trggers add group task. Called from status menu.
+     */
+    void addGroup();
 
 private slots:
 

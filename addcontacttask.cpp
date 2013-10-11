@@ -57,7 +57,7 @@ void AddContactTask::run() {
     mrimDebug() << __PRETTY_FUNCTION__;
 
     if ( !d->m || d->groupName.isEmpty() ) {
-        mrimDebug() << "neither metacontact nor groupName is set";
+        mrimWarning() << "neither metacontact nor groupName is set";
         return;
     }
 
@@ -67,6 +67,7 @@ void AddContactTask::run() {
     if ( gid == -1 ) {
         d->proto->addGroupToContactList(d->groupName, this);
     } else {
+
         d->groupId = gid;
         d->proto->addToContactList(
                         0,
@@ -81,14 +82,30 @@ void AddContactTask::run() {
 
 }
 
-void AddContactTask::slotGroupRegistred() {
+void AddContactTask::runAddGroupWithoutContact() {
 
+    if ( d->groupName.isEmpty() ) {
+        mrimWarning() << "neither metacontact nor groupName is set";
+        return;
+    }
+
+    int gid = d->account->getGroupIdByName( d->groupName );
+
+    if ( gid == -1 ) {
+        d->proto->addGroupToContactList(d->groupName, this);
+    } else {
+        mrimDebug() << "the group " << d->groupName << " is already exists";
+    }
 }
 
 void AddContactTask::groupAddedSuccessfully() {
 
     d->groupId = d->account->addGroupAndReturnId(d->groupName);
 
+    if ( d->nickName.isEmpty() ) {
+        mrimDebug() << "nickname is empty => return here";
+        return;
+    }
     d->proto->addToContactList(
                     0,
                     d->groupId,

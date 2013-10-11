@@ -1,7 +1,6 @@
-v0.2.1
-<done>
 v0.2.2
-[proto]  file transfer
+<done>
+
 
 v0.3
 [proto]  status message
@@ -10,9 +9,12 @@ v0.3
 [proto]  chats: add and remove users
 [proto]  create rooms
 [ui]     edit contacts
+[ui]     russian translation
+[proto]  reconnect after disconnect
 
 v0.4
 
 
 further
 [proto]  load avatars via 3 permanent connections
+[proto]  file transfer via files.mail.ru
