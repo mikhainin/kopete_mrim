@@ -25,7 +25,7 @@ Prepare
 
 Debian/Ubuntu: $ sudo apt-get install kdepimlibs5-dev libkopete-dev g++ cmake
 Mandriva: $ sudo urpmi kdenetwork4-devel
-Fedora: sudo yum install kopete-devel gcc-c++ kdepimlibs-devel
+Fedora: $ sudo yum install kopete-devel gcc-c++ kdepimlibs-devel
 
 
 Building
