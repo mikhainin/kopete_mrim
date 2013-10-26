@@ -7,10 +7,10 @@ v0.3
 [proto]  delivery status
 [kopete] message status: sent, delivered, rejected, etc...
 [proto]  chats: add and remove users
-[proto]  create rooms
 [ui]     edit contacts
 [ui]     russian translation
 [proto]  reconnect after disconnect
+[proto]  delete contacts from chatlist when we receive a notification "smb has deleted a member from the list"
 
 v0.4
 
