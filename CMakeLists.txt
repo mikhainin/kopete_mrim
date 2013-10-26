@@ -42,10 +42,12 @@ set(kopete_mrim_SRCS
     mra/mraprotocolv123.cpp
     mra/transferrequestinfo.cpp
     mra/transfermanager.cpp
+    mra/mraconferencesettings.cpp
 
     ui/contactinfo.cpp
     ui/mrimeditaccountwidget.cpp
     ui/mrimaddcontactpage.cpp
+    ui/createconferencedialog.cpp
 )
 
 kde4_add_ui_files(kopete_mrim_SRCS
@@ -53,6 +55,7 @@ kde4_add_ui_files(kopete_mrim_SRCS
 
     ui/mrimaccountpreferences.ui
     ui/contactinfo.ui
+    ui/createconferencedialog.ui
 )
 
 

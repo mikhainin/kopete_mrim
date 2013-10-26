@@ -160,6 +160,11 @@ public slots:
      */
     void addGroup();
 
+    /**
+     * @brief Trggers create a new conference task. Called from status menu.
+     */
+    void addConference();
+
 private slots:
 
     void slotReceivedContactList(const MRAContactList &list);

@@ -58,6 +58,12 @@ public:
 
     void receiveFile(const TransferRequestInfo &transferInfo);
     void receiveFileCancel(const TransferRequestInfo &transferInfo);
+
+    /**
+     * @brief isOrdinaryContact: neither chat nor phone number
+     * @return
+     */
+    bool isOrdinaryContact();
 signals:
     void userInfoLoaded(const MRAContactInfo &info);
 

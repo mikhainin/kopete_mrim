@@ -20,6 +20,8 @@
 #include "mra/mraofflinemessage.h"
 #include "mra/transferrequestinfo.h"
 
+#include "ui/createconferencedialog.h"
+
 #include "debug.h"
 #include "mrimprotocol.h"
 #include "mrimcontact.h"
@@ -82,6 +84,12 @@ void MrimAccount::fillActionMenu( KActionMenu *actionMenu )
     QObject::connect( addGroupAction, SIGNAL(triggered(bool)), this, SLOT(addGroup()) );
 
     actionMenu->addAction( addGroupAction );
+
+    KAction *addConferenceAction = new KAction( i18n("Create new conference"), actionMenu );
+
+    QObject::connect( addConferenceAction, SIGNAL(triggered(bool)), this, SLOT(addConference()) );
+
+    actionMenu->addAction( addConferenceAction );
 }
 
 void MrimAccount::addGroup() {
@@ -95,6 +103,14 @@ void MrimAccount::addGroup() {
     task->setGroupName(newGroupName);
     task->runAddGroupWithoutContact();
     // (void)addGroupAndReturnId(newGroupName);
+}
+
+void MrimAccount::addConference() {
+    CreateConferenceDialog *c = new CreateConferenceDialog(this);
+    if ( c->exec() == QDialog::Accepted ) {
+        MRAProtocolV123 *p = dynamic_cast<MRAProtocolV123 *>(d->mraProto);
+        p->createChat( c->getSettings() );
+    }
 }
 
 bool MrimAccount::createContact(const QString& contactId, Kopete::MetaContact* parentContact)

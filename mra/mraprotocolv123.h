@@ -11,6 +11,8 @@ namespace qtmra {
     class IFileTransferInfo;
 }
 
+class MRAConferenceSettings;
+
 class MRAProtocolV123 : public MRAProtocol
 {
     Q_OBJECT
@@ -50,6 +52,9 @@ public:
     virtual void sendTransferCantLocal(qtmra::IFileTransferInfo *transferReceiver);
     virtual void sendTryThisHost(qtmra::IFileTransferInfo *transferReceiver);
     virtual void addTransferSession(qtmra::IFileTransferInfo *transferReceiver);
+
+
+    virtual void createChat(const MRAConferenceSettings &conferenceSettings);
 
     static QString buildFilesListString(qtmra::IFileTransferInfo *transferReceiver);
 

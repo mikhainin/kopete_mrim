@@ -47,7 +47,7 @@ MrimContact::MrimContact( Kopete::Account* _account,
     : Kopete::Contact( _account, uniqueName, parent, QString("mrim_protocol") )
     , d(new Private)
 {
-    mrimDebug()<< " uniqueName: " << uniqueName << ", displayName: " << displayName;
+    mrimDebug()<< " uniqueName: " << uniqueName << ", displayName: " << displayName << "flags: " << flags;
 
     QTimer::singleShot( 10 * 1000, this, SLOT(slotLoadAvatar()) );
 
@@ -137,6 +137,10 @@ void MrimContact::setFlags(int arg) {
     } else {
         setFileCapable( false );
     }
+}
+
+bool MrimContact::isOrdinaryContact() {
+    return (d->flags == CONTACT_FLAG_UNKNOWN) || (d->flags == 0);
 }
 
 void MrimContact::slotPerformRequestForAuthorization() {
