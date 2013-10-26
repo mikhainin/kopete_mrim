@@ -55,7 +55,7 @@ bool MRAConnection::connectToHost()
     QStringList list = hostAndPort.split(':');
     if (list.size() < 2) {
         kWarning() << "Can't detect recommended server to connect to";
-        return;
+        return false;
     }
 
     m_socket = new QTcpSocket( this );
@@ -68,7 +68,7 @@ bool MRAConnection::connectToHost()
     } else {
         mrimWarning() << m_socket->errorString();
         /// @todo: show error to user
-        return;
+        return false;
     }
 
     m_localPort = m_socket->localPort();
