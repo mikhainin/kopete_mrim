@@ -244,20 +244,24 @@ bool MRAProtocolV123::isChatTextMessage(int chatMessageType) {
 
 void MRAProtocolV123::receiveChatMembersList(MRAData & data, const QString &from) {
 
+    MRAConferenceSettings settings;
     QString chatTitle  = data.getUnicodeString(); // subject
-    int i3 = data.getUint32();
 
-    int numMembers = data.getUint32();
+    MRAData chatData(data.getBinaryString());
 
-    QList<QString> membersList;
+
+    int numMembers = chatData.getUint32();
+
+    QStringList membersList;
 
     for(; numMembers > 0; --numMembers) {
-        membersList.append( data.getString() );
+        membersList.append( chatData.getString() );
     }
 
-    emit chatMembersListReceived(from, chatTitle, membersList);
+    settings.setTitle(chatTitle);
+    settings.setContactList(membersList);
 
-    Q_UNUSED(i3);
+    emit chatSettingsReceived(from, settings);
 
 }
 
