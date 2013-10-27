@@ -1,0 +1,10 @@
+<!DOCTYPE kpartgui>
+<kpartgui version="13" name="kopete_mrim_chat">
+
+    <ToolBar name="chatToolBar" fullWidth="true">
+        <Action name="mrimEditConference" />
+    </ToolBar>
+
+
+</kpartgui>
+

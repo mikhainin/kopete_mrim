@@ -107,6 +107,8 @@ public:
 
     void inviteMemberToChat(const QString &to, const QString &contactIdToInvite);
 
+    void removeMemberFromChat(const QString &to, const QString &contactIdToInvite);
+
     void contactTypingAMessage( const QString &to );
 
     void loadAvatar( const QString &email );
@@ -185,7 +187,7 @@ private slots:
 
     void slotAddContactAckReceived(int status, int contactId);
 
-    void slotChatMembersListReceived(const QString &chat, const QString &title, const QList<QString> &list);
+    void slotChatSettingsReceived(const QString &chat, const MRAConferenceSettings &settings);
     void slotChatInvitationReceived(const QString &chat, const QString &title, const QString &from);
 
     void slotTransferRequest(const TransferRequestInfo &transferInfo);

@@ -10,7 +10,7 @@ v0.3
 [ui]     edit contacts
 [ui]     russian translation
 [proto]  reconnect after disconnect
-[proto]  delete contacts from chatlist when we receive a notification "smb has deleted a member from the list"
+[proto]  delete/add contacts from chatlist when we receive a notification "smb has deleted/added a member from the list"
 
 v0.4
 

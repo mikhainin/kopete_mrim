@@ -104,6 +104,10 @@ void MRAProtocol::inviteMemberToChat(const QString &to, const QString &contactId
     Q_UNUSED(contactIdToInvite);
 }
 
+void MRAProtocol::removeMemberFromChat(const QString &to, const QString &contactIdToRemove) {
+    Q_UNUSED(to);
+    Q_UNUSED(contactIdToRemove);
+}
 
 void MRAProtocol::addGroupToContactList(const QString &groupName, IMRAProtocolGroupReceiver *groupAddedReveiver) {
 

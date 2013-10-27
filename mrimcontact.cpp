@@ -384,7 +384,13 @@ void MrimContact::loadChatMembersList() {
     a->loadChatMembersList( contactId() );
 }
 
-void MrimContact::slotChatMembersListReceived(const QString &title, const QList<QString> &list) {
+void MrimContact::slotChatSettingsReceived(const MRAConferenceSettings &settings) {
+
+    MrimChatSession *m = dynamic_cast<MrimChatSession *>(manager());
+    if (m) {
+        m->slotChatSettingsReceived(settings);
+    }
+    /*
     foreach(const QString &contact, list) {
         mrimDebug() << contact;
         if ( account()->contacts().value(contact) ) {
@@ -392,6 +398,7 @@ void MrimContact::slotChatMembersListReceived(const QString &title, const QList<
         }
     }
     manager()->setDisplayName(title);
+    */
 }
 
 void MrimContact::sync(unsigned int changed) {
@@ -409,7 +416,7 @@ void MrimContact::sync(unsigned int changed) {
     }
 }
 
-void MrimContact::inviteContact(const QString &contactIdToInvite) {
+void MrimContact::inviteContactToConference(const QString &contactIdToInvite) {
 
     if ( not isChatContact() ) {
         return;
@@ -417,6 +424,16 @@ void MrimContact::inviteContact(const QString &contactIdToInvite) {
 
     MrimAccount *a = dynamic_cast<MrimAccount*>( account() );
     a->inviteMemberToChat(contactId(), contactIdToInvite);
+}
+
+void MrimContact::removeContactFromConference(const QString &contactIdToRemove) {
+    if ( not isChatContact() ) {
+        return;
+    }
+
+    MrimAccount *a = dynamic_cast<MrimAccount*>( account() );
+    a->removeMemberFromChat(contactId(), contactIdToRemove);
+
 }
 
 #include "mrimcontact.moc"

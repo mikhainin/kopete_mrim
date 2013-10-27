@@ -17,6 +17,8 @@ class MRAOfflineMessage;
 class MRAContactList;
 class MRAConnection;
 class MRAContactListEntry;
+class MRAConferenceSettings;
+
 class TransferRequestInfo;
 typedef uint32_t mrim_msg_t;
 
@@ -87,6 +89,8 @@ public:
 
     virtual void inviteMemberToChat(const QString &to, const QString &contactIdToInvite);
 
+    virtual void removeMemberFromChat(const QString &to, const QString &contactIdToRemove);
+
     virtual void addGroupToContactList(const QString &groupName, IMRAProtocolGroupReceiver *groupAddedReveiver);
 
 private:
@@ -154,7 +158,7 @@ signals:
 
     void addContactAckReceived(int status, int contactId);
 
-    void chatMembersListReceived(const QString &chat, const QString &title, const QList<QString> &list);
+    void chatSettingsReceived(const QString &chat, const MRAConferenceSettings &settings);
     void chatIvitationReceived(const QString &chat, const QString &title, const QString &from);
     void transferRequest(const TransferRequestInfo &requestInfo);
     // void transferRequestCancelled(const TransferRequestInfo &requestInfo);

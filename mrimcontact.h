@@ -48,7 +48,7 @@ public:
     void setFlags(int arg);
 
     void loadChatMembersList();
-    void slotChatMembersListReceived(const QString &title, const QList<QString> &list);
+    void slotChatSettingsReceived(const MRAConferenceSettings &settings);
 
     virtual QList<KAction *> *customContextMenuActions(  );
     virtual QList<KAction *> *customContextMenuActions( Kopete::ChatSession* );
@@ -67,12 +67,8 @@ public:
 
     bool isChatContact() const;
 
-    /**
-     * Called when contact is dragged to the chat's contact list
-     * @brief inviteContact
-     * @param contactId
-     */
-    void inviteContact(const QString &contactIdToInvite);
+    void inviteContactToConference(const QString &contactIdToInvite);
+    void removeContactFromConference(const QString &contactIdToRemove);
 
 signals:
     void userInfoLoaded(const MRAContactInfo &info);

@@ -177,8 +177,8 @@ void MrimAccount::connect( const Kopete::OnlineStatus& /*initialStatus*/ )
     QObject::connect(d->mraProto, SIGNAL(addContactAckReceived(int,int)),
                      this, SLOT(slotAddContactAckReceived(int,int)) );
 
-    QObject::connect(d->mraProto, SIGNAL(chatMembersListReceived(QString,QString,QList<QString>)),
-                     this, SLOT(slotChatMembersListReceived(QString,QString,QList<QString>)));
+    QObject::connect(d->mraProto, SIGNAL(chatSettingsReceived(QString, MRAConferenceSettings)),
+                     this, SLOT(slotChatSettingsReceived(QString, MRAConferenceSettings)));
 
     QObject::connect(d->mraProto, SIGNAL(chatIvitationReceived(QString,QString,QString)),
                      this, SLOT(slotChatInvitationReceived(QString,QString,QString)));
@@ -516,6 +516,10 @@ void MrimAccount::inviteMemberToChat(const QString &to, const QString &contactId
     d->mraProto->inviteMemberToChat( to, contactIdToInvite );
 }
 
+void MrimAccount::removeMemberFromChat(const QString &to, const QString &contactIdToInvite) {
+    d->mraProto->removeMemberFromChat( to, contactIdToInvite );
+}
+
 void MrimAccount::slotReceivedMessage( const QString &from, const QString &text )
 {
     mrimDebug() << "from=" << from;
@@ -662,11 +666,11 @@ void MrimAccount::requestForAuthorization( const QString &contact ) {
     d->mraProto->sendAuthorizationRequest(contact, myself()->contactId(), tr("Please, authorize me."));
 }
 
-void MrimAccount::slotChatMembersListReceived(const QString &chat, const QString &title, const QList<QString> &list) {
+void MrimAccount::slotChatSettingsReceived(const QString &chat, const MRAConferenceSettings &settings) {
     MrimContact *c = dynamic_cast<MrimContact *>( contacts().value(chat) );
 
     if (c) {
-        c->slotChatMembersListReceived( title, list );
+        c->slotChatSettingsReceived( settings );
     }
 }
 

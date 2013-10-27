@@ -20,6 +20,8 @@ public:
 
     const MRAConferenceSettings &getSettings();
 
+    void setSettings(const MRAConferenceSettings &arg);
+
 private slots:
     void on_listAvailableContacts_doubleClicked(const QModelIndex &index);
 

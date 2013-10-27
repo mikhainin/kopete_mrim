@@ -68,3 +68,4 @@ target_link_libraries(kopete_mrim ${KDE4_KIO_LIBS} ${KDEPIMLIBS_KPIMIDENTITIES_L
 
 install( TARGETS kopete_mrim  DESTINATION ${PLUGIN_INSTALL_DIR} )
 install( FILES kopete_mrim.desktop  DESTINATION ${SERVICES_INSTALL_DIR})
+install( FILES kopetemrimchatui.rc  DESTINATION ${DATA_INSTALL_DIR}/kopete_mrim)

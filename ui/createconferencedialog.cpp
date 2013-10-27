@@ -2,6 +2,7 @@
 
 #include "mrimaccount.h"
 #include "mrimcontact.h"
+#include "debug.h"
 #include "mra/mraconferencesettings.h"
 
 #include "createconferencedialog.h"
@@ -85,4 +86,27 @@ void CreateConferenceDialog::on_buttonBox_accepted()
 
 const MRAConferenceSettings &CreateConferenceDialog::getSettings() {
     return d->settings;
+}
+
+void CreateConferenceDialog::setSettings(const MRAConferenceSettings &arg) {
+    d->settings = arg;
+    foreach (const QString &contact, d->settings.contactList()) {
+
+        QList<QListWidgetItem*> found = ui->listAvailableContacts->
+                findItems(contact, Qt::MatchExactly);
+
+        if ( found.isEmpty() ) {
+            // item not found
+            continue;
+        }
+
+        ui->listAvailableContacts->setCurrentItem( found.first() );
+
+        on_listAvailableContacts_doubleClicked(ui->listAvailableContacts->currentIndex());
+
+    }
+
+    ui->listSelectedContacts->sortItems();
+
+    ui->editConferenceTitle->setText(d->settings.title());
 }

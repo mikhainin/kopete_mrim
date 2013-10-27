@@ -279,7 +279,7 @@ void MRAProtocolV123::createChat(const MRAConferenceSettings &conferenceSettings
     MRAData chatData;
         MRAData listData;
 
-            QStringList membersList = conferenceSettings.getContactList();
+            QStringList membersList = conferenceSettings.contactList();
             listData.addUint32(membersList.length()); // members list length
 
             foreach (const QString &c, membersList) {
@@ -362,7 +362,7 @@ void MRAProtocolV123::inviteMemberToChat(const QString &to, const QString &conta
     MRAData chatData;
         chatData.addUint32(3); // TODO: 3 - add to the list, move to constants
         MRAData listData;
-            listData.addUint32(1); // members size
+            listData.addUint32(1); // members list size
             listData.addString(contactIdToInvite);
 
         chatData.addBinaryString( listData.toByteArray() );
@@ -370,6 +370,27 @@ void MRAProtocolV123::inviteMemberToChat(const QString &to, const QString &conta
     data.addBinaryString( chatData.toByteArray() );
 
     sendMsg(MRIM_CS_MESSAGE, &data);
+}
+
+void MRAProtocolV123::removeMemberFromChat(const QString &to, const QString &contactIdToRemove) {
+    MRAData data;
+    data.addUint32(  0x80 ); // TODO: move to contstants
+    data.addString(to);
+    data.addString("");
+    data.addString("");
+
+    MRAData chatData;
+        chatData.addUint32(8); // TODO: 8 - remove from the list, move to constants
+        MRAData listData;
+            listData.addUint32(1); // members list size
+            listData.addString(contactIdToRemove);
+
+        chatData.addBinaryString( listData.toByteArray() );
+
+    data.addBinaryString( chatData.toByteArray() );
+
+    sendMsg(MRIM_CS_MESSAGE, &data);
+
 }
 
 void MRAProtocolV123::setStatus(STATUS status) {
@@ -466,7 +487,7 @@ void MRAProtocolV123::readAnketaInfo(MRAData & data) {
 
     }
 
-    this->emit userInfoLoaded( info.email(), info );
+    emit userInfoLoaded( info.email(), info );
 }
 
 /* void MRAProtocolV123::authorizeContact(const QString &contact) {
