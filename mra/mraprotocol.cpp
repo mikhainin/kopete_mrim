@@ -783,7 +783,7 @@ void MRAProtocol::handleMessage(const ulong &msg, MRAData *data)
 }
 
 void MRAProtocol::slotPing() {
-    mrimDebug() << "sending ping";
+    //mrimDebug() << "sending ping";
     sendMsg(MRIM_CS_PING, NULL);
 
 }

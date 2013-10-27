@@ -142,7 +142,7 @@ ssize_t MRAConnection::readMessage(mrim_msg_t &msg_, MRAData *data)
     ssize_t sz = 0;
     sz = this->read((char*)&head_, sizeof head_ );
 
-    mrimDebug() << "message: " << head_.msg << " dlen" << head_.dlen;
+    //mrimDebug() << "message: " << head_.msg << " dlen" << head_.dlen;
 
     msg_ = head_.msg;
     if (sz > 0) {
@@ -174,7 +174,7 @@ void MRAConnection::sendMsg(mrim_msg_t msg, MRAData *data)
 
     if (data != NULL) {
         currHeader.dlen = data->getSize();
-        mrimDebug() << "dlen: " << currHeader.dlen;
+        //mrimDebug() << "dlen: " << currHeader.dlen;
     } else {
         currHeader.dlen = 0;
     }
