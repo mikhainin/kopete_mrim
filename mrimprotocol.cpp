@@ -1,8 +1,8 @@
 #include <kgenericfactory.h>
 #include <kdebug.h>
 
-#include <kopeteaccountmanager.h>
-#include <kopeteaccount.h>
+#include <kopete/kopeteaccountmanager.h>
+#include <kopete/kopeteaccount.h>
 
 #include "ui/mrimeditaccountwidget.h"
 #include "ui/mrimaddcontactpage.h"

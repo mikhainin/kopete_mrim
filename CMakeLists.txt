@@ -27,6 +27,7 @@ set(kopete_mrim_SRCS
     mrimprotocol.cpp
     mrimcontact.cpp
     mrimaccount.cpp
+    mrimchatsession.cpp
     debug.cpp
     version.cpp
     filetransfertask.cpp

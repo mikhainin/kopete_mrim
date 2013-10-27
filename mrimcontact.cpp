@@ -1,13 +1,13 @@
 #include <kdebug.h>
-#include <kopeteaccount.h>
-#include <kopetechatsessionmanager.h>
+#include <kopete/kopeteaccount.h>
+#include <kopete/kopetechatsessionmanager.h>
 #include <kopete/kopetetransfermanager.h>
 #include <QTimer>
 #include <QMessageBox>
-#include <kopeteavatarmanager.h>
-#include <kopeteuiglobal.h>
-#include <kopetemetacontact.h>
-#include <kopetegroup.h>
+#include <kopete/kopeteavatarmanager.h>
+#include <kopete/kopeteuiglobal.h>
+#include <kopete/kopetemetacontact.h>
+#include <kopete/kopetegroup.h>
 #include <kfiledialog.h>
 
 #include "ui/contactinfo.h"
@@ -18,6 +18,7 @@
 #include "debug.h"
 #include "mrimaccount.h"
 #include "mrimprotocol.h"
+#include "mrimchatsession.h"
 #include "mrimcontact.h"
 
 struct MrimContact::Private {
@@ -56,7 +57,7 @@ MrimContact::MrimContact( Kopete::Account* _account,
 
     d->flags = flags;
 
-    if ( (d->flags & CONTACT_FLAG_CHAT) == 0 ) {
+    if ( not isChatContact() ) {
         setFileCapable( true );
     }
 
@@ -132,15 +133,19 @@ void MrimContact::slotTransferFinished() {
 
 void MrimContact::setFlags(int arg) {
     d->flags = arg;
-    if ( (d->flags & CONTACT_FLAG_CHAT) == 0 ) {
-        setFileCapable( true );
-    } else {
+    if ( isChatContact() ) {
         setFileCapable( false );
+    } else {
+        setFileCapable( true );
     }
 }
 
-bool MrimContact::isOrdinaryContact() {
+bool MrimContact::isOrdinaryContact() const {
     return (d->flags == CONTACT_FLAG_UNKNOWN) || (d->flags == 0);
+}
+
+bool MrimContact::isChatContact() const {
+    return (d->flags & CONTACT_FLAG_CHAT) != 0;
 }
 
 void MrimContact::slotPerformRequestForAuthorization() {
@@ -175,13 +180,17 @@ Kopete::ChatSession* MrimContact::manager( CanCreateFlags canCreateFlags )
         contacts.append(this);
 
         Kopete::ChatSession::Form form = Kopete::ChatSession::Small;
-        if (d->flags & CONTACT_FLAG_CHAT) {
-            form = Kopete::ChatSession::Chatroom;
-            mrimDebug() << "Chat!";
-            loadChatMembersList();
-        }
+        if ( isChatContact() ) {
 
-        d->msgManager = Kopete::ChatSessionManager::self()->create(account()->myself(), contacts, protocol(), form );
+            form = Kopete::ChatSession::Chatroom;
+
+            loadChatMembersList();
+
+            d->msgManager = new MrimChatSession(account()->myself(), this, contacts, dynamic_cast<MrimProtocol*>(protocol()), form);
+
+        } else {
+            d->msgManager = Kopete::ChatSessionManager::self()->create(account()->myself(), contacts, protocol(), form );
+        }
 
         connect(d->msgManager, SIGNAL(messageSent(Kopete::Message&,Kopete::ChatSession*)),
                 this, SLOT(sendMessage(Kopete::Message&)) );
@@ -229,9 +238,10 @@ void MrimContact::receivedMessage( const QString &text ) {
 
     msg.setPlainBody( text );
 
-    msg.setManager( manager(CanCreate) );
-
     Kopete::ChatSession *session = manager(CanCreate);
+
+    msg.setManager( session );
+
     session->appendMessage(msg);
 }
 
@@ -397,6 +407,16 @@ void MrimContact::sync(unsigned int changed) {
     } else {
         mrimDebug() << "unknown change action:" << changed;
     }
+}
+
+void MrimContact::inviteContact(const QString &contactIdToInvite) {
+
+    if ( not isChatContact() ) {
+        return;
+    }
+
+    MrimAccount *a = dynamic_cast<MrimAccount*>( account() );
+    a->inviteMemberToChat(contactId(), contactIdToInvite);
 }
 
 #include "mrimcontact.moc"

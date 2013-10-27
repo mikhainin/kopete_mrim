@@ -2,7 +2,7 @@
 #define MRIMEDITACCOUNTWIDGET_H
 
 #include <QWidget>
-#include <ui/editaccountwidget.h>
+#include <kopete/ui/editaccountwidget.h>
 #include <KConfigGroup>
 #include "ui_mrimaccountpreferences.h"
 

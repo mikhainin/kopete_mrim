@@ -99,7 +99,10 @@ void MRAProtocol::loadChatMembersList(const QString &to) {
     Q_UNUSED(to); // proto v1.23
 }
 
-
+void MRAProtocol::inviteMemberToChat(const QString &to, const QString &contactIdToInvite) {
+    Q_UNUSED(to);
+    Q_UNUSED(contactIdToInvite);
+}
 
 
 void MRAProtocol::addGroupToContactList(const QString &groupName, IMRAProtocolGroupReceiver *groupAddedReveiver) {

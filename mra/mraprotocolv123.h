@@ -44,6 +44,8 @@ public:
 
     virtual void loadChatMembersList(const QString &to);
 
+    virtual void inviteMemberToChat(const QString &to, const QString &contactIdToInvite);
+
     virtual void addGroupToContactList(const QString &groupName, IMRAProtocolGroupReceiver *groupAddedReveiver);
 
     virtual void startFileTransfer(qtmra::IFileTransferInfo *transferReceiver);

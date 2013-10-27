@@ -512,6 +512,10 @@ void MrimAccount::loadChatMembersList(const QString &to) {
     d->mraProto->loadChatMembersList( to );
 }
 
+void MrimAccount::inviteMemberToChat(const QString &to, const QString &contactIdToInvite) {
+    d->mraProto->inviteMemberToChat( to, contactIdToInvite );
+}
+
 void MrimAccount::slotReceivedMessage( const QString &from, const QString &text )
 {
     mrimDebug() << "from=" << from;

@@ -105,6 +105,8 @@ public:
 
     void loadChatMembersList(const QString &to);
 
+    void inviteMemberToChat(const QString &to, const QString &contactIdToInvite);
+
     void contactTypingAMessage( const QString &to );
 
     void loadAvatar( const QString &email );

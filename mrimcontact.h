@@ -63,7 +63,17 @@ public:
      * @brief isOrdinaryContact: neither chat nor phone number
      * @return
      */
-    bool isOrdinaryContact();
+    bool isOrdinaryContact() const;
+
+    bool isChatContact() const;
+
+    /**
+     * Called when contact is dragged to the chat's contact list
+     * @brief inviteContact
+     * @param contactId
+     */
+    void inviteContact(const QString &contactIdToInvite);
+
 signals:
     void userInfoLoaded(const MRAContactInfo &info);
 

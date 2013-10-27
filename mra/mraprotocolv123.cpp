@@ -352,7 +352,25 @@ void MRAProtocolV123::loadChatMembersList(const QString &to) {
 
 }
 
+void MRAProtocolV123::inviteMemberToChat(const QString &to, const QString &contactIdToInvite) {
+    MRAData data;
+    data.addUint32(  0x80 ); // TODO: move to contstants
+    data.addString(to);
+    data.addString("");
+    data.addString("");
 
+    MRAData chatData;
+        chatData.addUint32(3); // TODO: 3 - add to the list, move to constants
+        MRAData listData;
+            listData.addUint32(1); // members size
+            listData.addString(contactIdToInvite);
+
+        chatData.addBinaryString( listData.toByteArray() );
+
+    data.addBinaryString( chatData.toByteArray() );
+
+    sendMsg(MRIM_CS_MESSAGE, &data);
+}
 
 void MRAProtocolV123::setStatus(STATUS status) {
     MRAData data;
