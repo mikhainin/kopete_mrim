@@ -1,6 +1,9 @@
 v0.2.2
 <done>
 
+v0.2.3 (?)
+[proto]  automatic load list of members when you were invited to the chat
+[proto]  merge fix of parsing "chat members list" packet
 
 v0.3
 [proto]  status message
@@ -11,6 +14,9 @@ v0.3
 [ui]     russian translation
 [proto]  reconnect after disconnect
 [proto]  delete/add contacts from chatlist when we receive a notification "smb has deleted/added a member from the list"
+[ui]     sorting in the "create chat" window
+[ui]     groups in the "create chat" window
+
 
 v0.4
 
