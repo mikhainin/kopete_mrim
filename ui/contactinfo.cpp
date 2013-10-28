@@ -59,8 +59,8 @@ void ContactInfo::slotUserInfoLoaded(const MRAContactInfo &info) {
 
     mrimDebug() << __PRETTY_FUNCTION__;
 
-    typedef QPair<QString, QString> pair_t;
     /*
+    typedef QPair<QString, QString> pair_t;
     foreach( const pair_t &item, info ) {
         d->ui.textInfo->append( item.first + ": " + item.second );
     }
