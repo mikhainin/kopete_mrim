@@ -1,7 +1,7 @@
 #ifndef MRIMACCOUNT_H
 #define MRIMACCOUNT_H
 
-#include <kopeteaccount.h>
+#include <kopete/kopeteaccount.h>
 #include "mra/mraprotocol.h"
 
 class MrimProtocol;
