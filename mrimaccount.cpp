@@ -6,11 +6,11 @@
 #include <klocalizedstring.h>
 #include <kactionmenu.h>
 
-#include <kopetecontactlist.h>
-#include <kopetemetacontact.h>
-#include <kopetemessage.h>
-#include <kopeteaccount.h>
-#include <kopeteutils.h>
+#include <kopete/kopetecontactlist.h>
+#include <kopete/kopetemetacontact.h>
+#include <kopete/kopetemessage.h>
+#include <kopete/kopeteaccount.h>
+#include <kopete/kopeteutils.h>
 
 
 #include "mra/mraprotocol.h"
@@ -654,13 +654,18 @@ void MrimAccount::slotChatInvitationReceived(const QString &chat, const QString 
     mrimDebug() << chat << title << from;
 
     d->adding = MRAContactListEntry(-1);
-    d->adding.setFlags(0);
+    d->adding.setFlags(CONTACT_FLAG_CHAT);
     d->adding.setNick(title);
     d->adding.setGroup(0);
     d->adding.setAddress(chat);
 
     d->mraProto->addToContactList( 0, 0, chat, title, myself()->contactId(), tr("Please, authorize me."), 0 );
     d->addingMetacontact = addContact(chat, title, 0, Kopete::Account::Temporary);
+    Kopete::Contact *c = d->addingMetacontact->contacts().first();
+    MrimContact *mrimContact = dynamic_cast<MrimContact *>( c );
+    if (mrimContact) {
+        mrimContact->setFlags(CONTACT_FLAG_CHAT);
+    }
 }
 
 void MrimAccount::slotTransferRequest(const TransferRequestInfo &transferInfo)
