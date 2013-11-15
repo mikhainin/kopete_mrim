@@ -24,3 +24,4 @@ v0.4
 further
 [proto]  load avatars via 3 permanent connections
 [proto]  file transfer via files.mail.ru
+[kopete] use wallet to store passwords
