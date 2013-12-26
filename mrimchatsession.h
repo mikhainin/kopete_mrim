@@ -5,6 +5,7 @@
 
 class MrimProtocol;
 class MrimContact;
+class MRAConferenceSettings;
 
 class MrimChatSession : public Kopete::ChatSession
 {
