@@ -52,7 +52,7 @@ void TransferManager::removeSession(const QString &remoteUser, int sessionId) {
 }
 
 IFileTransferInfo *TransferManager::session(const QString &remoteUser, int sessionId) {
-    Q_ASSERT(hasSession(remoteUser, session));
+    Q_ASSERT(hasSession(remoteUser, sessionId));
     return d->sessions[TransferSessionKey(remoteUser, sessionId)];
 }
 
