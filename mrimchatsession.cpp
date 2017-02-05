@@ -3,6 +3,8 @@
 #include <klocale.h>
 #include <kmenu.h>
 #include <kactioncollection.h>
+#include <KAction>
+#include <KIcon>
 
 #include <kopete/kopetechatsessionmanager.h>
 #include <kopete/kopeteaccount.h>
@@ -36,7 +38,7 @@ MrimChatSession::MrimChatSession(const Kopete::Contact *user,
 {
 
     Kopete::ChatSessionManager::self()->registerChatSession( this );
-    setComponentData( protocol->componentData() );
+    //setComponentData( protocol->componentData() );
 
     d->contact = contact;
     setMayInvite( contact->isChatContact() );

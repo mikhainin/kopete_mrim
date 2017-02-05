@@ -5,6 +5,7 @@
 #include <kinputdialog.h>
 #include <klocalizedstring.h>
 #include <kactionmenu.h>
+#include <KAction>
 
 #include <kopete/kopetecontactlist.h>
 #include <kopete/kopetemetacontact.h>

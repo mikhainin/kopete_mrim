@@ -17,7 +17,7 @@ class MrimProtocol : public Kopete::Protocol
 {
 Q_OBJECT
 public:
-    MrimProtocol(QObject *parent, const QStringList &args);
+    MrimProtocol(QObject *parent, const QVariantList &args);
     virtual ~MrimProtocol();
 
     /**

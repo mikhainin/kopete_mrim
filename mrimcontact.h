@@ -8,6 +8,7 @@
 #include <kopetechatsession.h>
 #include "mra/mraprotocol.h"
 
+class KAction;
 class MRAOfflineMessage;
 class ContactInfo;
 class TransferRequestInfo;
@@ -50,10 +51,10 @@ public:
     void loadChatMembersList();
     void slotChatSettingsReceived(const MRAConferenceSettings &settings);
 
-    virtual QList<KAction *> *customContextMenuActions(  );
-    virtual QList<KAction *> *customContextMenuActions( Kopete::ChatSession* );
+    virtual QList<QAction *> *customContextMenuActions(  );
+    virtual QList<QAction *> *customContextMenuActions( Kopete::ChatSession* );
 
-    void sendFile( const KUrl &sourceURL = KUrl(),
+    void sendFile( const QUrl &sourceURL = QUrl(),
                        const QString &fileName = QString(), uint fileSize = 0L );
 
     void receiveFile(const TransferRequestInfo &transferInfo);

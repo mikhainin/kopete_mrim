@@ -4,11 +4,14 @@
 #include <kopete/kopetetransfermanager.h>
 #include <QTimer>
 #include <QMessageBox>
+
 #include <kopete/kopeteavatarmanager.h>
 #include <kopete/kopeteuiglobal.h>
 #include <kopete/kopetemetacontact.h>
 #include <kopete/kopetegroup.h>
 #include <kfiledialog.h>
+#include <KAction>
+#include <KIcon>
 
 #include "ui/contactinfo.h"
 #include "mra/mraofflinemessage.h"
@@ -67,7 +70,7 @@ MrimContact::~MrimContact() {
     delete d;
 }
 
-void MrimContact::sendFile( const KUrl &sourceURL,
+void MrimContact::sendFile( const QUrl &sourceURL,
                    const QString &fileName, uint fileSize ) {
 
     kDebug(kdeDebugArea()) << sourceURL << fileName << fileSize;
@@ -75,9 +78,9 @@ void MrimContact::sendFile( const KUrl &sourceURL,
     QStringList fileNames;
     //If the file location is null, then get it from a file open dialog
     if( !sourceURL.isValid() ) {
-        fileNames = KFileDialog::getOpenFileNames( KUrl() ,"*", 0l  , tr( "Kopete File Transfer" ));
+        fileNames = KFileDialog::getOpenFileNames( QUrl() ,"*", 0l  , tr( "Kopete File Transfer" ));
     } else {
-        fileNames << sourceURL.path(KUrl::RemoveTrailingSlash);
+        fileNames << sourceURL.path();
     }
 
     kDebug(kdeDebugArea()) << "start transfer";
@@ -153,15 +156,15 @@ void MrimContact::slotPerformRequestForAuthorization() {
     a->requestForAuthorization(contactId() );
 }
 
-QList<KAction *> *MrimContact::customContextMenuActions( Kopete::ChatSession* ) {
+QList<QAction *> *MrimContact::customContextMenuActions( Kopete::ChatSession* ) {
 
-    QList<KAction *> *list = new QList<KAction *>();
+    QList<QAction *> *list = new QList<QAction *>();
     list->append(d->requestForAuthorization);
 
     return list;
 }
 
-QList<KAction *> *MrimContact::customContextMenuActions(  ) {
+QList<QAction *> *MrimContact::customContextMenuActions(  ) {
     return Kopete::Contact::customContextMenuActions();
 }
 

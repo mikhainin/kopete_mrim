@@ -1,7 +1,9 @@
 #include <kdebug.h>
 
 #include <QImage>
-#include <QHttp>
+#include <QNetworkReply>
+#include <QNetworkAccessManager>
+// #include <QHttp>
 
 #include "../debug.h"
 
@@ -12,7 +14,8 @@ struct MRAAvatarLoaderPrivate {
     QString contact;
     QString address;
 
-    QHttp http;
+    // QHttp http;
+    QNetworkAccessManager networkManager;
     QImage image;
 
     int getId;
@@ -65,6 +68,16 @@ void MRAAvatarLoader::run() {
     mrimDebug() << d->contact << d->address ;
     d->address = d->address.arg(items[1], items[0]);
 
+    d->networkManager.get(
+        QNetworkRequest(QUrl("http://qt-project.org"))
+    );
+
+    connect(&d->networkManager, SIGNAL(finished(QNetworkReply*)),
+            this, SLOT(replyFinished(QNetworkReply*)));
+
+    /*
+    connect(&d->networkManager, SIGNAL())
+    
     connect(&d->http, SIGNAL(done(bool)), this, SLOT(slotHttpHeadDone(bool)));
 
     connect(&d->http, SIGNAL(responseHeaderReceived(QHttpResponseHeader)),
@@ -73,6 +86,7 @@ void MRAAvatarLoader::run() {
     d->http.setHost("obraz.foto.mail.ru");
 
     d->http.head(d->address);
+    */
 
 }
 
@@ -96,6 +110,19 @@ const char *MRAAvatarLoader::member() const {
     return d->member;
 }
 
+void MRAAvatarLoader::replyFinished(QNetworkReply* reply) {
+    if (reply->error() != QNetworkReply::NoError) {
+        emit done(false, this);
+    } else {
+        QByteArray data = reply->readAll();
+
+        d->image.loadFromData(data);
+
+        emit done(true, this);
+    }
+}
+
+/*
 void MRAAvatarLoader::slotHttpHeadDone(bool error) {
     kdWarning(kdeDebugArea()) << error << d->http.errorString();
 
@@ -105,7 +132,6 @@ void MRAAvatarLoader::slotHttpHeadDone(bool error) {
     }
 
 }
-
 void MRAAvatarLoader::slotHttpHeadHeadersReceived(const QHttpResponseHeader & resp ) {
 
     disconnect(&d->http, SIGNAL(responseHeaderReceived(QHttpResponseHeader)),
@@ -160,5 +186,6 @@ void MRAAvatarLoader::slotHttpGetRequestFinished(int id, bool error) {
 
     emit done(true, this);
 }
+*/
 
 #include "mraavatarloader.moc"

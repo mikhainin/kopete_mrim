@@ -6,7 +6,7 @@
 class MRAAvatarLoaderPrivate;
 
 class QImage;
-class QHttpResponseHeader;
+class QNetworkReply;
 
 class MRAAvatarLoader : public QObject
 {
@@ -29,10 +29,11 @@ signals:
 public slots:
 
 private slots:
-    void slotHttpHeadDone(bool status);
-    void slotHttpHeadHeadersReceived(const QHttpResponseHeader & resp );
-    void slotHttpGetHeadersReceived(const QHttpResponseHeader & resp );
-    void slotHttpGetRequestFinished(int id, bool error);
+    // void slotHttpHeadDone(bool status);
+    // void slotHttpHeadHeadersReceived(const QHttpResponseHeader & resp );
+    // void slotHttpGetHeadersReceived(const QHttpResponseHeader & resp );
+    // void slotHttpGetRequestFinished(int id, bool error);
+    void replyFinished(QNetworkReply* reply);
 private:
     MRAAvatarLoaderPrivate *d;
 };

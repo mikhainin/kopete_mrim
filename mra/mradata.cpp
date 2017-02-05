@@ -3,21 +3,6 @@
 #include <string>
 #include "mradata.h"
 
-
-class CodecHolder {
-public:
-    CodecHolder(QByteArray name): m_oldCodec( QTextCodec::codecForCStrings() ) {
-        QTextCodec::setCodecForCStrings(QTextCodec::codecForName(name));
-    }
-    ~CodecHolder() {
-        QTextCodec::setCodecForCStrings(m_oldCodec);
-    }
-private:
-    QTextCodec *m_oldCodec;
-};
-
-
-
 MRAData::MRAData(QObject * parent)
     : QObject(parent)
     , m_pointer(0)
@@ -47,9 +32,8 @@ void MRAData::clear()
  */
 void MRAData::addString(const QString &str)
 {
-    CodecHolder holder("Windows-1251");
-
-    QByteArray ba = str.toAscii();
+    QTextCodec *w1251Codec = QTextCodec::codecForName("Windows-1251");
+    QByteArray ba = w1251Codec->fromUnicode(str);
 
      addUint32(ba.size());
      addData(ba.constData(), ba.size());
@@ -158,9 +142,9 @@ QString MRAData::getString()
             return QString();
         }
 
-        CodecHolder holder("Windows-1251");
-
-        QString result = QString::fromAscii( m_data.mid(m_pointer, len).constData() );
+        // CodecHolder holder("Windows-1251");
+        QTextCodec *w1251Codec = QTextCodec::codecForName("Windows-1251");
+        QString result = w1251Codec->toUnicode(m_data.mid(m_pointer, len).constData());
 
         m_pointer += len;
 
@@ -192,9 +176,10 @@ QString MRAData::getUnicodeString() {
             return QString();
         }
 
-        CodecHolder holder("UTF-16LE");
+        //CodecHolder holder("UTF-16LE");
+        QTextCodec *codec = QTextCodec::codecForName("UTF-16LE");
 
-        QString result = QString::fromAscii( m_data.mid(m_pointer, len).constData(), len );
+        QString result = codec->toUnicode( m_data.mid(m_pointer, len).constData(), len );
 
         m_pointer += len;
 

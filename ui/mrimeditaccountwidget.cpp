@@ -1,8 +1,12 @@
 #include <kdebug.h>
 #include <kopeteaccount.h>
 #include <kuser.h>
-#include <kpimidentities/identity.h>
-#include <kpimidentities/identitymanager.h>
+#include <kopeteidentity.h>
+
+#include <identitymanager.h>
+#include <identity.h>
+// #include <kpimidentities/identity.h>
+// #include <kpimidentities/identitymanager.h>
 
 #include "../debug.h"
 #include "mrimaccount.h"
@@ -48,8 +52,8 @@ MrimEditAccountWidget::MrimEditAccountWidget( QWidget* parent, Kopete::Account* 
         }
 
         // Next try via the default identity
-        KPIMIdentities::IdentityManager manager(true);
-        const KPIMIdentities::Identity & ident = manager.defaultIdentity();
+        KIdentityManagement::IdentityManager manager(true);
+        const KIdentityManagement::Identity & ident = manager.defaultIdentity();
 
         if (! ident.isNull()) {
             // Get the full name from identity (only if not available via KUser)

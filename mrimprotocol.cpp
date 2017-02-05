@@ -1,8 +1,17 @@
+#include <QTypeInfo>
+#include <QIcon>
+#include <qglobal.h>
+
+#include <kdemacros.h>
+#include <KSharedPtr>
 #include <kgenericfactory.h>
+#include <KSharedConfig>
+#include <KPluginFactory>
 #include <kdebug.h>
 
 #include <kopete/kopeteaccountmanager.h>
 #include <kopete/kopeteaccount.h>
+#include <kopeteonlinestatusmanager.h>
 
 #include "ui/mrimeditaccountwidget.h"
 #include "ui/mrimaddcontactpage.h"
@@ -13,16 +22,17 @@
 #include "mrimprotocol.h"
 #include "mra/mra_proto.h"
 
-typedef KGenericFactory<MrimProtocol> MrimProtocolFactory;
-K_EXPORT_COMPONENT_FACTORY( kopete_mrim, MrimProtocolFactory( "kopete_mrim" )  )
+// typedef KGenericFactory<MrimProtocol> MrimProtocolFactory;
+// K_EXPORT_COMPONENT_FACTORY( kopete_mrim, MrimProtocolFactory( "kopete_mrim" )  )
 
-
+K_PLUGIN_FACTORY( MrimProtocolFactory, registerPlugin<MrimProtocol>(); )
+K_EXPORT_PLUGIN( MrimProtocolFactory( "kopete_mrim" ) )
 
 MrimProtocol *MrimProtocol::s_protocol = NULL;
 
 
-MrimProtocol::MrimProtocol(QObject *parent, const QStringList &)
-    : Kopete::Protocol(MrimProtocolFactory::componentData(), parent)
+MrimProtocol::MrimProtocol(QObject *parent, const QVariantList&)
+    : Kopete::Protocol(parent)
 
     , mrimOnline(  Kopete::OnlineStatus::Online, 25, this, STATUS_ONLINE,  QStringList(QString()),
                  i18n( "Online" ),   i18n( "O&nline" ), Kopete::OnlineStatusManager::Online )

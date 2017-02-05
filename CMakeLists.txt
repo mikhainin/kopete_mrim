@@ -1,14 +1,51 @@
 # cmake -RCMAKE_INSTALL_PREFIX=/ -DEXEC_INSTALL_PREFIX=/usr -DSHARE_INSTALL_PREFIX=/usr/share/ -DCMAKE_BUILD_TYPE=DebugFull ..
+cmake_minimum_required(VERSION 2.6)
 
 project(kopete_mrim)
 
-cmake_minimum_required(VERSION 2.6)
+set(KF5_VERSION "5.11.0")
+set(REQUIRED_QT_VERSION "5.2.0")
 
-find_package(KDE4 REQUIRED)
-find_package(Kopete REQUIRED)
-find_package(KdepimLibs REQUIRED)
-include (KDE4Defaults)
-include (MacroLibrary)
+
+#ECM modules configurations
+find_package(ECM 1.7 REQUIRED NO_MODULE)
+
+# find_package(KDE4 REQUIRED)
+# find_package(Kopete REQUIRED)
+# find_package(KdepimLibs REQUIRED)
+# include (KDE4Defaults)
+# include (MacroLibrary)
+set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH} ${ECM_MODULE_DIR} ${ECM_KDE_MODULE_DIR})
+
+find_package(Phonon4Qt5 REQUIRED NO_MODULE)
+find_package(Qt5 ${REQUIRED_QT_VERSION} NO_MODULE REQUIRED Core Gui Gui)
+find_package(Qt5 ${REQUIRED_QT_VERSION} REQUIRED COMPONENTS Widgets Xml Sql Test)
+find_package(KF5 ${KF5_VERSION} REQUIRED COMPONENTS
+	CoreAddons
+	Config
+	# I18n
+	KDELibs4Support
+)
+set(CMAKE_AUTOMOC ON)
+
+# find_package(KF5Config ${KF5_VERSION} CONFIG REQUIRED)
+# find_package(KF5CoreAddons)
+find_package(KF5 COMPONENTS IdentityManagement)
+
+include(KDEInstallDirs)
+include(KDECMakeSettings)
+include(KDECompilerSettings)
+include(FeatureSummary)
+
+include(ECMAddTests)
+include(ECMAddAppIcon)
+include(ECMInstallIcons)
+include_directories(${PHONON_INCLUDES})
+
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
+
+include_directories("/usr/local/include/kopete")
 
 if (Kopete_FOUND)
     message(STATUS "Kopete include dir is: ${KOPETE_INCLUDE_DIR}")
@@ -17,10 +54,6 @@ if (Kopete_FOUND)
 else(Kopete_FOUND)
     message(ERROR "Kopete devel libraries do not found")
 endif(Kopete_FOUND)
-
-# include_directories(${KDEPIMLIBS_INCLUDE_DIRS})
-
-include_directories(${KDE4_INCLUDES} ${CMAKE_CURRENT_BINARY_DIR})
 
 set(kopete_mrim_SRCS
     addcontacttask.cpp
@@ -51,7 +84,7 @@ set(kopete_mrim_SRCS
     ui/createconferencedialog.cpp
 )
 
-kde4_add_ui_files(kopete_mrim_SRCS
+ki18n_wrap_ui(kopete_mrim_SRCS
     mrimaddui.ui
 
     ui/mrimaccountpreferences.ui
@@ -60,11 +93,26 @@ kde4_add_ui_files(kopete_mrim_SRCS
 )
 
 
-kde4_add_plugin(kopete_mrim ${kopete_mrim_SRCS} ${libmra_files} )
+add_library(kopete_mrim SHARED ${kopete_mrim_SRCS} ${libmra_files} )
 
 add_subdirectory (icons)
 
-target_link_libraries(kopete_mrim ${KDE4_KIO_LIBS} ${KDEPIMLIBS_KPIMIDENTITIES_LIBS} ${KDE4_KDNSSD_LIBS} kopete)
+
+target_link_libraries(kopete_mrim 
+    kopeteidentity
+    kopete
+#    KD5::PIM
+)
+
+target_link_libraries(kopete_mrim 
+    KF5::ConfigCore 
+    KF5::ConfigGui 
+    KF5::CoreAddons
+    KF5::KDELibs4Support
+    KF5::IdentityManagement
+    )
+
+# ${KDE4_KIO_LIBS} ${KDEPIMLIBS_KPIMIDENTITIES_LIBS} ${KDE4_KDNSSD_LIBS} kopete)
 
 install( TARGETS kopete_mrim  DESTINATION ${PLUGIN_INSTALL_DIR} )
 install( FILES kopete_mrim.desktop  DESTINATION ${SERVICES_INSTALL_DIR})
