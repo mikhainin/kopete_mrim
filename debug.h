@@ -1,12 +1,13 @@
 #ifndef DEBUG_H
 #define DEBUG_H
 
-#include <kdebug.h>
+#include <qdebug.h>
+#include <QLoggingCategory>
 
-int kdeDebugArea();
+Q_DECLARE_LOGGING_CATEGORY(MRIM_LOG_LISTER)
 
-#define mrimDebug() kDebug(kdeDebugArea())
+#define mrimDebug() qDebug(MRIM_LOG_LISTER)
 
-#define mrimWarning() kWarning(kdeDebugArea())
+#define mrimWarning() qWarning(MRIM_LOG_LISTER)
 
 #endif // DEBUG_H

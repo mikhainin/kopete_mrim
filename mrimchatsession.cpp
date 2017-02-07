@@ -3,8 +3,8 @@
 #include <klocale.h>
 #include <kmenu.h>
 #include <kactioncollection.h>
-#include <KAction>
-#include <KIcon>
+#include <QAction>
+#include <QIcon>
 
 #include <kopete/kopetechatsessionmanager.h>
 #include <kopete/kopeteaccount.h>
@@ -24,7 +24,7 @@
 class MrimChatSession::Private {
 public:
     MrimContact *contact;
-    KAction *editConferenceAction;
+    QAction *editConferenceAction;
     MRAConferenceSettings conferenceSettings;
 };
 
@@ -43,7 +43,7 @@ MrimChatSession::MrimChatSession(const Kopete::Contact *user,
     d->contact = contact;
     setMayInvite( contact->isChatContact() );
 
-    d->editConferenceAction = new KAction(KIcon("system-users"), i18n ("&Edit conference"), this);
+    d->editConferenceAction = new QAction(QIcon("system-users"), i18n ("&Edit conference"), this);
     connect(d->editConferenceAction, SIGNAL(triggered()), this, SLOT(slotEditConference()));
     actionCollection()->addAction("mrimEditConference", d->editConferenceAction);
 

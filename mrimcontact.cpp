@@ -4,14 +4,14 @@
 #include <kopete/kopetetransfermanager.h>
 #include <QTimer>
 #include <QMessageBox>
+#include <QAction>
+#include <QIcon>
 
 #include <kopete/kopeteavatarmanager.h>
 #include <kopete/kopeteuiglobal.h>
 #include <kopete/kopetemetacontact.h>
 #include <kopete/kopetegroup.h>
 #include <kfiledialog.h>
-#include <KAction>
-#include <KIcon>
 
 #include "ui/contactinfo.h"
 #include "mra/mraofflinemessage.h"
@@ -29,7 +29,7 @@ struct MrimContact::Private {
     QTimer *typingTimer;
     QTimer *myselfTypingTimer;
     ContactInfo *infoDialog;
-    KAction *requestForAuthorization;
+    QAction *requestForAuthorization;
     int flags;
     QMap<int, FileTransferTask*> transferTasks;
 
@@ -55,7 +55,7 @@ MrimContact::MrimContact( Kopete::Account* _account,
 
     QTimer::singleShot( 10 * 1000, this, SLOT(slotLoadAvatar()) );
 
-    d->requestForAuthorization = new KAction( KIcon("mail-reply-sender"), tr( "(Re)request Authorization From" ), this );
+    d->requestForAuthorization = new QAction( QIcon("mail-reply-sender"), tr( "(Re)request Authorization From" ), this );
     connect( d->requestForAuthorization, SIGNAL(triggered(bool)), this, SLOT(slotPerformRequestForAuthorization()) );
 
     d->flags = flags;
@@ -73,7 +73,7 @@ MrimContact::~MrimContact() {
 void MrimContact::sendFile( const QUrl &sourceURL,
                    const QString &fileName, uint fileSize ) {
 
-    kDebug(kdeDebugArea()) << sourceURL << fileName << fileSize;
+    mrimDebug() << sourceURL << fileName << fileSize;
 
     QStringList fileNames;
     //If the file location is null, then get it from a file open dialog
@@ -83,7 +83,7 @@ void MrimContact::sendFile( const QUrl &sourceURL,
         fileNames << sourceURL.path();
     }
 
-    kDebug(kdeDebugArea()) << "start transfer";
+    mrimDebug() << "start transfer";
 
     FileTransferTask *task = new FileTransferTask(
                   dynamic_cast<MrimAccount*>( account() )
@@ -105,7 +105,7 @@ void MrimContact::sendFile( const QUrl &sourceURL,
 
 void MrimContact::receiveFile(const TransferRequestInfo &transferInfo) {
     /// @todo ask user's confirmation
-    kDebug(kdeDebugArea());
+
     FileTransferTask *task = new FileTransferTask(
                   dynamic_cast<MrimAccount*>( account() )
                 , this

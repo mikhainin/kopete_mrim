@@ -1,4 +1,3 @@
-#include <kdebug.h>
 #include <kopete/kopetemetacontact.h>
 #include <kopete/kopetecontact.h>
 

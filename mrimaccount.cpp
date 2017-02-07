@@ -12,7 +12,7 @@
 #include <kopete/kopetemessage.h>
 #include <kopete/kopeteaccount.h>
 #include <kopete/kopeteutils.h>
-
+#include <kopete/kopeteuiglobal.h>
 
 #include "mra/mraprotocol.h"
 #include "mra/mraprotocolv123.h"
@@ -80,13 +80,13 @@ void MrimAccount::fillActionMenu( KActionMenu *actionMenu )
 
     actionMenu->addSeparator();
 
-    KAction *addGroupAction = new KAction( i18n("Add group"), actionMenu );
+    QAction *addGroupAction = new QAction( i18n("Add group"), actionMenu );
 
     QObject::connect( addGroupAction, SIGNAL(triggered(bool)), this, SLOT(addGroup()) );
 
     actionMenu->addAction( addGroupAction );
 
-    KAction *addConferenceAction = new KAction( i18n("Create new conference"), actionMenu );
+    QAction *addConferenceAction = new QAction( i18n("Create new conference"), actionMenu );
 
     QObject::connect( addConferenceAction, SIGNAL(triggered(bool)), this, SLOT(addConference()) );
 
@@ -95,7 +95,14 @@ void MrimAccount::fillActionMenu( KActionMenu *actionMenu )
 
 void MrimAccount::addGroup() {
     bool ok = false;
-    QString newGroupName = KInputDialog::getText( i18n("New group"), "New group name", QString(), &ok);
+    QString newGroupName = QInputDialog::getText(
+        Kopete::UI::Global::mainWidget(),
+        i18n("New group"), 
+        i18n("New group name"), 
+        QLineEdit::Normal,
+        "",
+        &ok
+    );
     if (not ok) {
         return;
     }

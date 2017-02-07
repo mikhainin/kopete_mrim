@@ -1,8 +1,3 @@
-#include <kdebug.h>
-
 #include "debug.h"
 
-int kdeDebugArea() {
-    static int area = KDebug::registerArea("kopete (kopete_mrim)");
-    return area;
-}
+Q_LOGGING_CATEGORY(MRIM_LOG_LISTER, "kopete_mrim_log")
