@@ -69,7 +69,7 @@ void MRAAvatarLoader::run() {
     d->address = d->address.arg(items[1], items[0]);
 
     d->networkManager.get(
-        QNetworkRequest(QUrl("http://qt-project.org"))
+        QNetworkRequest(QUrl(d->address))
     );
 
     connect(&d->networkManager, SIGNAL(finished(QNetworkReply*)),
@@ -115,7 +115,7 @@ void MRAAvatarLoader::replyFinished(QNetworkReply* reply) {
         emit done(false, this);
     } else {
         QByteArray data = reply->readAll();
-
+        mrimDebug() << "loaed data size " << data.size() << " from " << reply->rawHeaderPairs();
         d->image.loadFromData(data);
 
         emit done(true, this);
